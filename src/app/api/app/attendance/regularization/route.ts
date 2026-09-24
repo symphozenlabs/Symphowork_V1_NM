@@ -1,0 +1,10 @@
+import { and, desc, eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
+import { db } from "@/db/client";
+import { attendanceRegularizationRequests, employees } from "@/db/schema";
+import { errorResponse, AppError } from "@/lib/errors";
+import { resolveTenantContext } from "@/modules/tenancy/context";
+import { createRegularizationRequest } from "@/modules/attendance/regularization";
+
+export async function GET() { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); const [employee] = await db.select({ id: employees.id }).from(employees).where(and(eq(employees.organizationId, tenant.organization.id), eq(employees.userId, tenant.user.id))); if (!employee) throw new AppError("NOT_FOUND", "Your employee profile is not linked.", 404); return NextResponse.json({ success: true, requests: await db.select().from(attendanceRegularizationRequests).where(and(eq(attendanceRegularizationRequests.organizationId, tenant.organization.id), eq(attendanceRegularizationRequests.employeeId, employee.id))).orderBy(desc(attendanceRegularizationRequests.submittedAt)) }); } catch (error) { return errorResponse(error); } }
+export async function POST(request: Request) { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); const body = await request.json() as { attendanceId?: string; requestedIn?: string; requestedOut?: string; reason?: string }; if (!body.attendanceId || !body.reason) throw new AppError("VALIDATION_ERROR", "Attendance record and reason are required.", 400); return NextResponse.json({ success: true, request: await createRegularizationRequest({ organizationId: tenant.organization.id, userId: tenant.user.id, attendanceId: body.attendanceId, requestedIn: body.requestedIn, requestedOut: body.requestedOut, reason: body.reason }) }, { status: 201 }); } catch (error) { return errorResponse(error); } }

@@ -1,0 +1,3 @@
+import { describe, expect, it } from "vitest";
+import { availableBalance, calculateLeaveDays, overlaps } from "@/modules/leave/calculator";
+describe("leave calculations", () => { it("excludes weekends and holidays", () => expect(calculateLeaveDays([{ date: "2026-10-02", isWorkingDay: true, isHoliday: true }, { date: "2026-10-03", isWorkingDay: false, isHoliday: false }, { date: "2026-10-05", isWorkingDay: true, isHoliday: false }])).toBe(1)); it("reserves pending balance", () => expect(availableBalance({ opening: 10, accrued: 2, adjusted: 0, consumed: 3, pending: 2 })).toBe(7)); it("detects date overlap", () => expect(overlaps("2026-10-02", "2026-10-04", [{ startDate: "2026-10-03", endDate: "2026-10-05" }])).toBe(true)); });

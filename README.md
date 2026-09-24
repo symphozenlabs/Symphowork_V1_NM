@@ -4,7 +4,7 @@ Production foundation for SymphoWork, a future multi-tenant HRMS, ATS, recruitme
 
 ## Current milestone
 
-This repository contains the foundation plus the identity and SaaS security milestone: email/password identity, hashed sessions, email verification/reset foundations, organizations, memberships, database-backed RBAC, tenant authorization, provisioning, subscriptions, invitations, audit logging, and protected platform/workspace routes. It does not implement HRMS, ATS, payroll, chat, or task features.
+This repository contains the foundation plus identity, SaaS security, organization/employee operations, attendance, leave, configurable workflows, approvals, and notification-event foundations.
 
 ## Stack
 
@@ -26,3 +26,4 @@ pnpm build
 Database commands: `pnpm db:generate`, `pnpm db:migrate`, `pnpm db:push`, and `pnpm db:studio`.
 
 See [docs/architecture.md](docs/architecture.md), [docs/authentication.md](docs/authentication.md), [docs/multi-tenancy.md](docs/multi-tenancy.md), [docs/rbac.md](docs/rbac.md), [docs/provisioning.md](docs/provisioning.md), [docs/security.md](docs/security.md), and [docs/decisions/0001-foundation.md](docs/decisions/0001-foundation.md).
+Prompt 4 modules are documented in [docs/attendance.md](docs/attendance.md), [docs/leave.md](docs/leave.md), [docs/workflows.md](docs/workflows.md), and [docs/approval-engine.md](docs/approval-engine.md).

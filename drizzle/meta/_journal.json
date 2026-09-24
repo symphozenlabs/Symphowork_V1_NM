@@ -22,6 +22,20 @@
       "when": 1790272272359,
       "tag": "0002_brave_pet_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790274448260,
+      "tag": "0003_dashing_butterfly",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790274560088,
+      "tag": "0004_hard_jean_grey",
+      "breakpoints": true
     }
   ]
 }
