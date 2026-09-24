@@ -2,7 +2,7 @@
 
 SymphoWork uses a modular monolith: one Next.js deployment with explicit domain and infrastructure boundaries. The UI lives under `src/app` and `src/components`; cross-cutting contracts live under `src/lib`; persistence lives under `src/db`; future business capabilities belong under `src/modules/<domain>`.
 
-The first milestone deliberately includes only the application shell and foundation contracts. Prompt 2 should add identity, organizations, memberships, tenant-aware request context, and authorization without moving the shell.
+Prompt 2 adds identity, organizations, memberships, tenant-aware request context, and authorization without moving the shell. Platform identity remains separate from organization membership.
 
 ## Boundaries
 
