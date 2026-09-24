@@ -1,6 +1,6 @@
 import { and, eq, gt } from "drizzle-orm";
 import { db } from "@/db/client";
-import { invitations, memberships, roles, users } from "@/db/schema";
+import { employees, invitations, memberships, onboarding, roles, users } from "@/db/schema";
 import { hashPassword, hashToken } from "@/lib/crypto";
 import { AppError } from "@/lib/errors";
 import { recordAudit } from "@/lib/audit";
@@ -22,6 +22,7 @@ export async function acceptInvitation(input: { token: string; fullName: string;
     const role = await tx.query.roles.findFirst({ where: and(eq(roles.organizationId, invitation.organizationId), eq(roles.key, invitation.intendedRole)) });
     if (!role) throw new AppError("PROVISIONING_FAILED", "The invitation role is no longer available.", 500);
     const [membership] = await tx.insert(memberships).values({ userId: user.id, organizationId: invitation.organizationId, roleId: role.id, status: "active" }).returning();
+    if (invitation.employeeId) { await tx.update(employees).set({ userId: user.id, status: "onboarding", updatedAt: new Date() }).where(eq(employees.id, invitation.employeeId)); await tx.update(onboarding).set({ status: "in_progress", startedAt: new Date(), updatedAt: new Date() }).where(eq(onboarding.employeeId, invitation.employeeId)); }
     await tx.update(invitations).set({ status: "accepted", acceptedAt: new Date(), updatedAt: new Date() }).where(eq(invitations.id, invitation.id));
     return { user, membership };
   });

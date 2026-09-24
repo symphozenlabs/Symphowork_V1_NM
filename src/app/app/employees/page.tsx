@@ -1,0 +1,12 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { desc } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { db } from "@/db/client";
+import { employees } from "@/db/schema";
+import { getSessionUser } from "@/modules/identity/auth";
+import { resolveTenantContext } from "@/modules/tenancy/context";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+export default async function EmployeesPage() { const user = await getSessionUser(); if (!user) redirect("/login"); const tenant = await resolveTenantContext(); if (!tenant.organization) redirect("/platform"); const rows = await db.select().from(employees).where(eq(employees.organizationId, tenant.organization.id)).orderBy(desc(employees.createdAt)); return <div className="space-y-6"><div className="flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><Badge>People operations</Badge><h1 className="mt-3 text-3xl font-bold">Employees</h1><p className="mt-2 text-sm text-muted">Manage organization employee records and lifecycle status.</p></div><Button asChild><Link href="/app/employees/new">Create employee</Link></Button></div><Card><CardHeader><CardTitle>Employee directory <span className="ml-2 text-sm font-normal text-muted">{rows.length}</span></CardTitle></CardHeader><CardContent>{rows.length === 0 ? <p className="rounded-xl border border-dashed p-8 text-center text-sm text-muted">No employees yet. Create the first employee record to begin onboarding.</p> : <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b text-xs uppercase tracking-wide text-muted"><tr><th className="px-3 py-3">Employee</th><th className="px-3 py-3">Employee ID</th><th className="px-3 py-3">Status</th><th className="px-3 py-3">Joining date</th></tr></thead><tbody>{rows.map((employee) => <tr key={employee.id} className="border-b last:border-0"><td className="px-3 py-4 font-semibold"><Link className="hover:text-primary" href={`/app/employees/${employee.id}`}>{employee.displayName}</Link></td><td className="px-3 py-4 text-muted">{employee.employeeId}</td><td className="px-3 py-4"><Badge>{employee.status}</Badge></td><td className="px-3 py-4 text-muted">{employee.joiningDate ?? "—"}</td></tr>)}</tbody></table></div>}</CardContent></Card></div>; }

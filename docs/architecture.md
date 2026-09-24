@@ -4,6 +4,8 @@ SymphoWork uses a modular monolith: one Next.js deployment with explicit domain 
 
 Prompt 2 adds identity, organizations, memberships, tenant-aware request context, and authorization without moving the shell. Platform identity remains separate from organization membership.
 
+Prompt 3 adds a separate employee domain. Employees reference organizations and may optionally reference users; employee lifecycle, history, onboarding, and documents never replace the authentication identity model.
+
 ## Boundaries
 
 - Presentation: App Router pages, layouts, and reusable UI components.

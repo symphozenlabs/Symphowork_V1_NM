@@ -1,0 +1,9 @@
+import { NextResponse } from "next/server";
+import { and, eq } from "drizzle-orm";
+import { db } from "@/db/client";
+import { employees } from "@/db/schema";
+import { errorResponse, AppError } from "@/lib/errors";
+import { resolveTenantContext } from "@/modules/tenancy/context";
+import { employeeInputSchema } from "@/modules/employees/validation";
+export async function GET() { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); const [employee] = await db.select().from(employees).where(and(eq(employees.userId, tenant.user.id), eq(employees.organizationId, tenant.organization.id))); if (!employee) throw new AppError("NOT_FOUND", "Your employee profile is not linked yet.", 404); return NextResponse.json({ success: true, employee }); } catch (error) { return errorResponse(error); } }
+export async function PATCH(request: Request) { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); const [employee] = await db.select().from(employees).where(and(eq(employees.userId, tenant.user.id), eq(employees.organizationId, tenant.organization.id))); if (!employee) throw new AppError("NOT_FOUND", "Your employee profile is not linked yet.", 404); const changes = employeeInputSchema.pick({ firstName: true, middleName: true, lastName: true, personalEmail: true, phone: true }).partial().parse(await request.json()); const updated = await db.update(employees).set({ ...changes, displayName: [changes.firstName ?? employee.firstName, changes.middleName ?? employee.middleName, changes.lastName ?? employee.lastName].filter(Boolean).join(" "), updatedAt: new Date() }).where(eq(employees.id, employee.id)).returning(); return NextResponse.json({ success: true, employee: updated[0] }); } catch (error) { return errorResponse(error); } }

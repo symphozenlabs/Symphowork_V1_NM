@@ -15,6 +15,13 @@
       "when": 1790270663348,
       "tag": "0001_fluffy_micromax",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790272272359,
+      "tag": "0002_brave_pet_avengers",
+      "breakpoints": true
     }
   ]
 }

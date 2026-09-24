@@ -1,0 +1,3 @@
+import { describe, expect, it } from "vitest";
+import { assertEmployeeStatusTransition, assertNoSelfReporting, canTransitionEmployeeStatus } from "@/modules/employees/lifecycle";
+describe("employee lifecycle", () => { it("allows controlled status transitions", () => { expect(canTransitionEmployeeStatus("invited", "onboarding")).toBe(true); expect(canTransitionEmployeeStatus("exited", "active")).toBe(false); }); it("rejects self-reporting", () => { expect(() => assertNoSelfReporting("a", "a")).toThrow(); }); it("rejects invalid transitions", () => { expect(() => assertEmployeeStatusTransition("invited", "confirmed")).toThrow(); }); });
