@@ -71,6 +71,13 @@
       "when": 1790318389952,
       "tag": "0009_worthless_killmonger",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790319081324,
+      "tag": "0010_groovy_dragon_lord",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,6 @@
+import { NextResponse } from "next/server";
+import { errorResponse, AppError } from "@/lib/errors";
+import { resolveTenantContext } from "@/modules/tenancy/context";
+import { createProject, listProjects } from "@/modules/collaboration/service";
+export async function GET(request: Request) { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); const url = new URL(request.url); return NextResponse.json({ success: true, projects: await listProjects({ organizationId: tenant.organization.id, userId: tenant.user.id, query: url.searchParams.get("q") ?? undefined, limit: Number(url.searchParams.get("limit") ?? 50), offset: Number(url.searchParams.get("offset") ?? 0) }) }); } catch (error) { return errorResponse(error); } }
+export async function POST(request: Request) { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); return NextResponse.json({ success: true, project: await createProject({ organizationId: tenant.organization.id, userId: tenant.user.id, data: await request.json() }) }, { status: 201 }); } catch (error) { return errorResponse(error); } }
