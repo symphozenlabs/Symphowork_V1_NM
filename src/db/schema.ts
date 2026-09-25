@@ -6,7 +6,7 @@ const timestamps = {
 };
 
 export const userStatus = pgEnum("user_status", ["active", "disabled"]);
-export const platformRole = pgEnum("platform_role", ["NONE", "PLATFORM_OWNER"]);
+export const platformRole = pgEnum("platform_role", ["NONE", "PLATFORM_OWNER", "PRODUCT_OWNER", "PLATFORM_ADMIN", "PLATFORM_SUPPORT", "PLATFORM_BILLING"]);
 export const organizationStatus = pgEnum("organization_status", ["pending", "active", "suspended", "rejected", "archived"]);
 export const membershipStatus = pgEnum("membership_status", ["invited", "active", "suspended", "removed"]);
 export const invitationStatus = pgEnum("invitation_status", ["pending", "accepted", "expired", "revoked"]);
