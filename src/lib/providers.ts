@@ -12,3 +12,4 @@ export interface AIProvider {
   parseStructured<T>(input: string, schema: unknown): Promise<T>;
 }
 export interface JobQueue { enqueue<TPayload>(name: string, payload: TPayload): Promise<void>; }
+export interface BillingProvider { createCustomer(input: { organizationId: string; email?: string; name?: string }): Promise<{ customerId: string }>; createCheckoutSession(input: { organizationId: string; planCode: string; billingCycle: "monthly" | "annual" }): Promise<{ url: string }>; changeSubscription(input: { providerSubscriptionId: string; planCode: string; billingCycle: "monthly" | "annual" }): Promise<void>; cancelSubscription(input: { providerSubscriptionId: string }): Promise<void>; retrieveSubscription(input: { providerSubscriptionId: string }): Promise<unknown>; retrieveInvoices(input: { providerCustomerId: string }): Promise<unknown[]>; processWebhook(payload: unknown, signature?: string): Promise<void>; }

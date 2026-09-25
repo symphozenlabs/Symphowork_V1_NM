@@ -1,0 +1,3 @@
+import { describe, expect, it } from "vitest";
+import { billingFeatureAvailable, limitAllows } from "./policy";
+describe("billing entitlement policy", () => { it("distinguishes unlimited from zero and finite limits", () => { expect(limitAllows(null, 999)).toBe(true); expect(limitAllows(0, 0)).toBe(false); expect(limitAllows(0, 0, 1)).toBe(false); expect(limitAllows(3, 2)).toBe(true); expect(limitAllows(3, 3)).toBe(false); }); it("requires both feature enablement and capacity", () => { expect(billingFeatureAvailable(true, 10, 9)).toBe(true); expect(billingFeatureAvailable(false, null)).toBe(false); }); });
