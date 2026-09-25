@@ -1,0 +1,5 @@
+import { redirect } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getPlatformHealth } from "@/modules/platform/health";
+export default async function HealthPage() { let data; try { data = await getPlatformHealth(); } catch { redirect("/platform/login"); } return <div className="space-y-6"><div><Badge>Platform health</Badge><h1 className="mt-3 text-3xl font-bold">System health</h1><p className="mt-2 text-sm text-muted">Last checked {new Date(data.checkedAt).toLocaleString()}. Configuration is not treated as a successful provider probe.</p></div><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{Object.entries(data.components).map(([name, component]) => <Card key={name}><CardHeader><div className="flex items-center justify-between"><CardTitle className="capitalize">{name}</CardTitle><Badge>{component.status}</Badge></div></CardHeader><CardContent><p className="text-sm text-muted">{"detail" in component ? component.detail : component.status === "not_configured" ? "Not configured." : "Status checked."}</p></CardContent></Card>)}</div></div>; }
