@@ -16,5 +16,6 @@ export function errorResponse(error: unknown) {
   if (error instanceof AppError) {
     return Response.json({ success: false, error: { code: error.code, message: error.message } }, { status: error.status });
   }
+  console.error(JSON.stringify({ event: "unhandled_application_error", timestamp: new Date().toISOString() }));
   return Response.json({ success: false, error: { code: "INTERNAL_ERROR", message: "Something went wrong." } }, { status: 500 });
 }
