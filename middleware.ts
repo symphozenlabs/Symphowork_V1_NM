@@ -7,7 +7,6 @@ export function middleware(request: NextRequest) {
   const hasSession = Boolean(request.cookies.get("symphowork_session")?.value);
   if (isProtected && !hasSession) return NextResponse.redirect(new URL(path.startsWith("/platform") ? "/platform/login" : "/login", request.url));
   if ((path === "/login" || path === "/register") && hasSession) return NextResponse.redirect(new URL("/app", request.url));
-  if (path === "/platform/login" && hasSession) return NextResponse.redirect(new URL("/platform", request.url));
   const response = NextResponse.next();
   response.headers.set("x-request-id", request.headers.get("x-request-id") ?? crypto.randomUUID());
   response.headers.set("x-content-type-options", "nosniff");
@@ -15,6 +14,7 @@ export function middleware(request: NextRequest) {
   response.headers.set("x-frame-options", "DENY");
   response.headers.set("permissions-policy", "camera=(), microphone=(), geolocation=()");
   response.headers.set("content-security-policy", "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
+  if (process.env.NODE_ENV === "production") response.headers.set("strict-transport-security", "max-age=31536000; includeSubDomains");
   return response;
 }
 

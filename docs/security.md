@@ -1,7 +1,11 @@
 # Security controls
 
-Implemented controls include password hashing, expiring HTTP-only sessions, SameSite cookies, organization membership checks, permission checks, tenant-scoped queries, migration RLS policies, signed storage URL boundaries, input sanitization for collaboration text, safe error messages, audit records, idempotency fields, pagination, and security headers.
+## Implemented or verified in code
 
-Required before production: PostgreSQL RLS tests with two tenants, cross-tenant attack tests, CSRF review for deployed cookie architecture, endpoint rate limiting, public ATS abuse protection/CAPTCHA, malware scanning for resumes/uploads, storage-provider security review, dependency scanning, and a complete authorization matrix test.
+Password hashing, expiring HTTP-only sessions, production Secure cookies, SameSite cookies, organization membership checks, permission checks, tenant-scoped queries, migration RLS policies, signed storage URL boundaries, input validation/sanitization, safe error responses, audit records, idempotency fields, pagination, and security headers are present. Login, platform login, public ATS applications, registration, and password reset now have bounded process-local request throttling. Unauthorized platform login sessions are removed before returning 403.
 
-No secrets were added to the repository. Private chat content and sensitive provider credentials are not intended for logs.
+## Not verified or incomplete
+
+PostgreSQL RLS behavior has not been integration-tested because no \`DATABASE_URL\` was available. The transaction helpers that set RLS context require runtime verification. Distributed rate limiting, CAPTCHA/bot protection, malware scanning, storage-provider policy, dependency scanning, backup/restore, and deployment security are infrastructure-dependent and remain open. CSRF protection requires review against the deployed cookie architecture; SameSite=Lax reduces risk but is not a substitute for a deliberate deployment decision.
+
+No secrets were added to the repository. Sensitive credentials and private chat content are not intended for logs.
