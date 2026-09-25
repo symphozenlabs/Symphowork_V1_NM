@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { errorResponse, AppError } from "@/lib/errors";
+import { errorResponse } from "@/lib/errors";
 import { requireSession } from "@/modules/identity/auth";
-import { approveOrganization, runProvisioning } from "@/modules/platform/provisioning";
-export async function POST(request: Request, context: { params: Promise<{ organizationId: string }> }) { try { const user = await requireSession(); if (user.platformRole !== "PLATFORM_OWNER") throw new AppError("FORBIDDEN", "Platform Owner access is required.", 403); const { organizationId } = await context.params; const organization = await approveOrganization(organizationId, user.id); const body = (await request.json().catch(() => ({}))) as { primaryAdminEmail?: string }; const provisioning = body.primaryAdminEmail ? await runProvisioning(organizationId, body.primaryAdminEmail, user.id) : null; return NextResponse.json({ success: true, organization, provisioning: provisioning ? { job: provisioning.job, invitationToken: provisioning.invitationToken } : null }); } catch (error) { return errorResponse(error); } }
+import { authorizePlatform, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
+import { changeOrganizationStatus, retryProvisioning } from "@/modules/platform/operations";
+export async function POST(_: Request, context: { params: Promise<{ organizationId: string }> }) { try { const user = await requireSession(); await authorizePlatform(PLATFORM_PERMISSIONS.organizationSuspend); const { organizationId } = await context.params; const organization = await changeOrganizationStatus(organizationId, "active", user.id); const provisioning = await retryProvisioning(organizationId, user.id); return NextResponse.json({ success: true, organization, provisioning }); } catch (error) { return errorResponse(error); } }
