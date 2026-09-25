@@ -27,3 +27,4 @@ Database commands: `pnpm db:generate`, `pnpm db:migrate`, `pnpm db:push`, and `p
 
 See [docs/architecture.md](docs/architecture.md), [docs/authentication.md](docs/authentication.md), [docs/multi-tenancy.md](docs/multi-tenancy.md), [docs/rbac.md](docs/rbac.md), [docs/provisioning.md](docs/provisioning.md), [docs/security.md](docs/security.md), and [docs/decisions/0001-foundation.md](docs/decisions/0001-foundation.md).
 Prompt 4 modules are documented in [docs/attendance.md](docs/attendance.md), [docs/leave.md](docs/leave.md), [docs/workflows.md](docs/workflows.md), and [docs/approval-engine.md](docs/approval-engine.md).
+Prompt 5 modules are documented in [docs/expenses.md](docs/expenses.md), [docs/documents.md](docs/documents.md), and [docs/notifications.md](docs/notifications.md).

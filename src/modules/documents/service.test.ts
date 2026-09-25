@@ -1,0 +1,3 @@
+import { describe, expect, it } from "vitest";
+import { classifyDocumentExpiry, validateDocumentFile } from "@/modules/documents/service";
+describe("document foundation", () => { it("classifies expiry windows", () => { const now = new Date("2026-01-01T00:00:00Z"); expect(classifyDocumentExpiry("2025-12-31", now)).toBe("expired"); expect(classifyDocumentExpiry("2026-01-15", now)).toBe("expiring"); expect(classifyDocumentExpiry("2026-12-31", now)).toBe("active"); }); it("rejects unsupported files", () => { expect(() => validateDocumentFile({ type: "application/x-msdownload", size: 10 })).toThrow(); }); });

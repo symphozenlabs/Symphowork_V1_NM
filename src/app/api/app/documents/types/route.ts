@@ -1,0 +1,9 @@
+import { and, eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
+import { db } from "@/db/client";
+import { documentTypes } from "@/db/schema";
+import { errorResponse, AppError } from "@/lib/errors";
+import { resolveTenantContext } from "@/modules/tenancy/context";
+import { authorize } from "@/modules/tenancy/authorization";
+export async function GET() { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); await authorize({ organizationId: tenant.organization.id, permission: "document.read" }); return NextResponse.json({ success: true, types: await db.select().from(documentTypes).where(and(eq(documentTypes.organizationId, tenant.organization.id), eq(documentTypes.active, true))) }); } catch (error) { return errorResponse(error); } }
+export async function POST(request: Request) { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); await authorize({ organizationId: tenant.organization.id, permission: "document.manage" }); const body = await request.json() as { name?: string; code?: string; category?: string; required?: boolean; expiryApplicable?: boolean; verificationRequired?: boolean }; if (!body.name || !body.code) throw new AppError("VALIDATION_ERROR", "Document type name and code are required.", 400); const [type] = await db.insert(documentTypes).values({ organizationId: tenant.organization.id, name: body.name.trim(), code: body.code.trim().toUpperCase(), category: body.category ?? "other", required: Boolean(body.required), expiryApplicable: Boolean(body.expiryApplicable), verificationRequired: body.verificationRequired ?? true }).returning(); return NextResponse.json({ success: true, type }, { status: 201 }); } catch (error) { return errorResponse(error); } }

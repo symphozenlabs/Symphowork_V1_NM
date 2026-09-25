@@ -1,9 +1,6 @@
-import { recordAudit } from "@/lib/audit";
+import { notifyUsers } from "@/modules/notifications/service";
 
-export type NotificationEvent = "attendance.regularization.submitted" | "leave.submitted" | "approval.assigned" | "approval.completed";
+export type NotificationEvent = "attendance.regularization.submitted" | "leave.submitted" | "approval.assigned" | "approval.completed" | "expense.submitted" | "expense.approved" | "expense.rejected" | "document.verified" | "document.rejected" | "document.expiring" | "document.expired";
 
 /** Notification boundary: delivery providers can subscribe here without coupling domain writes to email/push infrastructure. */
-export async function emitNotificationEvent(input: { organizationId: string; event: NotificationEvent; recipientUserIds: string[]; subject: string; resource: string; resourceId: string }) {
-  await recordAudit({ organizationId: input.organizationId, action: "notification_event_queued", resource: input.resource, resourceId: input.resourceId, metadata: { event: input.event, recipientUserIds: input.recipientUserIds, subject: input.subject } });
-  return { queued: true, event: input.event };
-}
+export async function emitNotificationEvent(input: { organizationId: string; event: NotificationEvent; recipientUserIds: string[]; subject: string; resource: string; resourceId: string }) { const category = input.event.startsWith("expense") ? "expense" : input.event.startsWith("document") ? "documents" : input.event.startsWith("leave") ? "leave" : input.event.startsWith("attendance") ? "attendance" : "approvals"; await notifyUsers({ organizationId: input.organizationId, recipientUserIds: input.recipientUserIds, category, type: input.event, title: input.subject, message: input.subject, entityType: input.resource, entityId: input.resourceId, idempotencyKey: `${input.event}:${input.resourceId}` }); return { queued: true, event: input.event }; }

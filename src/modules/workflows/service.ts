@@ -11,7 +11,7 @@ export async function ensureDefaultWorkflow(organizationId: string, workflowType
   const [existing] = await db.select().from(workflowDefinitions).where(and(eq(workflowDefinitions.organizationId, organizationId), eq(workflowDefinitions.workflowType, workflowType), eq(workflowDefinitions.active, true)));
   if (existing) return existing;
   return db.transaction(async (tx) => {
-    const [definition] = await tx.insert(workflowDefinitions).values({ organizationId, name: workflowType === "leave" ? "Leave approval" : "Attendance regularization approval", code: `${workflowType.toUpperCase()}_STANDARD`, workflowType, description: "Default sequential approval workflow", active: true, createdByUserId }).returning();
+    const [definition] = await tx.insert(workflowDefinitions).values({ organizationId, name: workflowType === "leave" ? "Leave approval" : workflowType === "expense" ? "Expense approval" : "Attendance regularization approval", code: `${workflowType.toUpperCase()}_STANDARD`, workflowType, description: "Default sequential approval workflow", active: true, createdByUserId }).returning();
     const [version] = await tx.insert(workflowVersions).values({ organizationId, definitionId: definition.id, version: 1, active: true }).returning();
     await tx.insert(workflowSteps).values({ organizationId, versionId: version.id, stepOrder: 1, name: "Reporting manager", actorType: "reporting_manager", mode: "sequential" });
     return definition;

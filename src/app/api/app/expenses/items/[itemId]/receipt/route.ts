@@ -1,0 +1,10 @@
+import { and, eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
+import { db } from "@/db/client";
+import { employees, expenseClaims, expenseItems, expenseReceipts } from "@/db/schema";
+import { errorResponse, AppError } from "@/lib/errors";
+import { getStorageProvider } from "@/lib/storage";
+import { resolveTenantContext } from "@/modules/tenancy/context";
+import { validateDocumentFile } from "@/modules/documents/service";
+
+export async function POST(request: Request, context: { params: Promise<{ itemId: string }> }) { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); const { itemId } = await context.params; const [employee] = await db.select({ id: employees.id }).from(employees).where(and(eq(employees.organizationId, tenant.organization.id), eq(employees.userId, tenant.user.id))); const [item] = await db.select().from(expenseItems).innerJoin(expenseClaims, eq(expenseItems.claimId, expenseClaims.id)).where(and(eq(expenseItems.id, itemId), eq(expenseItems.organizationId, tenant.organization.id), eq(expenseClaims.employeeId, employee?.id ?? ""))); if (!item) throw new AppError("NOT_FOUND", "Expense item was not found.", 404); const file = (await request.formData()).get("file"); if (!(file instanceof File)) throw new AppError("VALIDATION_ERROR", "A receipt file is required.", 400); validateDocumentFile({ type: file.type, size: file.size }); const storageKey = `${tenant.organization.id}/expenses/${itemId}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`; const storage = getStorageProvider(); await storage.upload(storageKey, new Uint8Array(await file.arrayBuffer()), file.type); try { const [receipt] = await db.insert(expenseReceipts).values({ organizationId: tenant.organization.id, itemId, fileName: file.name, storageKey, mimeType: file.type, fileSize: file.size, uploadedByUserId: tenant.user.id }).returning(); return NextResponse.json({ success: true, receipt }, { status: 201 }); } catch (error) { await storage.delete(storageKey); throw error; } } catch (error) { return errorResponse(error); } }
