@@ -30,3 +30,4 @@ Prompt 4 modules are documented in [docs/attendance.md](docs/attendance.md), [do
 Prompt 5 modules are documented in [docs/expenses.md](docs/expenses.md), [docs/documents.md](docs/documents.md), and [docs/notifications.md](docs/notifications.md).
 Prompt 6 payroll is documented in [docs/payroll.md](docs/payroll.md). It is a configurable India payroll foundation, not a legal-compliance claim; statutory values require production verification.
 Prompt 7 ATS core is documented in [docs/ats.md](docs/ats.md). Resume intelligence, semantic search, and AI scoring are intentionally deferred to later prompts.
+Prompt 8 resume intelligence is documented in [docs/resume-intelligence.md](docs/resume-intelligence.md). Deterministic extraction and provider contracts are included; external AI, embeddings, and ranking remain deferred.

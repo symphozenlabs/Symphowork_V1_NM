@@ -57,6 +57,13 @@
       "when": 1790313762041,
       "tag": "0007_awesome_famine",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790317649993,
+      "tag": "0008_flimsy_triton",
+      "breakpoints": true
     }
   ]
 }
