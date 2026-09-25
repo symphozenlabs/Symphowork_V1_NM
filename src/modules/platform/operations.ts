@@ -1,11 +1,13 @@
 import { and, count, desc, eq, ilike, ne, or } from "drizzle-orm";
-import { db } from "@/db/client";
-import { auditLogs, employees, organizations, provisioningJobs, subscriptions, users } from "@/db/schema";
+import { db, withPlatformTransaction } from "@/db/client";
+import { auditLogs, employees, invitations, organizations, provisioningJobs, subscriptions, users } from "@/db/schema";
 import { AppError } from "@/lib/errors";
 import { recordAudit } from "@/lib/audit";
 import { authorizePlatform, authorizePlatformTargetOrganization, hasPlatformPermission, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
 import { runProvisioning } from "@/modules/platform/provisioning";
 import { organizationStatusSchema, platformRoleSchema } from "@/modules/platform/validation";
+import { sendInvitationEmail } from "@/lib/email";
+import { createOpaqueToken, hashToken } from "@/lib/crypto";
 
 const allowedTransitions: Record<string, string[]> = {
   pending: ["active", "rejected"],
@@ -31,15 +33,30 @@ export async function listPlatformOrganizations(input: { page?: number; pageSize
 
 export async function getPlatformOrganization(organizationId: string) {
   const { user, organization } = await authorizePlatformTargetOrganization({ organizationId, permission: PLATFORM_PERMISSIONS.organizationView, action: "organization_inspect" });
-  const [job, subscription, [{ employeeCount }], [{ activeEmployeeCount }], activity] = await Promise.all([
-    db.query.provisioningJobs.findFirst({ where: eq(provisioningJobs.organizationId, organizationId) }),
-    db.query.subscriptions.findFirst({ where: eq(subscriptions.organizationId, organizationId) }),
-    db.select({ employeeCount: count() }).from(employees).where(eq(employees.organizationId, organizationId)),
-    db.select({ activeEmployeeCount: count() }).from(employees).where(and(eq(employees.organizationId, organizationId), eq(employees.status, "active"))),
-    db.select().from(auditLogs).where(eq(auditLogs.organizationId, organizationId)).orderBy(desc(auditLogs.createdAt)).limit(12),
-  ]);
+  const [job, subscription, invitation, [{ employeeCount }], [{ activeEmployeeCount }], activity] = await withPlatformTransaction(async (tx) => Promise.all([
+    tx.query.provisioningJobs.findFirst({ where: eq(provisioningJobs.organizationId, organizationId) }),
+    tx.query.subscriptions.findFirst({ where: eq(subscriptions.organizationId, organizationId) }),
+    tx.query.invitations.findFirst({ where: and(eq(invitations.organizationId, organizationId), eq(invitations.invitationType, "organization_admin")) }),
+    tx.select({ employeeCount: count() }).from(employees).where(eq(employees.organizationId, organizationId)),
+    tx.select({ activeEmployeeCount: count() }).from(employees).where(and(eq(employees.organizationId, organizationId), eq(employees.status, "active"))),
+    tx.select().from(auditLogs).where(eq(auditLogs.organizationId, organizationId)).orderBy(desc(auditLogs.createdAt)).limit(12),
+  ]));
   await recordAudit({ actorUserId: user.id, organizationId, action: "platform_organization_inspection", resource: "organization", resourceId: organizationId });
-  return { organization, job, subscription, employeeCount, activeEmployeeCount, activity };
+  return { organization, job, invitation, subscription, employeeCount, activeEmployeeCount, activity };
+}
+
+export async function resendOrganizationInvitation(organizationId: string, actorUserId: string) {
+  const { organization } = await authorizePlatformTargetOrganization({ organizationId, permission: PLATFORM_PERMISSIONS.provisioningManage, action: "organization_invitation_resend" });
+  const result = await withPlatformTransaction(async (tx) => {
+    const invitation = await tx.query.invitations.findFirst({ where: and(eq(invitations.organizationId, organizationId), eq(invitations.invitationType, "organization_admin"), eq(invitations.status, "pending")) });
+    if (!invitation) throw new AppError("PROVISIONING_FAILED", "No pending organization admin invitation is available.", 409);
+    const token = createOpaqueToken();
+    const [updated] = await tx.update(invitations).set({ tokenHash: hashToken(token), expiresAt: new Date(Date.now() + 7 * 86_400_000), updatedAt: new Date() }).where(eq(invitations.id, invitation.id)).returning();
+    return { invitation: updated, token };
+  });
+  const delivery = await sendInvitationEmail({ email: organization.contactEmail ?? "", token: result.token, organizationName: organization.name });
+  await recordAudit({ actorUserId, organizationId, action: "organization_invitation_resent", resource: "invitation", resourceId: result.invitation.id });
+  return { invitation: { id: result.invitation.id, status: result.invitation.status, delivery } };
 }
 
 export async function changeOrganizationStatus(organizationId: string, nextStatus: string, actorUserId: string) {
@@ -54,19 +71,20 @@ export async function changeOrganizationStatus(organizationId: string, nextStatu
 
 export async function listProvisioningJobs() {
   await authorizePlatform(PLATFORM_PERMISSIONS.provisioningView);
-  return db.select({ job: provisioningJobs, organization: { id: organizations.id, name: organizations.name, slug: organizations.slug } }).from(provisioningJobs).innerJoin(organizations, eq(provisioningJobs.organizationId, organizations.id)).orderBy(desc(provisioningJobs.createdAt));
+  return withPlatformTransaction((tx) => tx.select({ job: provisioningJobs, organization: { id: organizations.id, name: organizations.name, slug: organizations.slug } }).from(provisioningJobs).innerJoin(organizations, eq(provisioningJobs.organizationId, organizations.id)).orderBy(desc(provisioningJobs.createdAt)));
 }
 
 export async function retryProvisioning(organizationId: string, actorUserId: string) {
   await authorizePlatformTargetOrganization({ organizationId, permission: PLATFORM_PERMISSIONS.provisioningManage, action: "provisioning_retry" });
-  const job = await db.query.provisioningJobs.findFirst({ where: eq(provisioningJobs.organizationId, organizationId) });
+  const job = await withPlatformTransaction((tx) => tx.query.provisioningJobs.findFirst({ where: eq(provisioningJobs.organizationId, organizationId) }));
   if (!job) throw new AppError("PROVISIONING_FAILED", "Provisioning job was not found.", 404);
   if (job.status === "completed") throw new AppError("PROVISIONING_FAILED", "Completed provisioning jobs cannot be retried.", 409);
   const organization = await db.query.organizations.findFirst({ where: eq(organizations.id, organizationId) });
   if (!organization?.contactEmail) throw new AppError("PROVISIONING_FAILED", "A primary administrator email is required to retry provisioning.", 400);
   const result = await runProvisioning(organizationId, organization.contactEmail, actorUserId);
   await recordAudit({ actorUserId, organizationId, action: "provisioning_retried", resource: "provisioning_job", resourceId: job.id });
-  return result;
+  const delivery = result.invitationToken ? await sendInvitationEmail({ email: organization.contactEmail, token: result.invitationToken, organizationName: organization.name }) : "not_configured";
+  return { job: result.job, invitation: { status: result.invitationToken ? "created" : "already_exists", delivery } };
 }
 
 export async function listPlatformUsers() {

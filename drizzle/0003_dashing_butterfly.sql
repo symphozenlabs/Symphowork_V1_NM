@@ -301,7 +301,7 @@ CREATE INDEX "workflow_instances_entity_idx" ON "workflow_instances" USING btree
 CREATE INDEX "workflow_instances_status_idx" ON "workflow_instances" USING btree ("organization_id","status");--> statement-breakpoint
 CREATE UNIQUE INDEX "workflow_steps_version_order_idx" ON "workflow_steps" USING btree ("version_id","step_order");--> statement-breakpoint
 CREATE UNIQUE INDEX "workflow_versions_definition_version_idx" ON "workflow_versions" USING btree ("definition_id","version");
-+--> statement-breakpoint
+--> statement-breakpoint
 ALTER TABLE "approval_history" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "approval_tasks" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "attendance_policies" ENABLE ROW LEVEL SECURITY;

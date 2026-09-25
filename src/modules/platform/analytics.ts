@@ -1,5 +1,5 @@
 import { count, desc, eq, gte, sql } from "drizzle-orm";
-import { db } from "@/db/client";
+import { db, withPlatformTransaction } from "@/db/client";
 import { auditLogs, organizations, plans, provisioningJobs, subscriptions } from "@/db/schema";
 import { authorizePlatform, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
 import { listOrganizationUsage } from "@/modules/platform/commercial";
@@ -13,8 +13,8 @@ export async function getPlatformAnalytics(days: AnalyticsWindow = 30) {
     db.select({ value: count() }).from(organizations).where(eq(organizations.status, "active")),
     db.select({ value: count() }).from(organizations).where(eq(organizations.status, "suspended")),
     db.select({ value: count() }).from(organizations).where(gte(organizations.createdAt, since)),
-    db.select({ value: count() }).from(provisioningJobs).where(sql`${provisioningJobs.status} in ('pending', 'running', 'retrying')`),
-    db.select({ value: count() }).from(provisioningJobs).where(eq(provisioningJobs.status, "failed")),
+    withPlatformTransaction((tx) => tx.select({ value: count() }).from(provisioningJobs).where(sql`${provisioningJobs.status} in ('pending', 'running', 'retrying')`)),
+    withPlatformTransaction((tx) => tx.select({ value: count() }).from(provisioningJobs).where(eq(provisioningJobs.status, "failed"))),
     db.select({ value: count() }).from(subscriptions),
     db.select({ value: count() }).from(subscriptions).where(eq(subscriptions.status, "active")),
     db.select({ value: count() }).from(subscriptions).where(eq(subscriptions.billingStatus, "trialing")),

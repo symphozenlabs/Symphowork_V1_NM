@@ -1,0 +1,3 @@
+import { AuthCard } from "@/components/auth/auth-card";
+import { InvitationAcceptForm } from "@/components/auth/invitation-accept-form";
+export default async function InvitationAcceptPage({ searchParams }: { searchParams: Promise<{ token?: string }> }) { const { token } = await searchParams; return <AuthCard title="Join your organization" description="Review the invitation and securely complete your workspace access." footer={<>Already have an account? Sign in, then reopen this invitation.</>}>{token ? <InvitationAcceptForm token={token} /> : <p className="mt-6 rounded-lg bg-red-50 p-4 text-sm text-red-700">This invitation link is missing its token.</p>}</AuthCard>; }

@@ -1,5 +1,5 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
-import { db } from "@/db/client";
+import { db, withTenantTransaction } from "@/db/client";
 import { approvalHistory, approvalTasks, employees, memberships, roles, workflowDefinitions, workflowInstances, workflowSteps, workflowVersions } from "@/db/schema";
 import { AppError } from "@/lib/errors";
 import { recordAudit } from "@/lib/audit";
@@ -23,7 +23,7 @@ async function resolveApprover(organizationId: string, employeeId: string, step:
   if (step.actorType === "specific_user" && step.actorUserId) return step.actorUserId;
   if (step.actorType === "reporting_manager") { const [employee] = await db.select({ managerId: employees.reportingManagerId }).from(employees).where(and(eq(employees.id, employeeId), eq(employees.organizationId, organizationId))); if (!employee?.managerId) throw new AppError("PROVISIONING_FAILED", "Workflow requires a reporting manager, but none is configured.", 422); const [manager] = await db.select({ userId: employees.userId }).from(employees).where(and(eq(employees.id, employee.managerId), eq(employees.organizationId, organizationId))); if (!manager?.userId) throw new AppError("PROVISIONING_FAILED", "The reporting manager does not have an account.", 422); return manager.userId; }
   const roleKeys = step.actorType === "hr_admin" ? ["HR_ADMIN", "ORGANIZATION_ADMIN", "ORGANIZATION_OWNER"] : step.actorRoleKey ? [step.actorRoleKey] : [];
-  if (roleKeys.length) { const [actor] = await db.select({ userId: memberships.userId }).from(memberships).innerJoin(roles, eq(memberships.roleId, roles.id)).where(and(eq(memberships.organizationId, organizationId), eq(memberships.status, "active"), inArray(roles.key, roleKeys))); if (actor) return actor.userId; }
+  if (roleKeys.length) { const [actor] = await withTenantTransaction(organizationId, (tx) => tx.select({ userId: memberships.userId }).from(memberships).innerJoin(roles, eq(memberships.roleId, roles.id)).where(and(eq(memberships.organizationId, organizationId), eq(memberships.status, "active"), inArray(roles.key, roleKeys)))); if (actor) return actor.userId; }
   throw new AppError("PROVISIONING_FAILED", "No approver is configured for this workflow step.", 422);
 }
 

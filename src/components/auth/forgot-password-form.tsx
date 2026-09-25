@@ -1,0 +1,6 @@
+"use client";
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+export function ForgotPasswordForm() { const [email, setEmail] = useState(""); const [message, setMessage] = useState<string>(); const [delivery, setDelivery] = useState<string>(); async function submit(e: React.FormEvent) { e.preventDefault(); const r = await fetch("/api/auth/forgot-password", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email }) }); const b = await r.json().catch(() => ({})); setMessage(b.message ?? "If that email is registered, reset instructions will be sent."); setDelivery(b.delivery); } return <form className="mt-6 space-y-4" onSubmit={submit}>{message ? <div className="space-y-3 rounded-lg bg-green-50 p-4 text-sm text-green-800"><p>{message}</p>{delivery === "not_configured" && <p>Email delivery is not configured, so no reset email was sent.</p>}<Link className="font-semibold underline" href="/login">Return to sign in</Link></div> : <><label className="block text-sm font-medium">Email<Input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></label><Button className="w-full" type="submit">Send reset instructions</Button></>}</form>; }

@@ -49,6 +49,15 @@ export async function registerUser(input: { email: string; fullName: string; pas
   return { user, verificationToken: token };
 }
 
+export async function resendVerification(email: string) {
+  const user = await db.query.users.findFirst({ where: eq(users.email, normalizeEmail(email)) });
+  if (!user || user.emailVerifiedAt) return undefined;
+  const token = createOpaqueToken();
+  await db.delete(emailVerificationTokens).where(eq(emailVerificationTokens.userId, user.id));
+  await db.insert(emailVerificationTokens).values({ userId: user.id, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + 24 * 86_400_000) });
+  return { email: user.email, token };
+}
+
 export async function authenticate(input: { email: string; password: string }) {
   const user = await db.query.users.findFirst({ where: eq(users.email, normalizeEmail(input.email)) });
   if (!user || !(await verifyPassword(input.password, user.passwordHash))) { await recordAudit({ action: "failed_login", resource: "user", metadata: { email: normalizeEmail(input.email) } }); throw new AppError("AUTH_INVALID_CREDENTIALS", "Email or password is incorrect.", 401); }

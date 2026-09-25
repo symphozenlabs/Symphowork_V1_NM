@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { db } from "@/db/client";
+import { db, withPlatformTransaction } from "@/db/client";
 import { auditLogs, invitations, organizations, permissions, plans, provisioningJobs, rolePermissions, roles, subscriptions } from "@/db/schema";
 import { createOpaqueToken, hashToken } from "@/lib/crypto";
 import { AppError } from "@/lib/errors";
@@ -10,7 +10,7 @@ import type { OrganizationInput } from "@/modules/platform/validation";
 export async function createOrganization(input: OrganizationInput, actorUserId: string) {
   const existing = await db.query.organizations.findFirst({ where: eq(organizations.slug, input.slug) });
   if (existing) throw new AppError("ORG_ALREADY_EXISTS", "An organization with this slug already exists.", 409);
-  const result = await db.transaction(async (tx) => {
+  const result = await withPlatformTransaction(async (tx) => {
     const [organization] = await tx.insert(organizations).values({ ...input, status: "pending" }).returning();
     const [job] = await tx.insert(provisioningJobs).values({ organizationId: organization.id }).returning();
     await tx.insert(auditLogs).values({ actorUserId, action: "organization_creation", resource: "organization", resourceId: organization.id });
@@ -27,7 +27,7 @@ export async function approveOrganization(organizationId: string, actorUserId: s
 }
 
 export async function runProvisioning(organizationId: string, primaryAdminEmail: string, actorUserId?: string) {
-  return db.transaction(async (tx) => {
+  return withPlatformTransaction(async (tx) => {
     let invitationToken: string | undefined;
     const job = await tx.query.provisioningJobs.findFirst({ where: eq(provisioningJobs.organizationId, organizationId) });
     if (!job) throw new AppError("PROVISIONING_FAILED", "Provisioning job was not found.", 404);
