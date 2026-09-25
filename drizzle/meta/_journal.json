@@ -64,6 +64,13 @@
       "when": 1790317649993,
       "tag": "0008_flimsy_triton",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790318389952,
+      "tag": "0009_worthless_killmonger",
+      "breakpoints": true
     }
   ]
 }

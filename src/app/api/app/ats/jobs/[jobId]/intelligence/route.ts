@@ -1,0 +1,7 @@
+import { NextResponse } from "next/server";
+import { errorResponse, AppError } from "@/lib/errors";
+import { resolveTenantContext } from "@/modules/tenancy/context";
+import { extractJobRequirements, matchCandidatesForJob } from "@/modules/recruiter-intelligence/service";
+
+export async function GET(_request: Request, context: { params: Promise<{ jobId: string }> }) { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); const { jobId } = await context.params; return NextResponse.json({ success: true, requirements: await extractJobRequirements({ organizationId: tenant.organization.id, userId: tenant.user.id, jobId }) }); } catch (error) { return errorResponse(error); } }
+export async function POST(request: Request, context: { params: Promise<{ jobId: string }> }) { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); const { jobId } = await context.params; const body = await request.json().catch(() => ({})) as { candidateIds?: string[]; limit?: number }; return NextResponse.json({ success: true, ...(await matchCandidatesForJob({ organizationId: tenant.organization.id, userId: tenant.user.id, jobId, candidateIds: body.candidateIds, limit: body.limit })) }); } catch (error) { return errorResponse(error); } }
