@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db/client";
-import { attendanceRecords, attendanceRegularizationRequests, employees, expenseClaims, expenseHistory, leaveApplications, leaveBalances, leaveTransactions, payrollRuns } from "@/db/schema";
+import { atsRequisitions, attendanceRecords, attendanceRegularizationRequests, employees, expenseClaims, expenseHistory, leaveApplications, leaveBalances, leaveTransactions, payrollRuns } from "@/db/schema";
 import { errorResponse, AppError } from "@/lib/errors";
 import { notifyUsers } from "@/modules/notifications/service";
 import { resolveTenantContext } from "@/modules/tenancy/context";
@@ -29,6 +29,9 @@ export async function POST(request: Request, context: { params: Promise<{ taskId
       } else if (result.entityType === "payroll_run" && result.status !== "in_progress") {
         const [run] = await tx.select().from(payrollRuns).where(and(eq(payrollRuns.id, result.entityId), eq(payrollRuns.organizationId, tenant.organization!.id)));
         if (run) { const approved = result.status === "approved"; await tx.update(payrollRuns).set({ status: approved ? "approved" : "rejected", approvedAt: approved ? new Date() : undefined, reviewedAt: new Date(), updatedAt: new Date() }).where(eq(payrollRuns.id, run.id)); recipientUserId = run.createdByUserId ?? undefined; }
+      } else if (result.entityType === "ats_requisition" && result.status !== "in_progress") {
+        const [requisition] = await tx.select().from(atsRequisitions).where(and(eq(atsRequisitions.id, result.entityId), eq(atsRequisitions.organizationId, tenant.organization!.id)));
+        if (requisition) { const approved = result.status === "approved"; await tx.update(atsRequisitions).set({ status: approved ? "approved" : "cancelled", approvedByUserId: approved ? tenant.user.id : undefined, updatedAt: new Date() }).where(eq(atsRequisitions.id, requisition.id)); recipientUserId = requisition.createdByUserId ?? undefined; }
       }
     });
     if (recipientUserId && result.status !== "in_progress") await notifyUsers({ organizationId: tenant.organization.id, recipientUserIds: [recipientUserId], category: result.entityType === "expense_claim" ? "expense" : result.entityType === "leave_application" ? "leave" : result.entityType === "attendance_regularization" ? "attendance" : "approvals", type: `${result.entityType}.${result.status}`, title: "Approval decision recorded", message: `Your ${result.entityType.replaceAll("_", " ")} is ${result.status}.`, entityType: result.entityType, entityId: result.entityId, actionUrl: result.entityType === "payroll_run" ? "/app/payroll" : result.entityType === "expense_claim" ? "/app/expenses" : result.entityType === "leave_application" ? "/app/leave" : "/app/attendance", idempotencyKey: `approval:${result.instanceId}:${result.status}` });

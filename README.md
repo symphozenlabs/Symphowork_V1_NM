@@ -29,3 +29,4 @@ See [docs/architecture.md](docs/architecture.md), [docs/authentication.md](docs/
 Prompt 4 modules are documented in [docs/attendance.md](docs/attendance.md), [docs/leave.md](docs/leave.md), [docs/workflows.md](docs/workflows.md), and [docs/approval-engine.md](docs/approval-engine.md).
 Prompt 5 modules are documented in [docs/expenses.md](docs/expenses.md), [docs/documents.md](docs/documents.md), and [docs/notifications.md](docs/notifications.md).
 Prompt 6 payroll is documented in [docs/payroll.md](docs/payroll.md). It is a configurable India payroll foundation, not a legal-compliance claim; statutory values require production verification.
+Prompt 7 ATS core is documented in [docs/ats.md](docs/ats.md). Resume intelligence, semantic search, and AI scoring are intentionally deferred to later prompts.

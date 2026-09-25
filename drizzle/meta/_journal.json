@@ -50,6 +50,13 @@
       "when": 1790310074930,
       "tag": "0006_slippery_snowbird",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790313762041,
+      "tag": "0007_awesome_famine",
+      "breakpoints": true
     }
   ]
 }

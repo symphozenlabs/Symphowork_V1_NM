@@ -10,7 +10,7 @@ const navItems = [
   { label: "Expenses", href: "/app/expenses", icon: ReceiptText },
   { label: "Payroll", href: "/app/payroll", icon: Banknote },
   { label: "Payslips", href: "/app/payroll/payslips", icon: FileText },
-  { label: "Recruitment", href: "/app", icon: BriefcaseBusiness },
+  { label: "Recruitment", href: "/app/recruitment", icon: BriefcaseBusiness },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
