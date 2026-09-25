@@ -1,0 +1,5 @@
+import { NextResponse } from "next/server";
+import { errorResponse, AppError } from "@/lib/errors";
+import { resolveTenantContext } from "@/modules/tenancy/context";
+import { assignSalaryStructure } from "@/modules/payroll/service";
+export async function POST(request: Request) { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); const body = await request.json() as { employeeId?: string; structureId?: string; effectiveFrom?: string; effectiveTo?: string; revisionReason?: string; notes?: string }; if (!body.employeeId || !body.structureId || !body.effectiveFrom) throw new AppError("VALIDATION_ERROR", "Employee, structure, and effective start date are required.", 400); return NextResponse.json({ success: true, assignment: await assignSalaryStructure({ organizationId: tenant.organization.id, userId: tenant.user.id, ...body } as Parameters<typeof assignSalaryStructure>[0]) }, { status: 201 }); } catch (error) { return errorResponse(error); } }

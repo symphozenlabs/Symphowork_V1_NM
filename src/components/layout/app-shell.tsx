@@ -1,4 +1,4 @@
-import { Bell, BriefcaseBusiness, CalendarCheck2, ChevronDown, ClipboardCheck, Clock3, LayoutDashboard, Menu, Search, Settings2, UsersRound, ReceiptText } from "lucide-react";
+import { Bell, BriefcaseBusiness, CalendarCheck2, ChevronDown, ClipboardCheck, Clock3, LayoutDashboard, Menu, Search, Settings2, UsersRound, ReceiptText, Banknote, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
@@ -8,6 +8,8 @@ const navItems = [
   { label: "Leave", href: "/app/leave", icon: CalendarCheck2 },
   { label: "Approvals", href: "/app/approvals", icon: ClipboardCheck },
   { label: "Expenses", href: "/app/expenses", icon: ReceiptText },
+  { label: "Payroll", href: "/app/payroll", icon: Banknote },
+  { label: "Payslips", href: "/app/payroll/payslips", icon: FileText },
   { label: "Recruitment", href: "/app", icon: BriefcaseBusiness },
 ];
 

@@ -1,0 +1,6 @@
+import { NextResponse } from "next/server";
+import { errorResponse, AppError } from "@/lib/errors";
+import { resolveTenantContext } from "@/modules/tenancy/context";
+import { calculatePayrollRun, listPayrollRuns } from "@/modules/payroll/service";
+export async function GET() { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); return NextResponse.json({ success: true, runs: await listPayrollRuns({ organizationId: tenant.organization.id, userId: tenant.user.id }) }); } catch (error) { return errorResponse(error); } }
+export async function POST(request: Request) { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); const body = await request.json() as { periodId?: string }; if (!body.periodId) throw new AppError("VALIDATION_ERROR", "Period is required.", 400); return NextResponse.json({ success: true, run: await calculatePayrollRun({ organizationId: tenant.organization.id, userId: tenant.user.id, periodId: body.periodId }) }, { status: 201 }); } catch (error) { return errorResponse(error); } }
