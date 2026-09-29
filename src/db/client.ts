@@ -10,7 +10,14 @@ if (process.env.NODE_ENV !== "production") globalForDb.sql = sql;
 export const db = drizzle(sql, { schema });
 export { sql };
 
-type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+export type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+export async function withInvitationTokenTransaction<T>(tokenHash: string, callback: (transaction: DbTransaction) => Promise<T>) {
+  return db.transaction(async (transaction) => {
+    await transaction.execute(drizzleSql`select set_config('app.current_invitation_token_hash', ${tokenHash}, true)`);
+    return callback(transaction);
+  });
+}
 
 export async function withTenantTransaction<T>(organizationId: string, callback: (transaction: DbTransaction) => Promise<T>) {
   return db.transaction(async (transaction) => {
