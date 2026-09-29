@@ -6,6 +6,7 @@ import { recordAudit } from "@/lib/audit";
 import { authorizePlatform, authorizePlatformTargetOrganization, hasPlatformPermission, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
 import { runProvisioning } from "@/modules/platform/provisioning";
 import { organizationStatusSchema, platformRoleSchema } from "@/modules/platform/validation";
+import { z } from "zod";
 import { sendInvitationEmail } from "@/lib/email";
 import { createOpaqueToken, hashToken } from "@/lib/crypto";
 
@@ -74,19 +75,30 @@ export async function changeOrganizationStatus(organizationId: string, nextStatu
 
 export async function listProvisioningJobs() {
   await authorizePlatform(PLATFORM_PERMISSIONS.provisioningView);
-  return withPlatformTransaction((tx) => tx.select({ job: provisioningJobs, organization: { id: organizations.id, name: organizations.name, slug: organizations.slug } }).from(provisioningJobs).innerJoin(organizations, eq(provisioningJobs.organizationId, organizations.id)).orderBy(desc(provisioningJobs.createdAt)));
+  return withPlatformTransaction((tx) => tx.select({ job: provisioningJobs, organization: { id: organizations.id, name: organizations.name, slug: organizations.slug, contactEmail: organizations.contactEmail } }).from(provisioningJobs).innerJoin(organizations, eq(provisioningJobs.organizationId, organizations.id)).orderBy(desc(provisioningJobs.createdAt)));
 }
 
-export async function retryProvisioning(organizationId: string, actorUserId: string) {
+const provisioningContactSchema = z.string().trim().email();
+export async function retryProvisioning(organizationId: string, actorUserId: string, requestedPrimaryAdminEmail?: string) {
   await authorizePlatformTargetOrganization({ organizationId, permission: PLATFORM_PERMISSIONS.provisioningManage, action: "provisioning_retry" });
   const job = await withPlatformTransaction((tx) => tx.query.provisioningJobs.findFirst({ where: eq(provisioningJobs.organizationId, organizationId) }));
   if (!job) throw new AppError("PROVISIONING_FAILED", "Provisioning job was not found.", 404);
   if (job.status === "completed") throw new AppError("PROVISIONING_FAILED", "Completed provisioning jobs cannot be retried.", 409);
   const [organization] = await withPlatformTransaction((tx) => tx.select().from(organizations).where(eq(organizations.id, organizationId)).limit(1));
-  if (!organization?.contactEmail) throw new AppError("PROVISIONING_FAILED", "A primary administrator email is required to retry provisioning.", 400);
-  const result = await runProvisioning(organizationId, organization.contactEmail, actorUserId);
+  const primaryAdminEmail = requestedPrimaryAdminEmail ? provisioningContactSchema.parse(requestedPrimaryAdminEmail).toLowerCase() : organization?.contactEmail?.toLowerCase();
+  if (!primaryAdminEmail) throw new AppError("PROVISIONING_FAILED", "A primary administrator email is required to process this job.", 400);
+  if (organization && organization.contactEmail !== primaryAdminEmail) await withPlatformTransaction((tx) => tx.update(organizations).set({ contactEmail: primaryAdminEmail, updatedAt: new Date() }).where(eq(organizations.id, organizationId)));
+  let result;
+  try {
+    result = await runProvisioning(organizationId, primaryAdminEmail, actorUserId);
+  } catch (error) {
+    const message = error instanceof AppError ? error.message : "Provisioning could not be completed. Retry the job or contact support.";
+    await withPlatformTransaction((tx) => tx.update(provisioningJobs).set({ status: "failed", currentStep: "failed", failureMessage: message.slice(0, 1000), updatedAt: new Date() }).where(eq(provisioningJobs.id, job.id)));
+    await recordAudit({ actorUserId, organizationId, action: "provisioning_failed", resource: "provisioning_job", resourceId: job.id, metadata: { message }, platform: true });
+    throw new AppError("PROVISIONING_FAILED", message, error instanceof AppError ? error.status : 500);
+  }
   await recordAudit({ actorUserId, organizationId, action: "provisioning_retried", resource: "provisioning_job", resourceId: job.id, platform: true });
-  const delivery = result.invitationToken ? await sendInvitationEmail({ email: organization.contactEmail, token: result.invitationToken, organizationName: organization.name }) : "not_configured";
+  const delivery = result.invitationToken ? await sendInvitationEmail({ email: primaryAdminEmail, token: result.invitationToken, organizationName: organization.name }) : "not_configured";
   return { job: result.job, invitation: { status: result.invitationToken ? "created" : "already_exists", delivery } };
 }
 
