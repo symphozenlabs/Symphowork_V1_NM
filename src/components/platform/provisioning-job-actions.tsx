@@ -32,7 +32,7 @@ export function ProvisioningJobActions({ organizationId, organizationName, conta
       const response = await fetch(`/api/platform/provisioning/${organizationId}/retry`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ primaryAdminEmail: email.trim().toLowerCase() }) });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error?.message ?? "Provisioning could not be completed.");
-      setMessage(body.invitation?.delivery === "not_configured" ? "Provisioning completed. Email delivery is not configured; copy-free invitation delivery will require email configuration." : "Provisioning completed and the primary admin invitation was prepared.");
+      setMessage(body.invitation?.delivery === "not_configured" ? "Provisioning completed. Email delivery is not configured; open the organization and copy the invitation link to share it manually." : "Provisioning completed and the primary admin invitation was prepared.");
       router.refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Provisioning could not be completed.");

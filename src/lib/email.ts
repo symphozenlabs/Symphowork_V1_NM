@@ -19,11 +19,17 @@ export async function sendEmailIfConfigured(message: EmailMessage): Promise<Emai
   }
 }
 
+export function buildInvitationUrl(token: string): string {
+  const appUrl = process.env.APP_URL?.trim().replace(/\/$/, "");
+  if (!appUrl) throw new Error("The public application URL is not configured.");
+  return `${appUrl}/invitations/accept?token=${encodeURIComponent(token)}`;
+}
+
 export async function sendInvitationEmail(input: { email: string; token: string; organizationName: string }): Promise<EmailDeliveryStatus> {
   if (!process.env.APP_URL) return "not_configured";
   return sendEmailIfConfigured({
     to: input.email,
     subject: `Invitation to join ${input.organizationName} on SymphoWork`,
-    html: `<p>You have been invited to join ${input.organizationName}.</p><p><a href="${process.env.APP_URL}/invitations/accept?token=${encodeURIComponent(input.token)}">Accept invitation</a></p>`,
+    html: `<p>You have been invited to join ${input.organizationName}.</p><p><a href="${buildInvitationUrl(input.token)}">Accept invitation</a></p>`,
   });
 }

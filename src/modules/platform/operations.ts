@@ -7,7 +7,7 @@ import { authorizePlatform, authorizePlatformTargetOrganization, hasPlatformPerm
 import { runProvisioning } from "@/modules/platform/provisioning";
 import { organizationStatusSchema, platformRoleSchema } from "@/modules/platform/validation";
 import { z } from "zod";
-import { sendInvitationEmail } from "@/lib/email";
+import { buildInvitationUrl, sendInvitationEmail } from "@/lib/email";
 import { createOpaqueToken, hashToken } from "@/lib/crypto";
 
 const allowedTransitions: Record<string, string[]> = {
@@ -49,18 +49,37 @@ export async function getPlatformOrganization(organizationId: string) {
   return { organization, job, invitation, subscription, employeeCount, activeEmployeeCount, activity };
 }
 
-export async function resendOrganizationInvitation(organizationId: string, actorUserId: string) {
-  const { organization } = await authorizePlatformTargetOrganization({ organizationId, permission: PLATFORM_PERMISSIONS.provisioningManage, action: "organization_invitation_resend" });
+async function issueOrganizationAdminInvitation(organizationId: string, action: string, requireUnexpired: boolean) {
+  const { organization } = await authorizePlatformTargetOrganization({ organizationId, permission: PLATFORM_PERMISSIONS.provisioningManage, action });
   const result = await withPlatformTransaction(async (tx) => {
-    const invitation = await tx.query.invitations.findFirst({ where: and(eq(invitations.organizationId, organizationId), eq(invitations.invitationType, "organization_admin"), eq(invitations.status, "pending")) });
+    const invitation = await tx.query.invitations.findFirst({ where: and(eq(invitations.organizationId, organizationId), eq(invitations.invitationType, "organization_admin"), eq(invitations.intendedRole, "ORGANIZATION_OWNER"), eq(invitations.status, "pending")) });
     if (!invitation) throw new AppError("PROVISIONING_FAILED", "No pending organization admin invitation is available.", 409);
+    if (requireUnexpired && invitation.expiresAt <= new Date()) throw new AppError("INVITATION_EXPIRED", "Invitation expired. Resend the invitation to generate a new link.", 410);
     const token = createOpaqueToken();
     const [updated] = await tx.update(invitations).set({ tokenHash: hashToken(token), expiresAt: new Date(Date.now() + 7 * 86_400_000), updatedAt: new Date() }).where(eq(invitations.id, invitation.id)).returning();
     return { invitation: updated, token };
   });
-  const delivery = await sendInvitationEmail({ email: organization.contactEmail ?? "", token: result.token, organizationName: organization.name });
+  return { organization, ...result };
+}
+
+export async function resendOrganizationInvitation(organizationId: string, actorUserId: string) {
+  const result = await issueOrganizationAdminInvitation(organizationId, "organization_invitation_resend", false);
+  const delivery = await sendInvitationEmail({ email: result.organization.contactEmail ?? "", token: result.token, organizationName: result.organization.name });
   await recordAudit({ actorUserId, organizationId, action: "organization_invitation_resent", resource: "invitation", resourceId: result.invitation.id, platform: true });
   return { invitation: { id: result.invitation.id, status: result.invitation.status, delivery } };
+}
+
+export async function createOrganizationInvitationLink(organizationId: string, actorUserId: string) {
+  if (!process.env.APP_URL?.trim()) throw new AppError("PROVISIONING_FAILED", "The public application URL is not configured.", 503);
+  const result = await issueOrganizationAdminInvitation(organizationId, "organization_invitation_link_copy", true);
+  let invitationUrl: string;
+  try {
+    invitationUrl = buildInvitationUrl(result.token);
+  } catch {
+    throw new AppError("PROVISIONING_FAILED", "The public application URL is not configured.", 503);
+  }
+  await recordAudit({ actorUserId, organizationId, action: "organization_invitation_link_copied", resource: "invitation", resourceId: result.invitation.id, platform: true });
+  return { invitationUrl };
 }
 
 export async function changeOrganizationStatus(organizationId: string, nextStatus: string, actorUserId: string) {
