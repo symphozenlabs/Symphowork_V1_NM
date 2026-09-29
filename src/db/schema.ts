@@ -73,7 +73,7 @@ export const atsSemanticSearchStatus = pgEnum("ats_semantic_search_status", ["in
 export const atsMatchAlignment = pgEnum("ats_match_alignment", ["matched", "partial", "missing", "unknown", "not_applicable"]);
 
 export const users = pgTable("users", {
-  id: uuid("id").defaultRandom().primaryKey(), email: varchar("email", { length: 320 }).notNull().unique(), fullName: varchar("full_name", { length: 160 }).notNull(), passwordHash: text("password_hash").notNull(), status: userStatus("status").default("active").notNull(), platformRole: platformRole("platform_role").default("NONE").notNull(), emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }), ...timestamps,
+  id: uuid("id").defaultRandom().primaryKey(), email: varchar("email", { length: 320 }).notNull().unique(), fullName: varchar("full_name", { length: 160 }).notNull(), passwordHash: text("password_hash").notNull(), mustChangePassword: boolean("must_change_password").default(false).notNull(), status: userStatus("status").default("active").notNull(), platformRole: platformRole("platform_role").default("NONE").notNull(), emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }), ...timestamps,
 }, (table) => [index("users_email_idx").on(table.email)]);
 
 export const organizations = pgTable("organizations", {

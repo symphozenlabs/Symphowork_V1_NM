@@ -16,6 +16,7 @@
     "db:migrate": "tsx src/db/migrate.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "bootstrap:platform-owner": "tsx scripts/bootstrap-platform-owner.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

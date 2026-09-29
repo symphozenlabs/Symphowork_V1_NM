@@ -1,6 +1,6 @@
 import { AppError } from "@/lib/errors";
 import { requireSession } from "@/modules/identity/auth";
-import { db } from "@/db/client";
+import { withPlatformTransaction } from "@/db/client";
 import { organizations } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -12,7 +12,7 @@ export function hasPlatformPermission(role: string, permission: PlatformPermissi
 export async function authorizePlatform(permission: PlatformPermission) { const user = await requireSession(); if (user.platformRole === "NONE" || !hasPlatformPermission(user.platformRole, permission)) throw new AppError("FORBIDDEN", "Platform permission is required.", 403); return user; }
 export async function authorizePlatformTargetOrganization(input: { organizationId: string; permission: PlatformPermission; action: string }) {
   const user = await authorizePlatform(input.permission);
-  const organization = await db.query.organizations.findFirst({ where: eq(organizations.id, input.organizationId) });
+  const [organization] = await withPlatformTransaction((tx) => tx.select().from(organizations).where(eq(organizations.id, input.organizationId)).limit(1));
   if (!organization) throw new AppError("ORG_NOT_FOUND", "Organization was not found.", 404);
   return { user, organization, action: input.action };
 }

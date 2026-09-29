@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { db, withPlatformTransaction } from "@/db/client";
+import { withPlatformTransaction } from "@/db/client";
 import { auditLogs, invitations, organizations, permissions, plans, provisioningJobs, rolePermissions, roles, subscriptions } from "@/db/schema";
 import { createOpaqueToken, hashToken } from "@/lib/crypto";
 import { AppError } from "@/lib/errors";
@@ -8,9 +8,9 @@ import { ALL_PERMISSION_KEYS, ROLE_PERMISSIONS, SYSTEM_ROLES } from "@/modules/r
 import type { OrganizationInput } from "@/modules/platform/validation";
 
 export async function createOrganization(input: OrganizationInput, actorUserId: string) {
-  const existing = await db.query.organizations.findFirst({ where: eq(organizations.slug, input.slug) });
-  if (existing) throw new AppError("ORG_ALREADY_EXISTS", "An organization with this slug already exists.", 409);
   const result = await withPlatformTransaction(async (tx) => {
+    const existing = await tx.query.organizations.findFirst({ where: eq(organizations.slug, input.slug) });
+    if (existing) throw new AppError("ORG_ALREADY_EXISTS", "An organization with this slug already exists.", 409);
     const [organization] = await tx.insert(organizations).values({ ...input, status: "pending" }).returning();
     const [job] = await tx.insert(provisioningJobs).values({ organizationId: organization.id }).returning();
     await tx.insert(auditLogs).values({ actorUserId, action: "organization_creation", resource: "organization", resourceId: organization.id });
@@ -20,9 +20,9 @@ export async function createOrganization(input: OrganizationInput, actorUserId: 
 }
 
 export async function approveOrganization(organizationId: string, actorUserId: string) {
-  const [organization] = await db.update(organizations).set({ status: "active", updatedAt: new Date() }).where(and(eq(organizations.id, organizationId), eq(organizations.status, "pending"))).returning();
+  const [organization] = await withPlatformTransaction((tx) => tx.update(organizations).set({ status: "active", updatedAt: new Date() }).where(and(eq(organizations.id, organizationId), eq(organizations.status, "pending"))).returning());
   if (!organization) throw new AppError("ORG_NOT_FOUND", "Pending organization was not found.", 404);
-  await recordAudit({ actorUserId, action: "organization_approval", resource: "organization", resourceId: organizationId });
+  await recordAudit({ actorUserId, action: "organization_approval", resource: "organization", resourceId: organizationId, platform: true });
   return organization;
 }
 
@@ -52,7 +52,7 @@ export async function runProvisioning(organizationId: string, primaryAdminEmail:
     const existingInvitation = await tx.query.invitations.findFirst({ where: and(eq(invitations.organizationId, organizationId), eq(invitations.invitedEmail, primaryAdminEmail.toLowerCase()), eq(invitations.status, "pending")) });
     if (!existingInvitation) { invitationToken = createOpaqueToken(); await tx.insert(invitations).values({ organizationId, invitedEmail: primaryAdminEmail.toLowerCase(), intendedRole: ownerRole.key, tokenHash: hashToken(invitationToken), expiresAt: new Date(Date.now() + 7 * 86_400_000) }); }
     const [completed] = await tx.update(provisioningJobs).set({ status: "completed", currentStep: "ready", completedAt: new Date(), updatedAt: new Date() }).where(eq(provisioningJobs.id, job.id)).returning();
-    await recordAudit({ actorUserId, organizationId, action: "provisioning_completed", resource: "provisioning_job", resourceId: job.id });
+    await recordAudit({ actorUserId, organizationId, action: "provisioning_completed", resource: "provisioning_job", resourceId: job.id, platform: true });
     return { job: completed, invitationToken };
   });
 }

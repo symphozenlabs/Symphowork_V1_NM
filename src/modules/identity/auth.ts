@@ -95,6 +95,13 @@ export async function resetPassword(token: string, password: string) {
   const row = await db.query.passwordResetTokens.findFirst({ where: and(eq(passwordResetTokens.tokenHash, hashToken(token)), isNull(passwordResetTokens.usedAt), gt(passwordResetTokens.expiresAt, new Date())) });
   if (!row) throw new AppError("AUTH_SESSION_EXPIRED", "This reset link is invalid or expired.", 400);
   const passwordHash = await hashPassword(password);
-  await db.transaction(async (tx) => { await tx.update(users).set({ passwordHash, updatedAt: new Date() }).where(eq(users.id, row.userId)); await tx.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, row.id)); await tx.delete(sessions).where(eq(sessions.userId, row.userId)); });
+  await db.transaction(async (tx) => { await tx.update(users).set({ passwordHash, mustChangePassword: false, updatedAt: new Date() }).where(eq(users.id, row.userId)); await tx.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, row.id)); await tx.delete(sessions).where(eq(sessions.userId, row.userId)); });
   await recordAudit({ actorUserId: row.userId, action: "password_change", resource: "user", resourceId: row.userId });
+}
+
+export async function changePassword(userId: string, password: string) {
+  if (!validatePassword(password)) throw new AppError("VALIDATION_ERROR", "Password must be 12 characters with upper, lower, and numeric characters.", 400);
+  const passwordHash = await hashPassword(password);
+  await db.update(users).set({ passwordHash, mustChangePassword: false, updatedAt: new Date() }).where(eq(users.id, userId));
+  await recordAudit({ actorUserId: userId, action: "password_change", resource: "user", resourceId: userId, metadata: { reason: "required_bootstrap_password_change" } });
 }

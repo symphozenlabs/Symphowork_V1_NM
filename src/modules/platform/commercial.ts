@@ -1,6 +1,6 @@
-import { and, count, desc, eq, ilike, or } from "drizzle-orm";
+import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "@/db/client";
+import { withPlatformTransaction } from "@/db/client";
 import { employees, organizations, planFeatures, plans, subscriptions } from "@/db/schema";
 import { recordAudit } from "@/lib/audit";
 import { billingProviderConfigured } from "@/lib/billing";
@@ -14,60 +14,68 @@ export const subscriptionInputSchema = z.object({ organizationId: z.string().uui
 const subscriptionTransitions: Record<string, string[]> = { pending: ["active", "cancelled"], active: ["suspended", "cancelled", "expired"], suspended: ["active", "cancelled", "expired"], cancelled: ["active", "expired"], expired: [] };
 export function canTransitionSubscriptionStatus(current: string, next: string) { return current === next || subscriptionTransitions[current]?.includes(next) === true; }
 
-export async function listPlans() { await authorizePlatform(PLATFORM_PERMISSIONS.planView); return db.select().from(plans).orderBy(desc(plans.createdAt)); }
+export async function listPlans() { await authorizePlatform(PLATFORM_PERMISSIONS.planView); return withPlatformTransaction((tx) => tx.select().from(plans).orderBy(desc(plans.createdAt))); }
 export async function savePlan(input: unknown, actorUserId: string, planId?: string) {
   await authorizePlatform(PLATFORM_PERMISSIONS.planManage);
   const data = planInputSchema.parse(input);
-  const [plan] = planId ? await db.update(plans).set({ ...data, updatedAt: new Date() }).where(eq(plans.id, planId)).returning() : await db.insert(plans).values(data).returning();
+  const [plan] = await withPlatformTransaction((tx) => planId ? tx.update(plans).set({ ...data, updatedAt: new Date() }).where(eq(plans.id, planId)).returning() : tx.insert(plans).values(data).returning());
   if (!plan) throw new AppError("NOT_FOUND", "Plan was not found.", 404);
-  await recordAudit({ actorUserId, action: planId ? "plan_updated" : "plan_created", resource: "plan", resourceId: plan.id, metadata: { code: plan.code, active: plan.active } });
+  await recordAudit({ actorUserId, action: planId ? "plan_updated" : "plan_created", resource: "plan", resourceId: plan.id, metadata: { code: plan.code, active: plan.active }, platform: true });
   return plan;
 }
 export async function setPlanFeatures(input: unknown, actorUserId: string) {
   await authorizePlatform(PLATFORM_PERMISSIONS.entitlementManage);
   const data = featureInputSchema.parse(input);
-  const [plan] = await db.select().from(plans).where(eq(plans.id, data.planId));
+  const [plan] = await withPlatformTransaction((tx) => tx.select().from(plans).where(eq(plans.id, data.planId)));
   if (!plan) throw new AppError("NOT_FOUND", "Plan was not found.", 404);
-  const [feature] = await db.insert(planFeatures).values(data).onConflictDoUpdate({ target: [planFeatures.planId, planFeatures.featureKey], set: { enabled: data.enabled, limitValue: data.limitValue } }).returning();
-  await recordAudit({ actorUserId, action: "plan_feature_changed", resource: "plan_feature", resourceId: feature.id, metadata: { planId: data.planId, featureKey: data.featureKey, enabled: data.enabled, limitValue: data.limitValue } });
+  const [feature] = await withPlatformTransaction((tx) => tx.insert(planFeatures).values(data).onConflictDoUpdate({ target: [planFeatures.planId, planFeatures.featureKey], set: { enabled: data.enabled, limitValue: data.limitValue } }).returning());
+  await recordAudit({ actorUserId, action: "plan_feature_changed", resource: "plan_feature", resourceId: feature.id, metadata: { planId: data.planId, featureKey: data.featureKey, enabled: data.enabled, limitValue: data.limitValue }, platform: true });
   return feature;
 }
-export async function getPlanFeatures(planId: string) { await authorizePlatform(PLATFORM_PERMISSIONS.entitlementView); return db.select().from(planFeatures).where(eq(planFeatures.planId, planId)).orderBy(planFeatures.featureKey); }
+export async function getPlanFeatures(planId: string) { await authorizePlatform(PLATFORM_PERMISSIONS.entitlementView); return withPlatformTransaction((tx) => tx.select().from(planFeatures).where(eq(planFeatures.planId, planId)).orderBy(planFeatures.featureKey)); }
 
 export async function listSubscriptions(input: { query?: string; status?: string }) {
   await authorizePlatform(PLATFORM_PERMISSIONS.subscriptionView);
-  const filters = [];
-  if (input.query) filters.push(or(ilike(organizations.name, `%${input.query}%`), ilike(organizations.slug, `%${input.query}%`)));
+  const filters: SQL[] = [];
+  if (input.query) {
+    const queryFilter = or(ilike(organizations.name, `%${input.query}%`), ilike(organizations.slug, `%${input.query}%`));
+    if (queryFilter) filters.push(queryFilter);
+  }
   if (input.status) filters.push(eq(subscriptions.status, input.status as typeof subscriptions.status.enumValues[number]));
-  return db.select({ subscription: subscriptions, organization: { id: organizations.id, name: organizations.name, slug: organizations.slug }, plan: plans }).from(subscriptions).innerJoin(organizations, eq(subscriptions.organizationId, organizations.id)).innerJoin(plans, eq(subscriptions.planId, plans.id)).where(filters.length ? and(...filters) : undefined).orderBy(desc(subscriptions.updatedAt));
+  return withPlatformTransaction((tx) => tx.select({ subscription: subscriptions, organization: { id: organizations.id, name: organizations.name, slug: organizations.slug }, plan: plans }).from(subscriptions).innerJoin(organizations, eq(subscriptions.organizationId, organizations.id)).innerJoin(plans, eq(subscriptions.planId, plans.id)).where(filters.length ? and(...filters) : undefined).orderBy(desc(subscriptions.updatedAt)));
 }
 export async function updateSubscription(input: unknown, actorUserId: string, subscriptionId?: string) {
   await authorizePlatform(PLATFORM_PERMISSIONS.subscriptionManage);
   const data = subscriptionInputSchema.parse(input);
   await authorizePlatformTargetOrganization({ organizationId: data.organizationId, permission: PLATFORM_PERMISSIONS.subscriptionManage, action: "subscription_update" });
-  const [plan] = await db.select().from(plans).where(eq(plans.id, data.planId));
+  const [plan] = await withPlatformTransaction((tx) => tx.select().from(plans).where(eq(plans.id, data.planId)));
   if (!plan) throw new AppError("NOT_FOUND", "Plan was not found.", 404);
-  const [existing] = subscriptionId ? await db.select().from(subscriptions).where(eq(subscriptions.id, subscriptionId)) : await db.select().from(subscriptions).where(eq(subscriptions.organizationId, data.organizationId));
+  const [existing] = await withPlatformTransaction((tx) => subscriptionId ? tx.select().from(subscriptions).where(eq(subscriptions.id, subscriptionId)) : tx.select().from(subscriptions).where(eq(subscriptions.organizationId, data.organizationId)));
   if (existing && !canTransitionSubscriptionStatus(existing.status, data.status)) throw new AppError("INVALID_STATUS_TRANSITION", `Subscription status cannot change from ${existing.status} to ${data.status}.`, 409);
   const values = { organizationId: data.organizationId, planId: data.planId, billingCycle: data.billingCycle, status: data.status, billingStatus: data.billingStatus, renewalAt: data.renewalAt ? new Date(data.renewalAt) : undefined, updatedAt: new Date(), startsAt: existing?.startsAt ?? new Date() };
-  const [subscription] = existing ? await db.update(subscriptions).set(values).where(eq(subscriptions.id, existing.id)).returning() : await db.insert(subscriptions).values(values).returning();
+  const [subscription] = await withPlatformTransaction((tx) => existing ? tx.update(subscriptions).set(values).where(eq(subscriptions.id, existing.id)).returning() : tx.insert(subscriptions).values(values).returning());
   if (!subscription) throw new AppError("NOT_FOUND", "Subscription was not found.", 404);
-  await recordAudit({ actorUserId, organizationId: data.organizationId, action: existing ? "subscription_updated" : "subscription_created", resource: "subscription", resourceId: subscription.id, metadata: { planId: data.planId, status: data.status, billingCycle: data.billingCycle, billingStatus: data.billingStatus } });
+  await recordAudit({ actorUserId, organizationId: data.organizationId, action: existing ? "subscription_updated" : "subscription_created", resource: "subscription", resourceId: subscription.id, metadata: { planId: data.planId, status: data.status, billingCycle: data.billingCycle, billingStatus: data.billingStatus }, platform: true });
   return subscription;
 }
 
 export async function getOrganizationUsage(organizationId: string) {
   await authorizePlatformTargetOrganization({ organizationId, permission: PLATFORM_PERMISSIONS.usageView, action: "commercial_usage_inspection" });
-  const [row] = await db.select({ organization: organizations, plan: plans, subscription: subscriptions }).from(organizations).leftJoin(subscriptions, eq(subscriptions.organizationId, organizations.id)).leftJoin(plans, eq(subscriptions.planId, plans.id)).where(eq(organizations.id, organizationId));
-  const [active] = await db.select({ value: count() }).from(employees).where(and(eq(employees.organizationId, organizationId), eq(employees.status, "active")));
+  const { row, active } = await withPlatformTransaction(async (tx) => {
+    const [row] = await tx.select({ organization: organizations, plan: plans, subscription: subscriptions }).from(organizations).leftJoin(subscriptions, eq(subscriptions.organizationId, organizations.id)).leftJoin(plans, eq(subscriptions.planId, plans.id)).where(eq(organizations.id, organizationId));
+    const [active] = await tx.select({ value: count() }).from(employees).where(and(eq(employees.organizationId, organizationId), eq(employees.status, "active")));
+    return { row, active: active.value };
+  });
   const limit = row?.plan?.maxUsers ?? null;
-  return { organization: row?.organization ?? null, plan: row?.plan ?? null, subscription: row?.subscription ?? null, activeEmployees: active.value, employeeLimit: limit, remaining: limit === null ? null : Math.max(0, limit - active.value), overLimit: limit !== null && active.value > limit, providerConfigured: billingProviderConfigured() };
+  return { organization: row?.organization ?? null, plan: row?.plan ?? null, subscription: row?.subscription ?? null, activeEmployees: active, employeeLimit: limit, remaining: limit === null ? null : Math.max(0, limit - active), overLimit: limit !== null && active > limit, providerConfigured: billingProviderConfigured() };
 }
 export async function listOrganizationUsage() {
   await authorizePlatform(PLATFORM_PERMISSIONS.usageView);
-  const rows = await db.select({ organization: organizations, plan: plans, subscription: subscriptions }).from(organizations).leftJoin(subscriptions, eq(subscriptions.organizationId, organizations.id)).leftJoin(plans, eq(subscriptions.planId, plans.id)).orderBy(desc(organizations.createdAt));
-  const counts = await db.select({ organizationId: employees.organizationId, value: count() }).from(employees).where(eq(employees.status, "active")).groupBy(employees.organizationId);
+  const { rows, counts } = await withPlatformTransaction(async (tx) => ({
+    rows: await tx.select({ organization: organizations, plan: plans, subscription: subscriptions }).from(organizations).leftJoin(subscriptions, eq(subscriptions.organizationId, organizations.id)).leftJoin(plans, eq(subscriptions.planId, plans.id)).orderBy(desc(organizations.createdAt)),
+    counts: await tx.select({ organizationId: employees.organizationId, value: count() }).from(employees).where(eq(employees.status, "active")).groupBy(employees.organizationId),
+  }));
   const countByOrg = new Map(counts.map((item) => [item.organizationId, item.value]));
   return rows.map((row) => { const activeEmployees = countByOrg.get(row.organization.id) ?? 0; const employeeLimit = row.plan?.maxUsers ?? null; return { ...row, activeEmployees, employeeLimit, remaining: employeeLimit === null ? null : Math.max(0, employeeLimit - activeEmployees), overLimit: employeeLimit !== null && activeEmployees > employeeLimit }; });
 }
-export async function commercialDashboard() { await authorizePlatform(PLATFORM_PERMISSIONS.subscriptionView); const [total, active, trialing, pastDue, distribution, usage] = await Promise.all([db.select({ value: count() }).from(subscriptions), db.select({ value: count() }).from(subscriptions).where(eq(subscriptions.status, "active")), db.select({ value: count() }).from(subscriptions).where(eq(subscriptions.billingStatus, "trialing")), db.select({ value: count() }).from(subscriptions).where(eq(subscriptions.billingStatus, "past_due")), db.select({ planId: subscriptions.planId, plan: plans.name, value: count() }).from(subscriptions).innerJoin(plans, eq(subscriptions.planId, plans.id)).groupBy(subscriptions.planId, plans.name), listOrganizationUsage()]); return { total: total[0].value, active: active[0].value, trialing: trialing[0].value, pastDue: pastDue[0].value, distribution, overLimit: usage.filter((item) => item.overLimit).length, approachingLimit: usage.filter((item) => item.employeeLimit !== null && !item.overLimit && item.activeEmployees >= item.employeeLimit * 0.8).length, providerConfigured: billingProviderConfigured() }; }
+export async function commercialDashboard() { await authorizePlatform(PLATFORM_PERMISSIONS.subscriptionView); const [total, active, trialing, pastDue, distribution, usage] = await Promise.all([withPlatformTransaction((tx) => tx.select({ value: count() }).from(subscriptions)), withPlatformTransaction((tx) => tx.select({ value: count() }).from(subscriptions).where(eq(subscriptions.status, "active"))), withPlatformTransaction((tx) => tx.select({ value: count() }).from(subscriptions).where(eq(subscriptions.billingStatus, "trialing"))), withPlatformTransaction((tx) => tx.select({ value: count() }).from(subscriptions).where(eq(subscriptions.billingStatus, "past_due"))), withPlatformTransaction((tx) => tx.select({ planId: subscriptions.planId, plan: plans.name, value: count() }).from(subscriptions).innerJoin(plans, eq(subscriptions.planId, plans.id)).groupBy(subscriptions.planId, plans.name)), listOrganizationUsage()]); return { total: total[0].value, active: active[0].value, trialing: trialing[0].value, pastDue: pastDue[0].value, distribution, overLimit: usage.filter((item) => item.overLimit).length, approachingLimit: usage.filter((item) => item.employeeLimit !== null && !item.overLimit && item.activeEmployees >= item.employeeLimit * 0.8).length, providerConfigured: billingProviderConfigured() }; }

@@ -120,6 +120,13 @@
       "when": 1790348251333,
       "tag": "0016_opposite_iron_lad",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1790683200000,
+      "tag": "0017_force_platform_owner_password_change",
+      "breakpoints": true
     }
   ]
 }
