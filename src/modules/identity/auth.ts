@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { cache } from "react";
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
 import { emailVerificationTokens, passwordResetTokens, sessions, users } from "@/db/schema";
@@ -19,21 +20,23 @@ export async function createSession(userId: string) {
   return { token, expiresAt };
 }
 
-export async function setSessionCookie(token: string, expiresAt: Date) {
-  (await cookies()).set(SESSION_COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", expires: expiresAt, path: " /".trim() });
+export async function setSessionCookie(token: string) {
+  (await cookies()).set(SESSION_COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/" });
 }
 
 export async function clearSessionCookie() { (await cookies()).delete(SESSION_COOKIE); }
 
-export async function getSessionUser() {
+export const getSessionUser = cache(async () => {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) return null;
-  const session = await db.query.sessions.findFirst({ where: and(eq(sessions.tokenHash, hashToken(token)), gt(sessions.expiresAt, new Date())) });
-  if (!session) return null;
-  const user = await db.query.users.findFirst({ where: eq(users.id, session.userId) });
-  if (!user || user.status !== "active") return null;
-  return user;
-}
+  const [row] = await db
+    .select({ user: users })
+    .from(sessions)
+    .innerJoin(users, eq(sessions.userId, users.id))
+    .where(and(eq(sessions.tokenHash, hashToken(token)), gt(sessions.expiresAt, new Date()), eq(users.status, "active")))
+    .limit(1);
+  return row?.user ?? null;
+});
 
 export async function requireSession() { const user = await getSessionUser(); if (!user) throw new AppError("UNAUTHORIZED", "Please sign in.", 401); return user; }
 

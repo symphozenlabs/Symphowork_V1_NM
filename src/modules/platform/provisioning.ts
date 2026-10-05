@@ -27,32 +27,91 @@ export async function approveOrganization(organizationId: string, actorUserId: s
 }
 
 export async function runProvisioning(organizationId: string, primaryAdminEmail: string, actorUserId?: string) {
-  return withPlatformTransaction(async (tx) => {
-    let invitationToken: string | undefined;
-    const job = await tx.query.provisioningJobs.findFirst({ where: eq(provisioningJobs.organizationId, organizationId) });
-    if (!job) throw new AppError("PROVISIONING_FAILED", "Provisioning job was not found.", 404);
-    if (job.status === "completed") return { job, invitationToken: undefined };
-    await tx.update(provisioningJobs).set({ status: "running", currentStep: "roles", attempts: job.attempts + 1, startedAt: job.startedAt ?? new Date(), updatedAt: new Date() }).where(eq(provisioningJobs.id, job.id));
+  const initialJob = await withPlatformTransaction((tx) =>
+    tx.query.provisioningJobs.findFirst({ where: eq(provisioningJobs.organizationId, organizationId) })
+  );
+  if (!initialJob) throw new AppError("PROVISIONING_FAILED", "Provisioning job was not found.", 404);
+  if (initialJob.status === "completed") return { job: initialJob, invitationToken: undefined };
+
+  // Stage 1: Mark job running & set step to roles
+  await withPlatformTransaction((tx) =>
+    tx.update(provisioningJobs)
+      .set({ status: "running", currentStep: "roles", attempts: initialJob.attempts + 1, startedAt: initialJob.startedAt ?? new Date(), updatedAt: new Date() })
+      .where(eq(provisioningJobs.id, initialJob.id))
+  );
+
+  // Stage 2: Create roles
+  const roleByKey = await withPlatformTransaction(async (tx) => {
     const roleRows = await tx.select().from(roles).where(eq(roles.organizationId, organizationId));
-    const roleByKey = new Map(roleRows.map((role) => [role.key, role]));
+    const map = new Map(roleRows.map((role) => [role.key, role]));
     for (const key of SYSTEM_ROLES.filter((candidate) => candidate !== "PLATFORM_OWNER")) {
-      if (!roleByKey.has(key)) { const [role] = await tx.insert(roles).values({ organizationId, key, name: key.replaceAll("_", " "), isSystem: true }).returning(); roleByKey.set(key, role); }
+      if (!map.has(key)) {
+        const [role] = await tx.insert(roles).values({ organizationId, key, name: key.replaceAll("_", " "), isSystem: true }).returning();
+        map.set(key, role);
+      }
     }
+    return map;
+  });
+
+  // Stage 3: Mark step to permissions and seed permissions
+  await withPlatformTransaction((tx) =>
+    tx.update(provisioningJobs).set({ currentStep: "permissions", updatedAt: new Date() }).where(eq(provisioningJobs.id, initialJob.id))
+  );
+
+  await withPlatformTransaction(async (tx) => {
     for (const key of ALL_PERMISSION_KEYS) await tx.insert(permissions).values({ key }).onConflictDoNothing();
     const permissionRows = await tx.select().from(permissions);
     const permissionByKey = new Map(permissionRows.map((permission) => [permission.key, permission]));
-    for (const [roleKey, permissionKeys] of Object.entries(ROLE_PERMISSIONS)) { const role = roleByKey.get(roleKey); if (!role) continue; for (const permissionKey of permissionKeys) { const permission = permissionByKey.get(permissionKey); if (permission) await tx.insert(rolePermissions).values({ roleId: role.id, permissionId: permission.id }).onConflictDoNothing(); } }
-    await tx.update(provisioningJobs).set({ currentStep: "subscription", updatedAt: new Date() }).where(eq(provisioningJobs.id, job.id));
+    for (const [roleKey, permissionKeys] of Object.entries(ROLE_PERMISSIONS)) {
+      const role = roleByKey.get(roleKey);
+      if (!role) continue;
+      for (const permissionKey of permissionKeys) {
+        const permission = permissionByKey.get(permissionKey);
+        if (permission) await tx.insert(rolePermissions).values({ roleId: role.id, permissionId: permission.id }).onConflictDoNothing();
+      }
+    }
+  });
+
+  // Stage 4: Mark step to subscription and create subscription
+  await withPlatformTransaction((tx) =>
+    tx.update(provisioningJobs).set({ currentStep: "subscription", updatedAt: new Date() }).where(eq(provisioningJobs.id, initialJob.id))
+  );
+
+  await withPlatformTransaction(async (tx) => {
     let plan = await tx.query.plans.findFirst({ where: eq(plans.code, "FREE") });
     if (!plan) { [plan] = await tx.insert(plans).values({ code: "FREE", name: "Free", description: "Foundation plan" }).returning(); }
     await tx.insert(subscriptions).values({ organizationId, planId: plan.id, status: "active", startsAt: new Date() }).onConflictDoNothing();
-    await tx.update(provisioningJobs).set({ currentStep: "primary_admin_invitation", updatedAt: new Date() }).where(eq(provisioningJobs.id, job.id));
+  });
+
+  // Stage 5: Mark step to primary_admin_invitation and create invitation
+  await withPlatformTransaction((tx) =>
+    tx.update(provisioningJobs).set({ currentStep: "primary_admin_invitation", updatedAt: new Date() }).where(eq(provisioningJobs.id, initialJob.id))
+  );
+
+  let invitationToken: string | undefined;
+  const completed = await withPlatformTransaction(async (tx) => {
     const ownerRole = roleByKey.get("ORGANIZATION_OWNER");
     if (!ownerRole) throw new AppError("PROVISIONING_FAILED", "Owner role could not be initialized.", 500);
-    const existingInvitation = await tx.query.invitations.findFirst({ where: and(eq(invitations.organizationId, organizationId), eq(invitations.invitedEmail, primaryAdminEmail.toLowerCase()), eq(invitations.status, "pending")) });
-    if (!existingInvitation) { invitationToken = createOpaqueToken(); await tx.insert(invitations).values({ organizationId, invitedEmail: primaryAdminEmail.toLowerCase(), intendedRole: ownerRole.key, tokenHash: hashToken(invitationToken), expiresAt: new Date(Date.now() + 7 * 86_400_000) }); }
-    const [completed] = await tx.update(provisioningJobs).set({ status: "completed", currentStep: "ready", completedAt: new Date(), updatedAt: new Date() }).where(eq(provisioningJobs.id, job.id)).returning();
-    await recordAudit({ actorUserId, organizationId, action: "provisioning_completed", resource: "provisioning_job", resourceId: job.id, platform: true });
-    return { job: completed, invitationToken };
+    const existingInvitation = await tx.query.invitations.findFirst({
+      where: and(eq(invitations.organizationId, organizationId), eq(invitations.invitedEmail, primaryAdminEmail.toLowerCase()), eq(invitations.status, "pending"))
+    });
+    if (!existingInvitation) {
+      invitationToken = createOpaqueToken();
+      await tx.insert(invitations).values({
+        organizationId,
+        invitedEmail: primaryAdminEmail.toLowerCase(),
+        intendedRole: ownerRole.key,
+        tokenHash: hashToken(invitationToken),
+        expiresAt: new Date(Date.now() + 7 * 86_400_000)
+      });
+    }
+    const [comp] = await tx.update(provisioningJobs)
+      .set({ status: "completed", currentStep: "ready", completedAt: new Date(), updatedAt: new Date() })
+      .where(eq(provisioningJobs.id, initialJob.id))
+      .returning();
+    return comp;
   });
+
+  await recordAudit({ actorUserId, organizationId, action: "provisioning_completed", resource: "provisioning_job", resourceId: initialJob.id, platform: true });
+  return { job: completed, invitationToken };
 }

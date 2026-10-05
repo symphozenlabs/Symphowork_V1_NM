@@ -3,5 +3,57 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authorizePlatform, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
 import { listProvisioningJobs } from "@/modules/platform/operations";
-import { ProvisioningJobActions } from "@/components/platform/provisioning-job-actions";
-export default async function ProvisioningPage() { try { await authorizePlatform(PLATFORM_PERMISSIONS.provisioningView); } catch { redirect("/platform/login"); } const rows = await listProvisioningJobs(); return <div className="space-y-6"><div><Badge>Provisioning</Badge><h1 className="mt-3 text-3xl font-bold">Provisioning operations</h1><p className="mt-2 text-sm text-muted">Process organization setup, roles, subscription, and primary-admin invitation from one place.</p></div><Card><CardHeader><CardTitle>Provisioning jobs</CardTitle></CardHeader><CardContent><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b text-xs uppercase tracking-wide text-muted"><tr><th className="px-3 py-3">Organization</th><th className="px-3 py-3">Type</th><th className="px-3 py-3">Status</th><th className="px-3 py-3">Step</th><th className="px-3 py-3">Attempts</th><th className="px-3 py-3">Created</th><th className="px-3 py-3">Action</th></tr></thead><tbody>{rows.map(({ job, organization }) => <tr key={job.id} className="border-b align-top last:border-0"><td className="px-3 py-4"><ProvisioningJobActions organizationId={organization.id} organizationName={organization.name} contactEmail={organization.contactEmail} job={job} /></td><td className="px-3 py-4 text-muted">{job.jobType}</td><td className="px-3 py-4"><Badge>{job.status}</Badge></td><td className="px-3 py-4 text-muted">{job.currentStep}</td><td className="px-3 py-4">{job.attempts}</td><td className="px-3 py-4 text-muted">{job.createdAt.toLocaleString()}</td><td className="px-3 py-4 text-muted">{job.status === "completed" ? "Ready" : job.status === "running" ? "In progress" : "Needs action"}</td></tr>)}</tbody></table>{!rows.length && <p className="p-8 text-center text-sm text-muted">No provisioning jobs found.</p>}</div></CardContent></Card></div>; }
+import { ProvisioningManager, ProvisioningRowData } from "@/components/platform/provisioning-manager";
+
+export default async function ProvisioningPage() {
+  try {
+    await authorizePlatform(PLATFORM_PERMISSIONS.provisioningView);
+  } catch {
+    redirect("/platform/login");
+  }
+
+  const rows = await listProvisioningJobs();
+
+  const serializedRows: ProvisioningRowData[] = rows.map(({ job, organization }) => ({
+    job: {
+      id: job.id,
+      organizationId: job.organizationId,
+      jobType: job.jobType,
+      status: job.status,
+      currentStep: job.currentStep,
+      attempts: job.attempts,
+      startedAt: job.startedAt ? job.startedAt.toISOString() : null,
+      completedAt: job.completedAt ? job.completedAt.toISOString() : null,
+      failureMessage: job.failureMessage,
+      createdAt: job.createdAt.toISOString(),
+    },
+    organization: {
+      id: organization.id,
+      name: organization.name,
+      slug: organization.slug,
+      contactEmail: organization.contactEmail,
+    },
+  }));
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <Badge>Provisioning</Badge>
+        <h1 className="mt-3 text-3xl font-bold">Provisioning operations</h1>
+        <p className="mt-2 text-sm text-muted">
+          Process organization setup, roles, subscription, and primary-admin invitation from one place.
+        </p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Provisioning jobs</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ProvisioningManager initialRows={serializedRows} />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+

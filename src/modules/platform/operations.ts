@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, ne, or } from "drizzle-orm";
+import { and, count, desc, eq, ilike, ne, or, sql } from "drizzle-orm";
 import { withPlatformTransaction } from "@/db/client";
 import { auditLogs, employees, invitations, organizations, provisioningJobs, subscriptions, users } from "@/db/schema";
 import { AppError } from "@/lib/errors";
@@ -28,7 +28,39 @@ export async function listPlatformOrganizations(input: { page?: number; pageSize
   if (input.status) filters.push(eq(organizations.status, input.status as typeof organizations.status.enumValues[number]));
   const where = filters.length ? and(...filters) : undefined;
   const { rows, total } = await withPlatformTransaction(async (tx) => {
-    const rows = await tx.select().from(organizations).where(where).orderBy(desc(organizations.createdAt)).limit(pageSize).offset((page - 1) * pageSize);
+    const rows = await tx
+      .select({
+        id: organizations.id,
+        name: organizations.name,
+        legalName: organizations.legalName,
+        slug: organizations.slug,
+        status: organizations.status,
+        timezone: organizations.timezone,
+        currency: organizations.currency,
+        website: organizations.website,
+        contactEmail: organizations.contactEmail,
+        contactPhone: organizations.contactPhone,
+        addressLine1: organizations.addressLine1,
+        addressLine2: organizations.addressLine2,
+        city: organizations.city,
+        state: organizations.state,
+        country: organizations.country,
+        postalCode: organizations.postalCode,
+        dateFormat: organizations.dateFormat,
+        fiscalYearStartMonth: organizations.fiscalYearStartMonth,
+        employeeIdPrefix: organizations.employeeIdPrefix,
+        employeeIdNext: organizations.employeeIdNext,
+        employeeIdPadding: organizations.employeeIdPadding,
+        createdAt: organizations.createdAt,
+        updatedAt: organizations.updatedAt,
+        provisioningStatus: provisioningJobs.status,
+      })
+      .from(organizations)
+      .leftJoin(provisioningJobs, eq(provisioningJobs.organizationId, organizations.id))
+      .where(where)
+      .orderBy(desc(organizations.createdAt))
+      .limit(pageSize)
+      .offset((page - 1) * pageSize);
     const [{ total }] = await tx.select({ total: count() }).from(organizations).where(where);
     return { rows, total };
   });
@@ -92,6 +124,45 @@ export async function changeOrganizationStatus(organizationId: string, nextStatu
   return updated;
 }
 
+export async function deletePlatformOrganization(organizationId: string, actorUserId: string) {
+  const { organization } = await authorizePlatformTargetOrganization({
+    organizationId,
+    permission: PLATFORM_PERMISSIONS.organizationEdit,
+    action: "organization_delete",
+  });
+
+  const [deleted] = await withPlatformTransaction(async (tx) =>
+    tx.delete(organizations).where(eq(organizations.id, organizationId)).returning()
+  );
+
+  if (!deleted) throw new AppError("ORG_NOT_FOUND", "Organization was not found.", 404);
+
+  await recordAudit({
+    actorUserId,
+    action: "organization_deleted",
+    resource: "organization",
+    resourceId: organizationId,
+    metadata: {
+      organizationId,
+      name: organization.name,
+      legalName: organization.legalName,
+      slug: organization.slug,
+      status: organization.status,
+    },
+    platform: true,
+  });
+
+  return {
+    deleted: true,
+    organization: {
+      id: organization.id,
+      name: organization.name,
+      slug: organization.slug,
+    },
+  };
+}
+
+
 export async function listProvisioningJobs() {
   await authorizePlatform(PLATFORM_PERMISSIONS.provisioningView);
   return withPlatformTransaction((tx) => tx.select({ job: provisioningJobs, organization: { id: organizations.id, name: organizations.name, slug: organizations.slug, contactEmail: organizations.contactEmail } }).from(provisioningJobs).innerJoin(organizations, eq(provisioningJobs.organizationId, organizations.id)).orderBy(desc(provisioningJobs.createdAt)));
@@ -103,6 +174,7 @@ export async function retryProvisioning(organizationId: string, actorUserId: str
   const job = await withPlatformTransaction((tx) => tx.query.provisioningJobs.findFirst({ where: eq(provisioningJobs.organizationId, organizationId) }));
   if (!job) throw new AppError("PROVISIONING_FAILED", "Provisioning job was not found.", 404);
   if (job.status === "completed") throw new AppError("PROVISIONING_FAILED", "Completed provisioning jobs cannot be retried.", 409);
+  if (job.status === "running") throw new AppError("PROVISIONING_FAILED", "Provisioning is already in progress for this organization.", 409);
   const [organization] = await withPlatformTransaction((tx) => tx.select().from(organizations).where(eq(organizations.id, organizationId)).limit(1));
   const primaryAdminEmail = requestedPrimaryAdminEmail ? provisioningContactSchema.parse(requestedPrimaryAdminEmail).toLowerCase() : organization?.contactEmail?.toLowerCase();
   if (!primaryAdminEmail) throw new AppError("PROVISIONING_FAILED", "A primary administrator email is required to process this job.", 400);
@@ -121,9 +193,71 @@ export async function retryProvisioning(organizationId: string, actorUserId: str
   return { job: result.job, invitation: { status: result.invitationToken ? "created" : "already_exists", delivery } };
 }
 
-export async function listPlatformUsers() {
+export interface PlatformUsersQueryInput {
+  query?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface PlatformUsersResult {
+  rows: Array<{
+    id: string;
+    email: string;
+    fullName: string;
+    status: string;
+    platformRole: string;
+    createdAt: Date;
+  }>;
+  total: number;
+  page: number;
+  pageSize: number;
+  pageCount: number;
+}
+
+export async function listPlatformUsers(
+  input?: string | PlatformUsersQueryInput
+): Promise<PlatformUsersResult> {
   await authorizePlatform(PLATFORM_PERMISSIONS.userView);
-  return withPlatformTransaction((tx) => tx.select({ id: users.id, email: users.email, fullName: users.fullName, status: users.status, platformRole: users.platformRole, createdAt: users.createdAt }).from(users).where(ne(users.platformRole, "NONE")).orderBy(desc(users.createdAt)));
+  const options = typeof input === "string" ? { query: input } : (input ?? {});
+  const page = Math.max(1, options.page ?? 1);
+  const pageSize = Math.min(100, Math.max(1, options.pageSize ?? 10));
+  const query = options.query?.trim();
+
+  const conditions = [ne(users.platformRole, "NONE")];
+  if (query) {
+    conditions.push(or(ilike(users.fullName, `%${query}%`), ilike(users.email, `%${query}%`))!);
+  }
+  const whereClause = and(...conditions);
+
+  return withPlatformTransaction(async (tx) => {
+    const rows = await tx
+      .select({
+        id: users.id,
+        email: users.email,
+        fullName: users.fullName,
+        status: users.status,
+        platformRole: users.platformRole,
+        createdAt: users.createdAt,
+      })
+      .from(users)
+      .where(whereClause)
+      .orderBy(desc(users.createdAt))
+      .limit(pageSize)
+      .offset((page - 1) * pageSize);
+
+    const [{ total }] = await tx
+      .select({ total: count() })
+      .from(users)
+      .where(whereClause);
+
+    return {
+      rows,
+      total,
+      page,
+      pageSize,
+      pageCount: Math.max(1, Math.ceil(total / pageSize)),
+    };
+  });
 }
 
 export async function changePlatformRole(targetUserId: string, nextRole: string, actorUserId: string) {
@@ -143,7 +277,72 @@ export async function changePlatformRole(targetUserId: string, nextRole: string,
   return updated;
 }
 
-export async function listPlatformAudit() {
+export interface PlatformAuditQueryInput {
+  query?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface PlatformAuditResult {
+  rows: Array<{
+    audit: typeof auditLogs.$inferSelect;
+    actor: { id: string; name: string; email: string } | null;
+    organization?: { id: string; name: string; slug: string } | null;
+  }>;
+  total: number;
+  page: number;
+  pageSize: number;
+  pageCount: number;
+}
+
+export async function listPlatformAudit(
+  input?: string | PlatformAuditQueryInput
+): Promise<PlatformAuditResult> {
   await authorizePlatform(PLATFORM_PERMISSIONS.auditView);
-  return withPlatformTransaction((tx) => tx.select({ audit: auditLogs, actor: { id: users.id, name: users.fullName, email: users.email } }).from(auditLogs).leftJoin(users, eq(auditLogs.actorUserId, users.id)).orderBy(desc(auditLogs.createdAt)).limit(200));
+  const options = typeof input === "string" ? { query: input } : (input ?? {});
+  const page = Math.max(1, options.page ?? 1);
+  const pageSize = Math.min(100, Math.max(1, options.pageSize ?? 10));
+  const query = options.query?.trim();
+
+  const whereClause = query
+    ? or(
+        ilike(users.fullName, `%${query}%`),
+        ilike(auditLogs.action, `%${query}%`),
+        ilike(auditLogs.resource, `%${query}%`),
+        ilike(organizations.name, `%${query}%`),
+        ilike(organizations.slug, `%${query}%`),
+        sql`${auditLogs.organizationId}::text ilike ${`%${query}%`}`
+      )
+    : undefined;
+
+  return withPlatformTransaction(async (tx) => {
+    const rows = await tx
+      .select({
+        audit: auditLogs,
+        actor: { id: users.id, name: users.fullName, email: users.email },
+        organization: { id: organizations.id, name: organizations.name, slug: organizations.slug },
+      })
+      .from(auditLogs)
+      .leftJoin(users, eq(auditLogs.actorUserId, users.id))
+      .leftJoin(organizations, eq(auditLogs.organizationId, organizations.id))
+      .where(whereClause)
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(pageSize)
+      .offset((page - 1) * pageSize);
+
+    const [{ total }] = await tx
+      .select({ total: count() })
+      .from(auditLogs)
+      .leftJoin(users, eq(auditLogs.actorUserId, users.id))
+      .leftJoin(organizations, eq(auditLogs.organizationId, organizations.id))
+      .where(whereClause);
+
+    return {
+      rows,
+      total,
+      page,
+      pageSize,
+      pageCount: Math.max(1, Math.ceil(total / pageSize)),
+    };
+  });
 }

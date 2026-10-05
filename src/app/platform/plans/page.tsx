@@ -1,8 +1,78 @@
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlanEditor } from "@/components/platform/plan-editor";
-import { FeatureEditor } from "@/components/platform/feature-editor";
+import { PlanManagement, type PlanItem, type PlanFeatureItem } from "@/components/platform/plan-management";
 import { authorizePlatform, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
 import { getPlanFeatures, listPlans } from "@/modules/platform/commercial";
-export default async function PlansPage() { try { await authorizePlatform(PLATFORM_PERMISSIONS.planView); } catch { redirect("/platform/login"); } let canEditPlan = true; let canEditFeatures = true; try { await authorizePlatform(PLATFORM_PERMISSIONS.planManage); } catch { canEditPlan = false; } try { await authorizePlatform(PLATFORM_PERMISSIONS.entitlementManage); } catch { canEditFeatures = false; } const plans = await listPlans(); const features = await Promise.all(plans.map(async (plan) => [plan.id, await getPlanFeatures(plan.id)] as const)); return <div className="space-y-6"><div><Badge>Commercial configuration</Badge><h1 className="mt-3 text-3xl font-bold">Plans & entitlements</h1><p className="mt-2 text-sm text-muted">Platform-owned pricing, limits, and feature access. Values are configuration only; no payment is collected here.</p></div><div className="grid gap-5 xl:grid-cols-2">{plans.map((plan) => <Card key={plan.id}><CardHeader><div className="flex items-center justify-between"><CardTitle>{plan.name}</CardTitle><Badge>{plan.active ? "Active" : "Inactive"}</Badge></div><p className="text-sm text-muted">{plan.code} · {plan.currency} · {plan.billingInterval}</p></CardHeader><CardContent className="space-y-4"><div className="grid grid-cols-2 gap-3 text-sm"><div><span className="text-muted">Monthly</span><p className="font-semibold">{plan.monthlyPriceCents === null ? "—" : `${plan.currency} ${(plan.monthlyPriceCents / 100).toFixed(2)}`}</p></div><div><span className="text-muted">Annual</span><p className="font-semibold">{plan.annualPriceCents === null ? "—" : `${plan.currency} ${(plan.annualPriceCents / 100).toFixed(2)}`}</p></div><div><span className="text-muted">Active employees</span><p className="font-semibold">{plan.maxUsers ?? "Unlimited"}</p></div><div><span className="text-muted">Trial days</span><p className="font-semibold">{plan.trialDays}</p></div></div><div><p className="mb-2 text-sm font-semibold">Features</p>{(features.find(([id]) => id === plan.id)?.[1] ?? []).length ? <div className="flex flex-wrap gap-2">{features.find(([id]) => id === plan.id)?.[1].map((feature) => <Badge key={feature.id}>{feature.featureKey}: {feature.enabled ? feature.limitValue === null ? "unlimited" : feature.limitValue : "disabled"}</Badge>)}</div> : <p className="text-sm text-muted">No feature overrides configured.</p>}{canEditFeatures && <FeatureEditor planId={plan.id} />}</div>{canEditPlan && <PlanEditor plan={plan} />}</CardContent></Card>)}</div>{canEditPlan && <Card><CardHeader><CardTitle>Add plan</CardTitle></CardHeader><CardContent><PlanEditor /></CardContent></Card>}</div>; }
+
+export default async function PlansPage() {
+  try {
+    await authorizePlatform(PLATFORM_PERMISSIONS.planView);
+  } catch {
+    redirect("/platform/login");
+  }
+
+  let canEditPlan = true;
+  let canEditFeatures = true;
+  try {
+    await authorizePlatform(PLATFORM_PERMISSIONS.planManage);
+  } catch {
+    canEditPlan = false;
+  }
+  try {
+    await authorizePlatform(PLATFORM_PERMISSIONS.entitlementManage);
+  } catch {
+    canEditFeatures = false;
+  }
+
+  const rawPlans = await listPlans();
+  const rawFeatures = await Promise.all(
+    rawPlans.map(async (plan) => [plan.id, await getPlanFeatures(plan.id)] as const)
+  );
+
+  const initialPlans: PlanItem[] = rawPlans.map((p) => ({
+    id: p.id,
+    code: p.code,
+    name: p.name,
+    description: p.description,
+    monthlyPriceCents: p.monthlyPriceCents,
+    annualPriceCents: p.annualPriceCents,
+    currency: p.currency,
+    trialDays: p.trialDays,
+    maxUsers: p.maxUsers,
+    maxStorageBytes: p.maxStorageBytes,
+    billingInterval: p.billingInterval,
+    active: p.active,
+    createdAt: p.createdAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(),
+  }));
+
+  const initialFeatures: Record<string, PlanFeatureItem[]> = {};
+  for (const [planId, planFeats] of rawFeatures) {
+    initialFeatures[planId] = planFeats.map((f) => ({
+      id: f.id,
+      planId: f.planId,
+      featureKey: f.featureKey,
+      enabled: f.enabled,
+      limitValue: f.limitValue,
+    }));
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <Badge>Commercial configuration</Badge>
+        <h1 className="mt-3 text-3xl font-bold">Plans & entitlements</h1>
+        <p className="mt-2 text-sm text-muted">
+          Platform-owned pricing, capacity limits, and feature entitlements. Values are configuration only; no payment is collected here.
+        </p>
+      </div>
+
+      <PlanManagement
+        initialPlans={initialPlans}
+        initialFeatures={initialFeatures}
+        canEditPlan={canEditPlan}
+        canEditFeatures={canEditFeatures}
+      />
+    </div>
+  );
+}

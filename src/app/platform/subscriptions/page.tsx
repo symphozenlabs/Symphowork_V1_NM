@@ -3,4 +3,107 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authorizePlatform, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
 import { listSubscriptions } from "@/modules/platform/commercial";
-export default async function SubscriptionsPage() { try { await authorizePlatform(PLATFORM_PERMISSIONS.subscriptionView); } catch { redirect("/platform/login"); } const rows = await listSubscriptions({}); return <div className="space-y-6"><div><Badge>Commercial operations</Badge><h1 className="mt-3 text-3xl font-bold">Subscriptions</h1><p className="mt-2 text-sm text-muted">Administrative subscription state and provider identifiers, without payment processing.</p></div><Card><CardHeader><CardTitle>Organization subscriptions</CardTitle></CardHeader><CardContent><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b text-xs uppercase tracking-wide text-muted"><tr><th className="px-3 py-3">Organization</th><th className="px-3 py-3">Plan</th><th className="px-3 py-3">Status</th><th className="px-3 py-3">Billing</th><th className="px-3 py-3">Renewal</th><th className="px-3 py-3">Provider state</th></tr></thead><tbody>{rows.map(({ subscription, organization, plan }) => <tr key={subscription.id} className="border-b last:border-0"><td className="px-3 py-4 font-semibold">{organization.name}</td><td className="px-3 py-4">{plan.name}</td><td className="px-3 py-4"><Badge>{subscription.status}</Badge></td><td className="px-3 py-4">{subscription.billingCycle}</td><td className="px-3 py-4 text-muted">{subscription.renewalAt?.toLocaleDateString() ?? "—"}</td><td className="px-3 py-4 text-muted">{subscription.providerSubscriptionId ? "Linked" : "Not linked"}</td></tr>)}</tbody></table>{!rows.length && <p className="p-8 text-center text-sm text-muted">No subscriptions found.</p>}</div></CardContent></Card></div>; }
+import {
+  SubscriptionManagement,
+  type SerializedSubscriptionRow,
+} from "@/components/platform/subscription-management";
+
+export default async function SubscriptionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    query?: string;
+    q?: string;
+    status?: string;
+    billing?: string;
+    billingInterval?: string;
+    billingCycle?: string;
+    page?: string;
+  }>;
+}) {
+  try {
+    await authorizePlatform(PLATFORM_PERMISSIONS.subscriptionView);
+  } catch {
+    redirect("/platform/login");
+  }
+
+  const params = await searchParams;
+  const query = params.q ?? params.query ?? "";
+  const status = params.status ?? "all";
+  const billing = params.billing ?? params.billingInterval ?? params.billingCycle ?? "all";
+  const page = Math.max(1, Number(params.page ?? "1") || 1);
+
+  const result = await listSubscriptions({
+    query: query || undefined,
+    status: status !== "all" ? status : undefined,
+    billingInterval: billing !== "all" ? billing : undefined,
+    page,
+    pageSize: 10,
+  });
+
+  const serializedRows: SerializedSubscriptionRow[] = result.rows.map((row) => ({
+    subscription: {
+      id: row.subscription.id,
+      organizationId: row.subscription.organizationId,
+      planId: row.subscription.planId,
+      status: row.subscription.status,
+      billingStatus: row.subscription.billingStatus,
+      billingCycle: row.subscription.billingCycle,
+      startsAt: row.subscription.startsAt?.toISOString() ?? null,
+      renewalAt: row.subscription.renewalAt?.toISOString() ?? null,
+      endsAt: row.subscription.endsAt?.toISOString() ?? null,
+      providerCustomerId: row.subscription.providerCustomerId,
+      providerSubscriptionId: row.subscription.providerSubscriptionId,
+      createdAt: row.subscription.createdAt.toISOString(),
+      updatedAt: row.subscription.updatedAt.toISOString(),
+    },
+    organization: {
+      id: row.organization.id,
+      name: row.organization.name,
+      slug: row.organization.slug,
+    },
+    plan: {
+      id: row.plan.id,
+      code: row.plan.code,
+      name: row.plan.name,
+      currency: row.plan.currency,
+      billingInterval: row.plan.billingInterval,
+      monthlyPriceCents: row.plan.monthlyPriceCents,
+      annualPriceCents: row.plan.annualPriceCents,
+      active: row.plan.active,
+    },
+  }));
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <Badge>Commercial operations</Badge>
+        <h1 className="mt-3 text-3xl font-bold">Subscriptions</h1>
+        <p className="mt-2 text-sm text-muted">
+          Administrative subscription state, tier entitlements, and provider identifiers.
+        </p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            Organization subscriptions{" "}
+            <span className="ml-2 text-sm font-normal text-muted">({result.total})</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SubscriptionManagement
+            initialRows={serializedRows}
+            total={result.total}
+            page={result.page}
+            pageSize={result.pageSize}
+            pageCount={result.pageCount}
+            initialQuery={query}
+            initialStatus={status}
+            initialBilling={billing}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

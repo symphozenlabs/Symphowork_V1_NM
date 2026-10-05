@@ -1,6 +1,62 @@
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authorizePlatform, PLATFORM_PERMISSIONS, platformRoleLabel } from "@/modules/platform/authorization";
 import { listPlatformUsers } from "@/modules/platform/operations";
-export default async function PlatformUsersPage() { try { await authorizePlatform(PLATFORM_PERMISSIONS.userView); } catch { redirect("/platform/login"); } const rows = await listPlatformUsers(); return <div className="space-y-6"><div><Badge>Platform identity</Badge><h1 className="mt-3 text-3xl font-bold">Platform users</h1><p className="mt-2 text-sm text-muted">Platform roles are separate from organization memberships.</p></div><Card><CardHeader><CardTitle>Authorized platform users</CardTitle></CardHeader><CardContent><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b text-xs uppercase tracking-wide text-muted"><tr><th className="px-3 py-3">User</th><th className="px-3 py-3">Role</th><th className="px-3 py-3">Status</th><th className="px-3 py-3">Created</th></tr></thead><tbody>{rows.map((row) => <tr key={row.id} className="border-b last:border-0"><td className="px-3 py-4"><span className="block font-semibold">{row.fullName}</span><span className="text-xs text-muted">{row.email}</span></td><td className="px-3 py-4"><Badge>{platformRoleLabel(row.platformRole)}</Badge></td><td className="px-3 py-4">{row.status}</td><td className="px-3 py-4 text-muted">{row.createdAt.toLocaleDateString()}</td></tr>)}</tbody></table>{!rows.length && <p className="p-8 text-center text-sm text-muted">No platform users found.</p>}</div></CardContent></Card></div>; }
+import { PlatformUserList } from "@/components/platform/platform-user-list";
+
+export default async function PlatformUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    q?: string;
+    query?: string;
+    page?: string;
+  }>;
+}) {
+  try {
+    await authorizePlatform(PLATFORM_PERMISSIONS.userView);
+  } catch {
+    redirect("/platform/login");
+  }
+
+  const params = await searchParams;
+  const query = params.q ?? params.query ?? "";
+  const page = Math.max(1, Number(params.page ?? "1") || 1);
+
+  const result = await listPlatformUsers({
+    query: query || undefined,
+    page,
+    pageSize: 10,
+  });
+
+  const serializedRows = result.rows.map((row) => ({
+    id: row.id,
+    email: row.email,
+    fullName: row.fullName,
+    status: row.status,
+    platformRole: row.platformRole,
+    roleLabel: platformRoleLabel(row.platformRole),
+    createdAt: row.createdAt.toLocaleDateString(),
+  }));
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <Badge>Platform identity</Badge>
+        <h1 className="mt-3 text-3xl font-bold">Platform users</h1>
+        <p className="mt-2 text-sm text-muted">
+          Platform roles are separate from organization memberships.
+        </p>
+      </div>
+
+      <PlatformUserList
+        initialRows={serializedRows}
+        total={result.total}
+        page={result.page}
+        pageSize={result.pageSize}
+        pageCount={result.pageCount}
+        initialQuery={query}
+      />
+    </div>
+  );
+}
