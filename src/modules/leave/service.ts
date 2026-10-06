@@ -1,14 +1,16 @@
 import { and, eq, gte, lte, ne } from "drizzle-orm";
 import { db } from "@/db/client";
-import { employees, holidays, leaveApplications, leaveBalances, leaveTransactions, leaveTypes, workingDays } from "@/db/schema";
+import { holidays, leaveApplications, leaveBalances, leaveTransactions, leaveTypes, workingDays } from "@/db/schema";
 import { recordAudit } from "@/lib/audit";
 import { AppError } from "@/lib/errors";
 import { authorize } from "@/modules/tenancy/authorization";
 import { availableBalance, calculateLeaveDays, overlaps } from "@/modules/leave/calculator";
 import { createWorkflowInstance, ensureDefaultWorkflow } from "@/modules/workflows/service";
 
+import { getOrEnsureEmployeeForUser } from "@/modules/employees/service";
+
 function dateRange(start: string, end: string) { const dates: string[] = []; const cursor = new Date(`${start}T00:00:00Z`); const last = new Date(`${end}T00:00:00Z`); while (cursor <= last) { dates.push(cursor.toISOString().slice(0, 10)); cursor.setUTCDate(cursor.getUTCDate() + 1); } return dates; }
-async function employeeForUser(organizationId: string, userId: string) { const [employee] = await db.select().from(employees).where(and(eq(employees.organizationId, organizationId), eq(employees.userId, userId))); if (!employee) throw new AppError("NOT_FOUND", "Your employee profile is not linked.", 404); return employee; }
+async function employeeForUser(organizationId: string, userId: string) { return getOrEnsureEmployeeForUser(organizationId, userId); }
 
 export async function applyLeave(input: { organizationId: string; userId: string; leaveTypeId: string; startDate: string; endDate: string; halfDay: boolean; reason: string }) {
   await authorize({ organizationId: input.organizationId, permission: "leave.apply" }); const employee = await employeeForUser(input.organizationId, input.userId); if (input.endDate < input.startDate) throw new AppError("VALIDATION_ERROR", "Leave end date must be on or after the start date.", 400);

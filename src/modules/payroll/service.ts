@@ -7,6 +7,7 @@ import { authorize } from "@/modules/tenancy/authorization";
 import { calculatePayroll, PAYROLL_CALCULATION_VERSION, type PayrollAdjustment, type PayrollComponent, type StatutoryInputs } from "./calculator";
 import { createWorkflowInstance, ensureDefaultWorkflow } from "@/modules/workflows/service";
 import { notifyUsers } from "@/modules/notifications/service";
+import { getOrEnsureEmployeeForUser } from "@/modules/employees/service";
 
 function periodDates(month: number, year: number) {
   if (!Number.isInteger(month) || month < 1 || month > 12 || !Number.isInteger(year) || year < 2000 || year > 2200) throw new AppError("VALIDATION_ERROR", "A valid payroll month and year are required.", 400);
@@ -142,7 +143,6 @@ export async function finalizePayrollRun(input: { organizationId: string; userId
 
 export async function listEmployeePayslips(input: { organizationId: string; userId: string }) {
   await authorize({ organizationId: input.organizationId, permission: "payslip.view" });
-  const [employee] = await db.select().from(employees).where(and(eq(employees.organizationId, input.organizationId), eq(employees.userId, input.userId)));
-  if (!employee) throw new AppError("NOT_FOUND", "Your employee profile is not linked.", 404);
+  const employee = await getOrEnsureEmployeeForUser(input.organizationId, input.userId);
   return db.select({ payslip: payrollPayslips, run: payrollRuns, period: payrollPeriods, snapshot: payrollCalculationSnapshots }).from(payrollPayslips).innerJoin(payrollRunEmployees, eq(payrollPayslips.runEmployeeId, payrollRunEmployees.id)).innerJoin(payrollRuns, eq(payrollRunEmployees.runId, payrollRuns.id)).innerJoin(payrollPeriods, eq(payrollRuns.periodId, payrollPeriods.id)).innerJoin(payrollCalculationSnapshots, eq(payrollPayslips.snapshotId, payrollCalculationSnapshots.id)).where(and(eq(payrollPayslips.organizationId, input.organizationId), eq(payrollPayslips.employeeId, employee.id), eq(payrollRuns.status, "finalized"))).orderBy(desc(payrollPayslips.generatedAt));
 }

@@ -3,9 +3,19 @@ import { canTransitionOrganizationStatus } from "./operations";
 
 describe("platform operations policy", () => {
   it("allows only supported organization lifecycle transitions", () => {
+    // Valid transitions
     expect(canTransitionOrganizationStatus("pending", "active")).toBe(true);
+    expect(canTransitionOrganizationStatus("pending", "rejected")).toBe(true);
     expect(canTransitionOrganizationStatus("active", "suspended")).toBe(true);
+    expect(canTransitionOrganizationStatus("active", "archived")).toBe(true);
     expect(canTransitionOrganizationStatus("suspended", "active")).toBe(true);
+    expect(canTransitionOrganizationStatus("suspended", "archived")).toBe(true);
+
+    // Invalid transitions
+    expect(canTransitionOrganizationStatus("active", "rejected")).toBe(false);
+    expect(canTransitionOrganizationStatus("active", "active")).toBe(false);
+    expect(canTransitionOrganizationStatus("suspended", "suspended")).toBe(false);
+    expect(canTransitionOrganizationStatus("pending", "suspended")).toBe(false);
     expect(canTransitionOrganizationStatus("rejected", "active")).toBe(false);
     expect(canTransitionOrganizationStatus("archived", "active")).toBe(false);
   });

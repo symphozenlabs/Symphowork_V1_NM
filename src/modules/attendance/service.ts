@@ -1,14 +1,16 @@
 import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
-import { attendancePolicies, attendancePunches, attendanceRecords, employees, organizations, shifts } from "@/db/schema";
+import { attendancePolicies, attendancePunches, attendanceRecords, organizations, shifts } from "@/db/schema";
 import { recordAudit } from "@/lib/audit";
 import { AppError } from "@/lib/errors";
 import { authorize } from "@/modules/tenancy/authorization";
 import { calculateAttendance, shiftWindow } from "@/modules/attendance/calculator";
 import type { PunchType } from "@/modules/attendance/types";
 
+import { getOrEnsureEmployeeForUser } from "@/modules/employees/service";
+
 function localDateInTimezone(timezone: string) { return new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
-async function employeeForUser(organizationId: string, userId: string) { const [employee] = await db.select().from(employees).where(and(eq(employees.organizationId, organizationId), eq(employees.userId, userId))); if (!employee) throw new AppError("NOT_FOUND", "Your employee profile is not linked.", 404); return employee; }
+async function employeeForUser(organizationId: string, userId: string) { return getOrEnsureEmployeeForUser(organizationId, userId); }
 
 export async function recordPunch(input: { organizationId: string; userId: string; type: PunchType }) {
   const permission = input.type === "clock_in" ? "attendance.clockin" : input.type === "clock_out" ? "attendance.clockout" : "attendance.break";

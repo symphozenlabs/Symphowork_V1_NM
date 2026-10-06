@@ -5,6 +5,7 @@ import { hashPassword, hashToken, verifyPassword } from "@/lib/crypto";
 import { AppError } from "@/lib/errors";
 import { recordAuditInTransaction } from "@/lib/audit";
 import { normalizeEmail, validatePassword } from "@/modules/identity/auth";
+import { getOrEnsureEmployeeForUser } from "@/modules/employees/service";
 
 type SessionIdentity = { id: string; email: string };
 
@@ -30,6 +31,9 @@ export async function getInvitationPreview(token: string) {
     const invitation = validateInvitation(await findInvitation(transaction, hashToken(token)));
     const organization = await transaction.query.organizations.findFirst({ where: eq(organizations.id, invitation.organizationId) });
     if (!organization) throw new AppError("INVITATION_INVALID", "This invitation is no longer available.", 400);
+    if (organization.status !== "active") {
+      throw new AppError("FORBIDDEN", "This organization has not been activated yet. Please contact the platform administrator.", 403);
+    }
     return { organization: { name: organization.name, slug: organization.slug }, invitedEmail: invitation.invitedEmail, expiresAt: invitation.expiresAt };
   });
 }
@@ -37,6 +41,11 @@ export async function getInvitationPreview(token: string) {
 export async function acceptInvitation(input: { token: string; fullName?: string; password?: string; currentUser?: SessionIdentity | null }) {
   return withInvitationContext(input.token, async (tx) => {
     const invitation = validateInvitation(await findInvitation(tx, hashToken(input.token)));
+    const organization = await tx.query.organizations.findFirst({ where: eq(organizations.id, invitation.organizationId) });
+    if (!organization) throw new AppError("INVITATION_INVALID", "This invitation is no longer available.", 400);
+    if (organization.status !== "active") {
+      throw new AppError("FORBIDDEN", "This organization has not been activated yet. Please contact the platform administrator.", 403);
+    }
     await tx.execute(sql`select set_config('app.current_organization_id', ${invitation.organizationId}, true)`);
     let user = await tx.query.users.findFirst({ where: eq(users.email, normalizeEmail(invitation.invitedEmail)) });
     if (input.currentUser && (!user || user.id !== input.currentUser.id || normalizeEmail(input.currentUser.email) !== normalizeEmail(invitation.invitedEmail))) throw new AppError("INVITATION_EMAIL_MISMATCH", "This invitation belongs to a different email address.", 403);
@@ -55,7 +64,12 @@ export async function acceptInvitation(input: { token: string; fullName?: string
     const role = await tx.query.roles.findFirst({ where: and(eq(roles.organizationId, invitation.organizationId), eq(roles.key, invitation.intendedRole)) });
     if (!role) throw new AppError("PROVISIONING_FAILED", "The invitation role is no longer available.", 500);
     const [membership] = await tx.insert(memberships).values({ userId: user.id, organizationId: invitation.organizationId, roleId: role.id, status: "active" }).returning();
-    if (invitation.employeeId) { await tx.update(employees).set({ userId: user.id, status: "onboarding", updatedAt: new Date() }).where(eq(employees.id, invitation.employeeId)); await tx.update(onboarding).set({ status: "in_progress", startedAt: new Date(), updatedAt: new Date() }).where(eq(onboarding.employeeId, invitation.employeeId)); }
+    if (invitation.employeeId) {
+      await tx.update(employees).set({ userId: user.id, status: "onboarding", updatedAt: new Date() }).where(eq(employees.id, invitation.employeeId));
+      await tx.update(onboarding).set({ status: "in_progress", startedAt: new Date(), updatedAt: new Date() }).where(eq(onboarding.employeeId, invitation.employeeId));
+    } else {
+      await getOrEnsureEmployeeForUser(invitation.organizationId, user.id, tx, { user, roleKey: role.key, membership });
+    }
     const [consumedInvitation] = await tx.update(invitations).set({ status: "accepted", acceptedAt: new Date(), updatedAt: new Date() }).where(and(eq(invitations.id, invitation.id), eq(invitations.status, "pending"), gt(invitations.expiresAt, new Date()))).returning();
     if (!consumedInvitation) {
       const currentInvitation = await tx.query.invitations.findFirst({ where: eq(invitations.id, invitation.id) });

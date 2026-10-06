@@ -7,8 +7,9 @@ import { authorize } from "@/modules/tenancy/authorization";
 import { projectNumber, sanitizeCollaborationText, taskNumber, validateDateRange, wouldCreateDependencyCycle } from "./policy";
 import { createNotification } from "@/modules/notifications/service";
 import { parseMentionNames } from "./policy";
+import { getOrEnsureEmployeeForUser } from "@/modules/employees/service";
 
-async function employeeForUser(organizationId: string, userId: string) { const [employee] = await db.select().from(employees).where(and(eq(employees.organizationId, organizationId), eq(employees.userId, userId))); if (!employee) throw new AppError("NOT_FOUND", "Employee profile was not found.", 404); return employee; }
+async function employeeForUser(organizationId: string, userId: string) { return getOrEnsureEmployeeForUser(organizationId, userId); }
 async function ensureEmployee(organizationId: string, employeeId: string) { const [employee] = await db.select().from(employees).where(and(eq(employees.organizationId, organizationId), eq(employees.id, employeeId))); if (!employee) throw new AppError("NOT_FOUND", "Employee is not part of this organization.", 404); return employee; }
 async function nextNumber(counter: typeof projectNumberCounters | typeof taskNumberCounters, organizationId: string) { await db.insert(counter).values({ organizationId }).onConflictDoNothing(); const [row] = await db.update(counter).set({ nextNumber: sql`${counter.nextNumber} + 1`, updatedAt: new Date() }).where(eq(counter.organizationId, organizationId)).returning(); return row.nextNumber; }
 async function addActivity(organizationId: string, actorEmployeeId: string, activityType: string, projectId?: string, taskId?: string, metadata?: unknown) { await db.insert(collaborationActivity).values({ organizationId, actorEmployeeId, activityType, projectId, taskId, metadata: metadata ? JSON.stringify(metadata) : undefined }); }

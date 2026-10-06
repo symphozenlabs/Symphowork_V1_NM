@@ -59,16 +59,24 @@ export async function runProvisioning(organizationId: string, primaryAdminEmail:
   );
 
   await withPlatformTransaction(async (tx) => {
-    for (const key of ALL_PERMISSION_KEYS) await tx.insert(permissions).values({ key }).onConflictDoNothing();
+    if (ALL_PERMISSION_KEYS.length > 0) {
+      await tx.insert(permissions).values(ALL_PERMISSION_KEYS.map((key) => ({ key }))).onConflictDoNothing();
+    }
     const permissionRows = await tx.select().from(permissions);
     const permissionByKey = new Map(permissionRows.map((permission) => [permission.key, permission]));
+    const rolePermissionValues: Array<{ roleId: string; permissionId: string }> = [];
     for (const [roleKey, permissionKeys] of Object.entries(ROLE_PERMISSIONS)) {
       const role = roleByKey.get(roleKey);
       if (!role) continue;
       for (const permissionKey of permissionKeys) {
         const permission = permissionByKey.get(permissionKey);
-        if (permission) await tx.insert(rolePermissions).values({ roleId: role.id, permissionId: permission.id }).onConflictDoNothing();
+        if (permission) {
+          rolePermissionValues.push({ roleId: role.id, permissionId: permission.id });
+        }
       }
+    }
+    if (rolePermissionValues.length > 0) {
+      await tx.insert(rolePermissions).values(rolePermissionValues).onConflictDoNothing();
     }
   });
 

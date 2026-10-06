@@ -17,3 +17,16 @@ export async function authorizePlatformTargetOrganization(input: { organizationI
   return { user, organization, action: input.action };
 }
 export function platformRoleLabel(role: string) { return role.replaceAll("_", " "); }
+
+export const PLATFORM_ROLE_CONSOLE_TITLES: Record<string, string> = {
+  PLATFORM_OWNER: "Platform Owner Console",
+  PRODUCT_OWNER: "Product Owner Console",
+  PLATFORM_ADMIN: "Platform Admin Console",
+  PLATFORM_SUPPORT: "Platform Support Console",
+  PLATFORM_BILLING: "Platform Billing Console",
+};
+
+export function platformConsoleTitle(role?: string | null): string {
+  if (!role) return "Platform Console";
+  return PLATFORM_ROLE_CONSOLE_TITLES[role] ?? "Platform Console";
+}
