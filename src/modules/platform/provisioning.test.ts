@@ -121,9 +121,10 @@ describe("provisioning performance and role_permissions bulk insertion", () => {
     expect(values.length).toBe(expectedTotal);
     expect(values.length).toBeGreaterThan(300);
 
-    // Verify each system role is represented
+    // Verify each system role is represented (9 tenant organization roles)
     const insertedRoleIds = new Set(values.map((v) => v.roleId));
     expect(insertedRoleIds.size).toBe(SYSTEM_ROLES.filter((r) => r !== "PLATFORM_OWNER").length);
+    expect(insertedRoleIds.size).toBe(9);
 
     // Verify permissions table was also bulk inserted
     const permInsert = fixture.insertedTables.find((entry) => entry.table === permissions);

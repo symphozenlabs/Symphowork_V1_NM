@@ -38,7 +38,7 @@ export default async function WorkspacePage() {
               Your organization workspace is currently not accessible. This may occur if the organization is pending activation, suspended, or undergoing administrative review.
             </p>
             <p className="text-sm text-muted">
-              Please contact your organization administrator or platform support for assistance.
+              Please contact your organization owner or platform support for assistance.
             </p>
           </CardContent>
         </Card>

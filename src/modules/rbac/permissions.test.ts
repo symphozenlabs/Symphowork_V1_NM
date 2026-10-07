@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ALL_PERMISSION_KEYS, PERMISSIONS, ROLE_PERMISSIONS } from "@/modules/rbac/permissions";
+import { ALL_PERMISSION_KEYS, PERMISSIONS, ROLE_PERMISSIONS, SYSTEM_ROLES } from "@/modules/rbac/permissions";
 
 describe("permission registry", () => {
   it("uses stable resource.action keys", () => {
@@ -8,7 +8,13 @@ describe("permission registry", () => {
   });
 
   it("gives the owner role the complete registry", () => {
+    expect(SYSTEM_ROLES).toContain("ORGANIZATION_OWNER");
     expect(ROLE_PERMISSIONS.ORGANIZATION_OWNER).toHaveLength(ALL_PERMISSION_KEYS.length);
+  });
+
+  it("does not include ORGANIZATION_ADMIN in SYSTEM_ROLES or ROLE_PERMISSIONS", () => {
+    expect(SYSTEM_ROLES).not.toContain("ORGANIZATION_ADMIN");
+    expect(ROLE_PERMISSIONS).not.toHaveProperty("ORGANIZATION_ADMIN");
   });
 
   it("configures HR_EXECUTIVE with intended core HR permissions", () => {
@@ -65,7 +71,6 @@ describe("permission registry", () => {
   it("preserves payroll.view for authorized payroll roles", () => {
     const authorizedRoles = [
       "ORGANIZATION_OWNER",
-      "ORGANIZATION_ADMIN",
       "HR_ADMIN",
       "FINANCE_ADMIN",
       "MANAGER",

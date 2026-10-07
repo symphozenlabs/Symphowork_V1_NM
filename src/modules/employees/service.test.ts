@@ -195,17 +195,19 @@ describe("getOrEnsureEmployeeForUser", () => {
     }));
   });
 
-  it("auto-provisions employee profile for ORGANIZATION_ADMIN", async () => {
-    const { executor, insertedRecords } = createMockExecutor({ roleKey: "ORGANIZATION_ADMIN" });
+  it("does not auto-provision employee profile for non-owner roles such as ORGANIZATION_ADMIN", async () => {
+    const { executor } = createMockExecutor({ roleKey: "ORGANIZATION_ADMIN" });
 
-    const employee = await getOrEnsureEmployeeForUser(organizationId, userId, executor as never, {
-      user: mockUser,
-      roleKey: "ORGANIZATION_ADMIN",
-      membership: mockMembership,
+    await expect(
+      getOrEnsureEmployeeForUser(organizationId, userId, executor as never, {
+        user: mockUser,
+        roleKey: "ORGANIZATION_ADMIN",
+        membership: mockMembership,
+      })
+    ).rejects.toMatchObject({
+      status: 404,
+      code: "NOT_FOUND",
     });
-
-    expect(employee.employeeId).toBe("EMP0001");
-    expect(insertedRecords.some((r) => r.table === employees)).toBe(true);
   });
 
   it("throws 404 NOT_FOUND when a regular EMPLOYEE is not linked", async () => {

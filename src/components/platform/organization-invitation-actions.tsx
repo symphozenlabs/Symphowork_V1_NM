@@ -45,8 +45,8 @@ export function OrganizationInvitationActions({
     return (
       <p className="text-sm text-muted">
         {invitation?.status === "accepted"
-          ? "Primary admin invitation accepted."
-          : "No pending primary admin invitation. Process or retry provisioning first."}
+          ? "Organization owner invitation accepted."
+          : "No pending organization owner invitation. Process or retry provisioning first."}
       </p>
     );
   }
@@ -130,7 +130,7 @@ export function OrganizationInvitationActions({
         <p className="text-sm text-muted">
           {expired
             ? "Invitation expired — resend to generate a new link."
-            : "Email delivery is not configured. Copy this secure invitation link and send it to the primary admin manually."}
+            : "Email delivery is not configured. Copy this secure invitation link and send it to the organization owner manually."}
         </p>
 
         <div className="flex flex-wrap gap-2">
@@ -177,10 +177,10 @@ export function OrganizationInvitationActions({
                   id="invitation-dialog-title"
                   className="text-lg font-bold text-foreground"
                 >
-                  Admin invitation link
+                  Owner invitation link
                 </h2>
                 <p className="mt-1 text-xs text-muted">
-                  Share this secure invitation link with the primary administrator to complete workspace onboarding.
+                  Share this secure invitation link with the organization owner to complete workspace onboarding.
                 </p>
               </div>
               <button

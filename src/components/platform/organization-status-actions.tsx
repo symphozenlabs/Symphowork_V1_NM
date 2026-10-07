@@ -77,7 +77,7 @@ export function OrganizationStatusActions({
           disabled={busy}
           onClick={() => void update("active")}
         >
-          {busy ? "Approving…" : "Approve and invite admin"}
+          {busy ? "Approving…" : "Approve and invite owner"}
         </Button>
       )}
       {currentStatus === "active" && (

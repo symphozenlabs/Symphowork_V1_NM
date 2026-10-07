@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { hasPlatformPermission, PLATFORM_PERMISSIONS, platformConsoleTitle } from "./authorization";
 describe("platform authorization boundary", () => {
   it("does not treat organization roles as platform roles", () => {
-    expect(hasPlatformPermission("ORGANIZATION_ADMIN", PLATFORM_PERMISSIONS.organizationView)).toBe(false);
+    expect(hasPlatformPermission("ORGANIZATION_OWNER", PLATFORM_PERMISSIONS.organizationView)).toBe(false);
     expect(hasPlatformPermission("EMPLOYEE", PLATFORM_PERMISSIONS.organizationView)).toBe(false);
   });
   it("limits platform role capabilities", () => {

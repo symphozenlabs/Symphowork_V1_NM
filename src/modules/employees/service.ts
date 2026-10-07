@@ -124,15 +124,15 @@ export async function getOrEnsureEmployeeForUser(
     return linked;
   }
 
-  // 5. Verify if role is eligible for auto-provisioning (ORGANIZATION_OWNER or ORGANIZATION_ADMIN)
+  // 5. Verify if role is eligible for auto-provisioning (ORGANIZATION_OWNER)
   let roleKey = context?.roleKey;
   if (!roleKey) {
     const role = (await client.query.roles?.findFirst({ where: eq(roles.id, membership.roleId) })) ?? (await client.select().from(roles).where(eq(roles.id, membership.roleId)))[0];
     roleKey = role?.key;
   }
-  const isOwnerOrAdmin = roleKey === "ORGANIZATION_OWNER" || roleKey === "ORGANIZATION_ADMIN";
+  const isOwner = roleKey === "ORGANIZATION_OWNER";
 
-  if (!isOwnerOrAdmin) {
+  if (!isOwner) {
     throw new AppError("NOT_FOUND", "Your employee profile is not linked.", 404);
   }
 
