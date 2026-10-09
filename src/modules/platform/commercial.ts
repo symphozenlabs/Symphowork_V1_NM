@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, ne, or, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, ilike, inArray, ne, or, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { withPlatformTransaction } from "@/db/client";
 import { employees, organizations, planFeatures, plans, subscriptions } from "@/db/schema";
@@ -120,6 +120,27 @@ export async function setPlanFeatures(input: unknown, actorUserId: string) {
   return feature;
 }
 export async function getPlanFeatures(planId: string) { await authorizePlatform(PLATFORM_PERMISSIONS.entitlementView); return withPlatformTransaction((tx) => tx.select().from(planFeatures).where(eq(planFeatures.planId, planId)).orderBy(planFeatures.featureKey)); }
+
+export async function getBatchPlanFeatures(planIds: string[]): Promise<Record<string, (typeof planFeatures.$inferSelect)[]>> {
+  const uniquePlanIds = [...new Set(planIds)];
+  const result: Record<string, (typeof planFeatures.$inferSelect)[]> = {};
+  for (const id of uniquePlanIds) {
+    result[id] = [];
+  }
+  if (uniquePlanIds.length === 0) return result;
+  await authorizePlatform(PLATFORM_PERMISSIONS.entitlementView);
+  const rows = await withPlatformTransaction((tx) =>
+    tx
+      .select()
+      .from(planFeatures)
+      .where(inArray(planFeatures.planId, uniquePlanIds))
+      .orderBy(planFeatures.featureKey)
+  );
+  for (const row of rows) {
+    result[row.planId]?.push(row);
+  }
+  return result;
+}
 
 export interface ListSubscriptionsInput {
   query?: string;

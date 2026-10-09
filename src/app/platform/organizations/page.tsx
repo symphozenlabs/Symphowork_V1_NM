@@ -1,11 +1,10 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authorizePlatform, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
 import { listPlatformOrganizations } from "@/modules/platform/operations";
 import { OrganizationListTable } from "@/components/platform/organization-list-table";
+import { OrganizationCreateDialog } from "@/components/platform/organization-create-dialog";
 
 export default async function OrganizationsPage() {
   try {
@@ -35,9 +34,7 @@ export default async function OrganizationsPage() {
             Inspect organization lifecycle without entering tenant membership context.
           </p>
         </div>
-        <Button asChild>
-          <Link href="/platform/organizations/new">Create organization</Link>
-        </Button>
+        <OrganizationCreateDialog />
       </div>
 
       <Card>

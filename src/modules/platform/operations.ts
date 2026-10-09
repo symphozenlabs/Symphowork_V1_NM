@@ -27,43 +27,44 @@ export async function listPlatformOrganizations(input: { page?: number; pageSize
   if (input.query) filters.push(or(ilike(organizations.name, `%${input.query}%`), ilike(organizations.slug, `%${input.query}%`)));
   if (input.status) filters.push(eq(organizations.status, input.status as typeof organizations.status.enumValues[number]));
   const where = filters.length ? and(...filters) : undefined;
-  const { rows, total } = await withPlatformTransaction(async (tx) => {
-    const rows = await tx
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        legalName: organizations.legalName,
-        slug: organizations.slug,
-        status: organizations.status,
-        timezone: organizations.timezone,
-        currency: organizations.currency,
-        website: organizations.website,
-        contactEmail: organizations.contactEmail,
-        contactPhone: organizations.contactPhone,
-        addressLine1: organizations.addressLine1,
-        addressLine2: organizations.addressLine2,
-        city: organizations.city,
-        state: organizations.state,
-        country: organizations.country,
-        postalCode: organizations.postalCode,
-        dateFormat: organizations.dateFormat,
-        fiscalYearStartMonth: organizations.fiscalYearStartMonth,
-        employeeIdPrefix: organizations.employeeIdPrefix,
-        employeeIdNext: organizations.employeeIdNext,
-        employeeIdPadding: organizations.employeeIdPadding,
-        createdAt: organizations.createdAt,
-        updatedAt: organizations.updatedAt,
-        provisioningStatus: provisioningJobs.status,
-      })
-      .from(organizations)
-      .leftJoin(provisioningJobs, eq(provisioningJobs.organizationId, organizations.id))
-      .where(where)
-      .orderBy(desc(organizations.createdAt))
-      .limit(pageSize)
-      .offset((page - 1) * pageSize);
-    const [{ total }] = await tx.select({ total: count() }).from(organizations).where(where);
-    return { rows, total };
-  });
+  const [rows, [{ total }]] = await withPlatformTransaction(async (tx) =>
+    Promise.all([
+      tx
+        .select({
+          id: organizations.id,
+          name: organizations.name,
+          legalName: organizations.legalName,
+          slug: organizations.slug,
+          status: organizations.status,
+          timezone: organizations.timezone,
+          currency: organizations.currency,
+          website: organizations.website,
+          contactEmail: organizations.contactEmail,
+          contactPhone: organizations.contactPhone,
+          addressLine1: organizations.addressLine1,
+          addressLine2: organizations.addressLine2,
+          city: organizations.city,
+          state: organizations.state,
+          country: organizations.country,
+          postalCode: organizations.postalCode,
+          dateFormat: organizations.dateFormat,
+          fiscalYearStartMonth: organizations.fiscalYearStartMonth,
+          employeeIdPrefix: organizations.employeeIdPrefix,
+          employeeIdNext: organizations.employeeIdNext,
+          employeeIdPadding: organizations.employeeIdPadding,
+          createdAt: organizations.createdAt,
+          updatedAt: organizations.updatedAt,
+          provisioningStatus: provisioningJobs.status,
+        })
+        .from(organizations)
+        .leftJoin(provisioningJobs, eq(provisioningJobs.organizationId, organizations.id))
+        .where(where)
+        .orderBy(desc(organizations.createdAt))
+        .limit(pageSize)
+        .offset((page - 1) * pageSize),
+      tx.select({ total: count() }).from(organizations).where(where),
+    ])
+  );
   return { rows, page, pageSize, total, pageCount: Math.ceil(total / pageSize) };
 }
 
@@ -72,7 +73,7 @@ export async function getPlatformOrganization(organizationId: string) {
   const [job, subscription, invitation, [{ employeeCount }], [{ activeEmployeeCount }], activity] = await withPlatformTransaction(async (tx) => Promise.all([
     tx.query.provisioningJobs.findFirst({ where: eq(provisioningJobs.organizationId, organizationId) }),
     tx.query.subscriptions.findFirst({ where: eq(subscriptions.organizationId, organizationId) }),
-    tx.query.invitations.findFirst({ where: and(eq(invitations.organizationId, organizationId), eq(invitations.invitationType, "organization_admin")) }),
+    tx.query.invitations.findFirst({ where: and(eq(invitations.organizationId, organizationId), eq(invitations.intendedRole, "ORGANIZATION_OWNER")) }),
     tx.select({ employeeCount: count() }).from(employees).where(eq(employees.organizationId, organizationId)),
     tx.select({ activeEmployeeCount: count() }).from(employees).where(and(eq(employees.organizationId, organizationId), eq(employees.status, "active"))),
     tx.select().from(auditLogs).where(eq(auditLogs.organizationId, organizationId)).orderBy(desc(auditLogs.createdAt)).limit(12),
@@ -84,7 +85,13 @@ export async function getPlatformOrganization(organizationId: string) {
 async function issueOrganizationOwnerInvitation(organizationId: string, action: string, requireUnexpired: boolean) {
   const { organization } = await authorizePlatformTargetOrganization({ organizationId, permission: PLATFORM_PERMISSIONS.provisioningManage, action });
   const result = await withPlatformTransaction(async (tx) => {
-    const invitation = await tx.query.invitations.findFirst({ where: and(eq(invitations.organizationId, organizationId), eq(invitations.invitationType, "organization_admin"), eq(invitations.intendedRole, "ORGANIZATION_OWNER"), eq(invitations.status, "pending")) });
+    const invitation = await tx.query.invitations.findFirst({
+      where: and(
+        eq(invitations.organizationId, organizationId),
+        eq(invitations.intendedRole, "ORGANIZATION_OWNER"),
+        eq(invitations.status, "pending")
+      )
+    });
     if (!invitation) throw new AppError("PROVISIONING_FAILED", "No pending organization owner invitation is available.", 409);
     if (requireUnexpired && invitation.expiresAt <= new Date()) throw new AppError("INVITATION_EXPIRED", "Invitation expired. Resend the invitation to generate a new link.", 410);
     const token = createOpaqueToken();
@@ -96,7 +103,7 @@ async function issueOrganizationOwnerInvitation(organizationId: string, action: 
 
 export async function resendOrganizationInvitation(organizationId: string, actorUserId: string) {
   const result = await issueOrganizationOwnerInvitation(organizationId, "organization_invitation_resend", false);
-  const delivery = await sendInvitationEmail({ email: result.organization.contactEmail ?? "", token: result.token, organizationName: result.organization.name });
+  const delivery = await sendInvitationEmail({ email: result.invitation.invitedEmail, token: result.token, organizationName: result.organization.name });
   await recordAudit({ actorUserId, organizationId, action: "organization_invitation_resent", resource: "invitation", resourceId: result.invitation.id, platform: true });
   return { invitation: { id: result.invitation.id, status: result.invitation.status, delivery } };
 }
@@ -176,9 +183,22 @@ export async function retryProvisioning(organizationId: string, actorUserId: str
   if (job.status === "completed") throw new AppError("PROVISIONING_FAILED", "Completed provisioning jobs cannot be retried.", 409);
   if (job.status === "running") throw new AppError("PROVISIONING_FAILED", "Provisioning is already in progress for this organization.", 409);
   const [organization] = await withPlatformTransaction((tx) => tx.select().from(organizations).where(eq(organizations.id, organizationId)).limit(1));
-  const primaryAdminEmail = requestedPrimaryAdminEmail ? provisioningContactSchema.parse(requestedPrimaryAdminEmail).toLowerCase() : organization?.contactEmail?.toLowerCase();
-  if (!primaryAdminEmail) throw new AppError("PROVISIONING_FAILED", "A primary administrator email is required to process this job.", 400);
-  if (organization && organization.contactEmail !== primaryAdminEmail) await withPlatformTransaction((tx) => tx.update(organizations).set({ contactEmail: primaryAdminEmail, updatedAt: new Date() }).where(eq(organizations.id, organizationId)));
+  const existingOwnerInvitation = await withPlatformTransaction((tx) =>
+    tx.query.invitations.findFirst({
+      where: and(
+        eq(invitations.organizationId, organizationId),
+        eq(invitations.intendedRole, "ORGANIZATION_OWNER"),
+        eq(invitations.status, "pending")
+      ),
+    })
+  );
+  const primaryAdminEmail = requestedPrimaryAdminEmail
+    ? provisioningContactSchema.parse(requestedPrimaryAdminEmail).toLowerCase()
+    : existingOwnerInvitation?.invitedEmail?.toLowerCase() ?? organization?.contactEmail?.toLowerCase();
+  if (!primaryAdminEmail) throw new AppError("PROVISIONING_FAILED", "An organization owner email is required to process this job.", 400);
+  if (requestedPrimaryAdminEmail && organization && !organization.contactEmail) {
+    await withPlatformTransaction((tx) => tx.update(organizations).set({ contactEmail: primaryAdminEmail, updatedAt: new Date() }).where(eq(organizations.id, organizationId)));
+  }
   let result;
   try {
     result = await runProvisioning(organizationId, primaryAdminEmail, actorUserId);

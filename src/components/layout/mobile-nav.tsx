@@ -1,6 +1,7 @@
 "use client";
 
 import { Menu, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 type MobileNavItem = { label: string; href: string };
@@ -36,9 +37,9 @@ export function MobileNav({ items, label = "Open navigation" }: { items: MobileN
             </div>
             <div className="space-y-1">
               {items.map((item) => (
-                <a key={item.href} href={item.href} onClick={() => setOpen(false)} className="block rounded-xl px-3 py-2.5 text-sm text-blue-100/80 hover:bg-white/10 hover:text-white">
+                <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className="block rounded-xl px-3 py-2.5 text-sm text-blue-100/80 hover:bg-white/10 hover:text-white">
                   {item.label}
-                </a>
+                </Link>
               ))}
             </div>
           </nav>

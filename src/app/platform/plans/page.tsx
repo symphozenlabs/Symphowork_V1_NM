@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { PlanManagement, type PlanItem, type PlanFeatureItem } from "@/components/platform/plan-management";
 import { authorizePlatform, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
-import { getPlanFeatures, listPlans } from "@/modules/platform/commercial";
+import { getBatchPlanFeatures, listPlans } from "@/modules/platform/commercial";
 
 export default async function PlansPage() {
   try {
@@ -25,9 +25,7 @@ export default async function PlansPage() {
   }
 
   const rawPlans = await listPlans();
-  const rawFeatures = await Promise.all(
-    rawPlans.map(async (plan) => [plan.id, await getPlanFeatures(plan.id)] as const)
-  );
+  const rawFeaturesByPlan = await getBatchPlanFeatures(rawPlans.map((plan) => plan.id));
 
   const initialPlans: PlanItem[] = rawPlans.map((p) => ({
     id: p.id,
@@ -47,7 +45,7 @@ export default async function PlansPage() {
   }));
 
   const initialFeatures: Record<string, PlanFeatureItem[]> = {};
-  for (const [planId, planFeats] of rawFeatures) {
+  for (const [planId, planFeats] of Object.entries(rawFeaturesByPlan)) {
     initialFeatures[planId] = planFeats.map((f) => ({
       id: f.id,
       planId: f.planId,

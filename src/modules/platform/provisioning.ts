@@ -9,11 +9,93 @@ import type { OrganizationInput } from "@/modules/platform/validation";
 
 export async function createOrganization(input: OrganizationInput, actorUserId: string) {
   const result = await withPlatformTransaction(async (tx) => {
-    const existing = await tx.query.organizations.findFirst({ where: eq(organizations.slug, input.slug) });
+    const slug = input.slug.trim().toLowerCase();
+    const existing = await tx.query.organizations.findFirst({ where: eq(organizations.slug, slug) });
     if (existing) throw new AppError("ORG_ALREADY_EXISTS", "An organization with this slug already exists.", 409);
-    const [organization] = await tx.insert(organizations).values({ ...input, status: "pending" }).returning();
+
+    const ownerEmail = (input.ownerEmail?.trim() || input.contactEmail?.trim())?.toLowerCase();
+    if (!ownerEmail) {
+      throw new AppError("VALIDATION_ERROR", "Organization owner email is required.", 400);
+    }
+
+    // Official contact email falls back to ownerEmail if left blank
+    const contactEmail = (input.contactEmail?.trim() || ownerEmail).toLowerCase();
+
+    // Verify selected plan if provided
+    let planId = input.planId?.trim() ? input.planId : undefined;
+    if (planId) {
+      const selectedPlan = await tx.query.plans.findFirst({
+        where: and(eq(plans.id, planId), eq(plans.active, true)),
+      });
+      if (!selectedPlan) {
+        throw new AppError("VALIDATION_ERROR", "Selected plan does not exist or is inactive.", 400);
+      }
+    } else {
+      // Default to active FREE plan if available
+      const freePlan = await tx.query.plans.findFirst({
+        where: and(eq(plans.code, "FREE"), eq(plans.active, true)),
+      });
+      if (freePlan) {
+        planId = freePlan.id;
+      }
+    }
+
+    const [organization] = await tx
+      .insert(organizations)
+      .values({
+        name: input.name.trim(),
+        legalName: input.legalName?.trim() || input.name.trim(),
+        slug,
+        website: input.website?.trim() || null,
+        contactEmail,
+        contactPhone: input.contactPhone?.trim() || null,
+        addressLine1: input.addressLine1?.trim() || null,
+        addressLine2: input.addressLine2?.trim() || null,
+        city: input.city?.trim() || null,
+        state: input.state?.trim() || null,
+        country: input.country?.trim() || null,
+        postalCode: input.postalCode?.trim() || null,
+        timezone: input.timezone.trim(),
+        currency: input.currency.trim().toUpperCase(),
+        dateFormat: input.dateFormat?.trim() || "dd/MM/yyyy",
+        status: "pending",
+      })
+      .returning();
+
+    // Insert pending subscription if plan is resolved
+    if (planId) {
+      await tx.insert(subscriptions).values({
+        organizationId: organization.id,
+        planId,
+        status: "pending",
+        billingCycle: input.billingCycle ?? "monthly",
+      });
+    }
+
+    // Pre-insert pending owner invitation
+    const initialInvitationToken = createOpaqueToken();
+    await tx.insert(invitations).values({
+      organizationId: organization.id,
+      invitedEmail: ownerEmail,
+      intendedRole: "ORGANIZATION_OWNER",
+      tokenHash: hashToken(initialInvitationToken),
+      expiresAt: new Date(Date.now() + 7 * 86_400_000),
+      status: "pending",
+    });
+
     const [job] = await tx.insert(provisioningJobs).values({ organizationId: organization.id }).returning();
-    await tx.insert(auditLogs).values({ actorUserId, action: "organization_creation", resource: "organization", resourceId: organization.id });
+    await tx.insert(auditLogs).values({
+      actorUserId,
+      action: "organization_creation",
+      resource: "organization",
+      resourceId: organization.id,
+      metadata: JSON.stringify({
+        ownerEmail,
+        ownerFullName: input.ownerFullName?.trim() || null,
+        planId,
+        billingCycle: input.billingCycle ?? "monthly",
+      }),
+    });
     return { organization, job };
   });
   return result;
@@ -80,18 +162,30 @@ export async function runProvisioning(organizationId: string, primaryAdminEmail:
     }
   });
 
-  // Stage 4: Mark step to subscription and create subscription
+  // Stage 4: Mark step to subscription and activate or create subscription
   await withPlatformTransaction((tx) =>
     tx.update(provisioningJobs).set({ currentStep: "subscription", updatedAt: new Date() }).where(eq(provisioningJobs.id, initialJob.id))
   );
 
   await withPlatformTransaction(async (tx) => {
-    let plan = await tx.query.plans.findFirst({ where: eq(plans.code, "FREE") });
-    if (!plan) { [plan] = await tx.insert(plans).values({ code: "FREE", name: "Free", description: "Foundation plan" }).returning(); }
-    await tx.insert(subscriptions).values({ organizationId, planId: plan.id, status: "active", startsAt: new Date() }).onConflictDoNothing();
+    const existingSubscription = await tx.query.subscriptions?.findFirst({
+      where: eq(subscriptions.organizationId, organizationId),
+    });
+    if (existingSubscription) {
+      await tx
+        .update(subscriptions)
+        .set({ status: "active", startsAt: new Date(), updatedAt: new Date() })
+        .where(eq(subscriptions.id, existingSubscription.id));
+    } else {
+      let plan = await tx.query.plans.findFirst({ where: eq(plans.code, "FREE") });
+      if (!plan) {
+        [plan] = await tx.insert(plans).values({ code: "FREE", name: "Free", description: "Foundation plan" }).returning();
+      }
+      await tx.insert(subscriptions).values({ organizationId, planId: plan.id, status: "active", startsAt: new Date() }).onConflictDoNothing();
+    }
   });
 
-  // Stage 5: Mark step to primary_admin_invitation and create invitation
+  // Stage 5: Mark step to primary_admin_invitation and create/refresh invitation
   await withPlatformTransaction((tx) =>
     tx.update(provisioningJobs).set({ currentStep: "primary_admin_invitation", updatedAt: new Date() }).where(eq(provisioningJobs.id, initialJob.id))
   );
@@ -103,8 +197,8 @@ export async function runProvisioning(organizationId: string, primaryAdminEmail:
     const existingInvitation = await tx.query.invitations.findFirst({
       where: and(eq(invitations.organizationId, organizationId), eq(invitations.invitedEmail, primaryAdminEmail.toLowerCase()), eq(invitations.status, "pending"))
     });
+    invitationToken = createOpaqueToken();
     if (!existingInvitation) {
-      invitationToken = createOpaqueToken();
       await tx.insert(invitations).values({
         organizationId,
         invitedEmail: primaryAdminEmail.toLowerCase(),
@@ -112,6 +206,15 @@ export async function runProvisioning(organizationId: string, primaryAdminEmail:
         tokenHash: hashToken(invitationToken),
         expiresAt: new Date(Date.now() + 7 * 86_400_000)
       });
+    } else {
+      await tx
+        .update(invitations)
+        .set({
+          tokenHash: hashToken(invitationToken),
+          expiresAt: new Date(Date.now() + 7 * 86_400_000),
+          updatedAt: new Date(),
+        })
+        .where(eq(invitations.id, existingInvitation.id));
     }
     const [comp] = await tx.update(provisioningJobs)
       .set({ status: "completed", currentStep: "ready", completedAt: new Date(), updatedAt: new Date() })
