@@ -1,0 +1,12 @@
+import { eq } from "drizzle-orm";
+import { z } from "zod";
+import { db } from "@/db/client";
+import { departments } from "@/db/schema";
+import { errorResponse } from "@/lib/errors";
+import { authorize } from "@/modules/tenancy/authorization";
+import { resolveTenantContextForUser } from "@/modules/tenancy/context-core";
+import { withSvelteRequestUser } from "$lib/server/request-context";
+import type { RequestHandler } from "./$types";
+const schema = z.object({ name: z.string().trim().min(2).max(120), code: z.string().trim().toUpperCase().min(2).max(40), description: z.string().max(500).optional() });
+export const GET: RequestHandler = async (event) => { try { return Response.json(await withSvelteRequestUser(event, async (user) => { const t = await resolveTenantContextForUser(user); if (!t.organization) return { success: true, items: [] }; await authorize({ organizationId: t.organization.id, permission: "department.read" }); return { success: true, items: await db.select().from(departments).where(eq(departments.organizationId, t.organization.id)) }; })); } catch (cause) { return errorResponse(cause); } };
+export const POST: RequestHandler = async (event) => { try { const input = schema.parse(await event.request.json()); return Response.json(await withSvelteRequestUser(event, async (user) => { const t = await resolveTenantContextForUser(user); if (!t.organization) throw new Error("organization required"); await authorize({ organizationId: t.organization.id, permission: "department.create" }); const [item] = await db.insert(departments).values({ organizationId: t.organization.id, ...input }).returning(); return { success: true, item }; }), { status: 201 }); } catch (cause) { return errorResponse(cause); } };

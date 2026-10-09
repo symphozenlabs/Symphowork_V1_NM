@@ -1,0 +1,2 @@
+import { errorResponse } from "@/lib/errors"; import { getInvitationPreview } from "@/modules/platform/invitations"; import type { RequestHandler } from "./$types";
+export const GET: RequestHandler = async (event) => { try { const token = new URL(event.request.url).searchParams.get("token") ?? ""; return Response.json({ success: true, invitation: await getInvitationPreview(token) }); } catch (cause) { return errorResponse(cause); } };

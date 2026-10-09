@@ -1,6 +1,8 @@
 node_modules
 .pnpm-store
 .next
+.svelte-kit
+sveltekit/.vercel
 out
 coverage
 *.tsbuildinfo

@@ -1,0 +1,2 @@
+import { errorResponse } from "@/lib/errors"; import { resendOrganizationInvitation } from "@/modules/platform/operations"; import { withPlatformRequest } from "$lib/server/platform-context"; import type { RequestHandler } from "./$types";
+export const POST: RequestHandler = async (event) => { try { return Response.json(await withPlatformRequest(event, async (user) => ({ success: true, ...await resendOrganizationInvitation(event.params.organizationId, user.id) }))); } catch (cause) { return errorResponse(cause); } };

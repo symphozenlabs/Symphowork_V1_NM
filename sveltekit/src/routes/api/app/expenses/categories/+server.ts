@@ -1,0 +1,10 @@
+import { and, eq } from "drizzle-orm";
+import { db } from "@/db/client";
+import { expenseCategories } from "@/db/schema";
+import { AppError, errorResponse } from "@/lib/errors";
+import { authorize } from "@/modules/tenancy/authorization";
+import { resolveTenantContextForUser } from "@/modules/tenancy/context-core";
+import { withSvelteRequestUser } from "$lib/server/request-context";
+import type { RequestHandler } from "./$types";
+export const GET: RequestHandler = async (event) => { try { return Response.json(await withSvelteRequestUser(event, async (user) => { const tenant = await resolveTenantContextForUser(user); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); await authorize({ organizationId: tenant.organization.id, permission: "expense.read" }); return { success: true, categories: await db.select().from(expenseCategories).where(and(eq(expenseCategories.organizationId, tenant.organization.id), eq(expenseCategories.status, "active"))) }; })); } catch (cause) { return errorResponse(cause); } };
+export const POST: RequestHandler = async (event) => { try { const body = await event.request.json() as { name?: string; code?: string; description?: string }; if (!body.name || !body.code) throw new AppError("VALIDATION_ERROR", "Category name and code are required.", 400); return Response.json(await withSvelteRequestUser(event, async (user) => { const tenant = await resolveTenantContextForUser(user); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); await authorize({ organizationId: tenant.organization.id, permission: "expense.category.manage" }); const [category] = await db.insert(expenseCategories).values({ organizationId: tenant.organization.id, name: body.name!.trim(), code: body.code!.trim().toUpperCase(), description: body.description?.trim() }).returning(); return { success: true, category }; }), { status: 201 }); } catch (cause) { return errorResponse(cause); } };

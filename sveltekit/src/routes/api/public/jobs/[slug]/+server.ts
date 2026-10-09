@@ -1,0 +1,2 @@
+import { errorResponse } from "@/lib/errors"; import { publicJobBySlug } from "@/modules/ats/service"; import type { RequestHandler } from "./$types";
+export const GET: RequestHandler = async (event) => { try { const result = await publicJobBySlug(event.params.slug); return Response.json({ success: true, job: { ...result.job, organizationId: undefined, requisitionId: undefined, status: undefined } }); } catch (cause) { return errorResponse(cause); } };

@@ -1,0 +1,10 @@
+import { and, asc, eq } from "drizzle-orm";
+import { db } from "@/db/client";
+import { employees, payrollCalculationSnapshots, payrollLineItems, payrollPeriods, payrollRunEmployees, payrollRuns } from "@/db/schema";
+import { AppError, errorResponse } from "@/lib/errors";
+import { authorize } from "@/modules/tenancy/authorization";
+import { resolveTenantContextForUser } from "@/modules/tenancy/context-core";
+import { withSvelteRequestUser } from "$lib/server/request-context";
+import type { RequestHandler } from "./$types";
+
+export const GET: RequestHandler = async (event) => { try { return Response.json(await withSvelteRequestUser(event, async (user) => { const tenant = await resolveTenantContextForUser(user); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); await authorize({ organizationId: tenant.organization.id, permission: "payroll.view" }); const [run] = await db.select({ run: payrollRuns, period: payrollPeriods }).from(payrollRuns).innerJoin(payrollPeriods, eq(payrollRuns.periodId, payrollPeriods.id)).where(and(eq(payrollRuns.id, event.params.runId), eq(payrollRuns.organizationId, tenant.organization.id))); if (!run) throw new AppError("NOT_FOUND", "Payroll run was not found.", 404); const rows = await db.select({ runEmployee: payrollRunEmployees, employee: employees, snapshot: payrollCalculationSnapshots }).from(payrollRunEmployees).innerJoin(employees, eq(payrollRunEmployees.employeeId, employees.id)).leftJoin(payrollCalculationSnapshots, eq(payrollCalculationSnapshots.runEmployeeId, payrollRunEmployees.id)).where(and(eq(payrollRunEmployees.runId, event.params.runId), eq(payrollRunEmployees.organizationId, tenant.organization.id))).orderBy(asc(employees.displayName)); const lineItems = rows.length ? await db.select().from(payrollLineItems).where(eq(payrollLineItems.organizationId, tenant.organization.id)) : []; return { success: true, run: run.run, period: run.period, rows: rows.map((row) => ({ ...row, lineItems: lineItems.filter((item) => item.snapshotId === row.snapshot?.id) })) }; })); } catch (cause) { return errorResponse(cause); } };

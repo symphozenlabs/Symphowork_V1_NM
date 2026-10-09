@@ -4,7 +4,8 @@ import { atsCandidateCertifications, atsCandidateProjects, atsCandidateSkills, a
 import { recordAudit } from "@/lib/audit";
 import { authorize } from "@/modules/tenancy/authorization";
 import { AppError } from "@/lib/errors";
-import { CandidateProfile, JobRequirement, MATCHING_VERSION, interpretRecruiterQuery, matchCandidateToJob, parseSkillList, rankMatchResults } from "./matching";
+import { MATCHING_VERSION, interpretRecruiterQuery, matchCandidateToJob, parseSkillList, rankMatchResults } from "./matching";
+import type { CandidateProfile, JobRequirement } from "./matching";
 
 function parseJson<T>(value: string | null | undefined, fallback: T): T { try { return value ? JSON.parse(value) as T : fallback; } catch { return fallback; } }
 function requirementFromRows(job: typeof atsJobs.$inferSelect, requisition: typeof atsRequisitions.$inferSelect): JobRequirement { return { requiredSkills: parseSkillList(requisition.requiredSkills ?? job.skills), preferredSkills: parseSkillList(requisition.preferredSkills), experienceMin: requisition.experienceMin ?? undefined, experienceMax: requisition.experienceMax ?? undefined, location: job.location ?? undefined, workMode: job.workMode ?? requisition.workMode ?? undefined, education: requisition.educationRequirements ?? undefined, employmentType: job.employmentType ?? undefined }; }

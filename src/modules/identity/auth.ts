@@ -1,38 +1,36 @@
-import { cookies } from "next/headers";
-import { and, eq, gt, isNull } from "drizzle-orm";
+import { and, eq, isNull, gt } from "drizzle-orm";
 import { db } from "@/db/client";
 import { emailVerificationTokens, passwordResetTokens, sessions, users } from "@/db/schema";
 import { AppError } from "@/lib/errors";
-import { createOpaqueToken, hashPassword, hashToken, verifyPassword } from "@/lib/crypto";
+import { createOpaqueToken, hashPassword, hashToken } from "@/lib/crypto";
 import { recordAudit } from "@/lib/audit";
+import { authenticateUser, createUserSession, deleteUserSession, getUserBySessionToken, normalizeEmail, SESSION_COOKIE } from "@/modules/identity/session-core";
+import { getRequestUser } from "@/modules/identity/request-context";
 
-export const SESSION_COOKIE = "symphowork_session";
-const SESSION_DAYS = 14;
-
-export function normalizeEmail(email: string) { return email.trim().toLowerCase(); }
+export { normalizeEmail, SESSION_COOKIE } from "@/modules/identity/session-core";
 export function validatePassword(password: string) { return password.length >= 12 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password); }
 
+async function nextCookies() {
+  const { cookies } = await import("next/headers");
+  return cookies();
+}
+
 export async function createSession(userId: string) {
-  const token = createOpaqueToken();
-  const expiresAt = new Date(Date.now() + SESSION_DAYS * 86_400_000);
-  await db.insert(sessions).values({ userId, tokenHash: hashToken(token), expiresAt });
-  return { token, expiresAt };
+  return createUserSession(userId);
 }
 
 export async function setSessionCookie(token: string, expiresAt: Date) {
-  (await cookies()).set(SESSION_COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", expires: expiresAt, path: " /".trim() });
+  (await nextCookies()).set(SESSION_COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", expires: expiresAt, path: " /".trim() });
 }
 
-export async function clearSessionCookie() { (await cookies()).delete(SESSION_COOKIE); }
+export async function clearSessionCookie() { (await nextCookies()).delete(SESSION_COOKIE); }
 
 export async function getSessionUser() {
-  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  const requestUser = getRequestUser();
+  if (requestUser) return requestUser;
+  const token = (await nextCookies()).get(SESSION_COOKIE)?.value;
   if (!token) return null;
-  const session = await db.query.sessions.findFirst({ where: and(eq(sessions.tokenHash, hashToken(token)), gt(sessions.expiresAt, new Date())) });
-  if (!session) return null;
-  const user = await db.query.users.findFirst({ where: eq(users.id, session.userId) });
-  if (!user || user.status !== "active") return null;
-  return user;
+  return getUserBySessionToken(token);
 }
 
 export async function requireSession() { const user = await getSessionUser(); if (!user) throw new AppError("UNAUTHORIZED", "Please sign in.", 401); return user; }
@@ -59,17 +57,12 @@ export async function resendVerification(email: string) {
 }
 
 export async function authenticate(input: { email: string; password: string }) {
-  const user = await db.query.users.findFirst({ where: eq(users.email, normalizeEmail(input.email)) });
-  if (!user || !(await verifyPassword(input.password, user.passwordHash))) { await recordAudit({ action: "failed_login", resource: "user", metadata: { email: normalizeEmail(input.email) } }); throw new AppError("AUTH_INVALID_CREDENTIALS", "Email or password is incorrect.", 401); }
-  if (!user.emailVerifiedAt) throw new AppError("AUTH_EMAIL_NOT_VERIFIED", "Verify your email before signing in.", 403);
-  const session = await createSession(user.id);
-  await recordAudit({ actorUserId: user.id, action: "login", resource: "session", metadata: { expiresAt: session.expiresAt.toISOString() } });
-  return { user, ...session };
+  return authenticateUser(input);
 }
 
 export async function logout() {
-  const token = (await cookies()).get(SESSION_COOKIE)?.value;
-  if (token) await db.delete(sessions).where(eq(sessions.tokenHash, hashToken(token)));
+  const token = (await nextCookies()).get(SESSION_COOKIE)?.value;
+  if (token) await deleteUserSession(token);
   await clearSessionCookie();
 }
 

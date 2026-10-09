@@ -1,0 +1,18 @@
+import { AppError, errorResponse } from "@/lib/errors";
+import { recordPunch } from "@/modules/attendance/service";
+import { resolveTenantContextForUser } from "@/modules/tenancy/context-core";
+import { withSvelteRequestUser } from "$lib/server/request-context";
+import type { PunchType } from "@/modules/attendance/types";
+import type { RequestHandler } from "./$types";
+
+export const POST: RequestHandler = async (event) => {
+  try {
+    const body = await event.request.json() as { type?: PunchType };
+    if (!body.type) throw new AppError("VALIDATION_ERROR", "A punch type is required.", 400);
+    return Response.json(await withSvelteRequestUser(event, async (user) => {
+      const tenant = await resolveTenantContextForUser(user);
+      if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
+      return { success: true, record: await recordPunch({ organizationId: tenant.organization.id, userId: user.id, type: body.type! }) };
+    }));
+  } catch (cause) { return errorResponse(cause); }
+};

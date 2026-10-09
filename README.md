@@ -8,7 +8,7 @@ This repository contains the foundation plus identity, SaaS security, organizati
 
 ## Stack
 
-Next.js App Router, React, TypeScript strict mode, Tailwind CSS v4, shadcn-style Radix primitives, PostgreSQL, Drizzle ORM, Zod, Vitest, Playwright, ESLint, Prettier, and pnpm.
+SvelteKit, Svelte 5, TypeScript strict mode, Tailwind CSS v4, PostgreSQL, Drizzle ORM, Zod, Vitest, Playwright, ESLint, Prettier, and pnpm. The former Next.js implementation remains in the repository as a compatibility/source reference while the SvelteKit adapter is the production entrypoint.
 
 ## Commands
 
@@ -22,6 +22,8 @@ pnpm test
 pnpm test:e2e
 pnpm build
 ```
+
+Production builds use the SvelteKit/Vercel adapter. The root `vercel.json` points Vercel at the generated SvelteKit output; configure server-side environment variables in Vercel without exposing them as public variables.
 
 Database commands: `pnpm db:generate`, `pnpm db:migrate`, `pnpm db:push`, and `pnpm db:studio`.
 

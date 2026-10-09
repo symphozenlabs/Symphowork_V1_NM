@@ -1,0 +1,2 @@
+import { AppError, errorResponse } from "@/lib/errors"; import { resetPassword } from "@/modules/identity/auth"; import type { RequestHandler } from "./$types";
+export const POST: RequestHandler = async (event) => { try { const body = await event.request.json() as { token?: string; password?: string }; if (!body.token || !body.password) throw new AppError("VALIDATION_ERROR", "Token and password are required.", 400); await resetPassword(body.token, body.password); return Response.json({ success: true }); } catch (cause) { return errorResponse(cause); } };

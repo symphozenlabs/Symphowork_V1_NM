@@ -1,0 +1,2 @@
+import { AppError, errorResponse } from "@/lib/errors"; import { verifyEmail } from "@/modules/identity/auth"; import type { RequestHandler } from "./$types";
+export const POST: RequestHandler = async (event) => { try { const body = await event.request.json() as { token?: string }; if (!body.token) throw new AppError("VALIDATION_ERROR", "A verification token is required.", 400); await verifyEmail(body.token); return Response.json({ success: true }); } catch (cause) { return errorResponse(cause); } };

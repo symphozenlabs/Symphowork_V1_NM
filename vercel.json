@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pnpm svelte:build",
+  "outputDirectory": "sveltekit/.vercel/output",
+  "framework": null
+}

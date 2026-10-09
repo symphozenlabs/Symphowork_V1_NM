@@ -1,0 +1,12 @@
+<script lang="ts">
+  let fullName = $state(""); let email = $state(""); let password = $state(""); let error = $state(""); let message = $state(""); let loading = $state(false);
+  async function submit() {
+    error = ""; message = ""; loading = true;
+    try { const response = await fetch("/api/auth/register", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ fullName, email, password }) }); const body = await response.json().catch(() => ({})); if (!response.ok) throw new Error(body.error?.message ?? "Unable to register."); message = "Registration submitted. Check your email if verification is required."; }
+    catch (cause) { error = cause instanceof Error ? cause.message : "Unable to register."; } finally { loading = false; }
+  }
+</script>
+<section class="card"><p class="eyebrow">SymphoWork account</p><h1>Create account</h1><p class="muted">Create an account when you do not have an organization invitation.</p><form onsubmit={(event) => { event.preventDefault(); submit(); }} aria-busy={loading}><label>Full name<input bind:value={fullName} minlength="2" required disabled={loading} /></label><label>Email<input type="email" bind:value={email} required disabled={loading} /></label><label>Password<input type="password" bind:value={password} minlength="12" required disabled={loading} /></label>{#if error}<p class="error" role="alert">{error}</p>{/if}{#if message}<p class="success" role="status">{message}</p>{/if}<button disabled={loading}>{loading ? "Creating account…" : "Create account"}</button></form><a href="/login">Back to sign in</a></section>
+<style>
+  .card { background: white; border: 1px solid #e1e7f0; border-radius: 1rem; margin: auto; max-width: 32rem; padding: 2rem; } .eyebrow { color: #168f76; font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; } .muted { color: #52617b; line-height: 1.6; } form { display: grid; gap: 1rem; margin: 1.5rem 0; } label { display: grid; gap: .4rem; font-weight: 700; } input { border: 1px solid #cfd8e7; border-radius: .55rem; font: inherit; padding: .75rem; } button { background: #168f76; border: 0; border-radius: .55rem; color: white; font: inherit; font-weight: 750; padding: .8rem; } .error, .success { border-radius: .55rem; padding: .75rem; } .error { background: #fff1f1; color: #a52929; } .success { background: #ecfaf5; color: #13775f; }
+</style>
