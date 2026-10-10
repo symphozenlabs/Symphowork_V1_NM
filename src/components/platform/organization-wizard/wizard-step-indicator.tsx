@@ -58,7 +58,7 @@ export function VerticalStepNav({
                 <span
                   className={`relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all ${
                     isCurrent
-                      ? "bg-[#172338] text-white ring-4 ring-[#172338]/15 shadow-xs"
+                      ? "bg-primary text-white ring-4 ring-primary/15 shadow-xs"
                       : isCompleted
                       ? "bg-emerald-600 text-white shadow-xs"
                       : "border-2 border-slate-200 bg-white text-slate-400"
@@ -77,7 +77,7 @@ export function VerticalStepNav({
                     <span
                       className={`text-xs font-bold tracking-tight transition-colors ${
                         isCurrent
-                          ? "text-[#172338]"
+                          ? "text-primary"
                           : isCompleted
                           ? "text-slate-800 group-hover:text-slate-900"
                           : "text-slate-500"
@@ -86,7 +86,7 @@ export function VerticalStepNav({
                       {step.title}
                     </span>
                     {isCurrent && (
-                      <span className="size-1.5 rounded-full bg-[#172338] animate-pulse" />
+                      <span className="size-1.5 rounded-full bg-primary animate-pulse" />
                     )}
                   </div>
                   <p
@@ -128,7 +128,7 @@ export function CompactStepProgress({
     <div className="w-full">
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
-          <span className="inline-flex size-5 items-center justify-center rounded-full bg-[#172338] text-[10px] font-bold text-white">
+          <span className="inline-flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
             {currentStep}
           </span>
           <span className="font-bold text-slate-900">{currentStepDef.title}</span>
@@ -150,7 +150,7 @@ export function CompactStepProgress({
                 isPast
                   ? "bg-emerald-500"
                   : isCurr
-                  ? "bg-[#172338]"
+                  ? "bg-primary"
                   : "bg-slate-200"
               }`}
             />

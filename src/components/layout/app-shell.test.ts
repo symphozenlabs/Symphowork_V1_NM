@@ -108,4 +108,59 @@ describe("Sidebar vertical scrolling and layout structure", () => {
     expect(mobileNavElement).toBeDefined();
     expect(mobileNavElement.props.items).toHaveLength(15);
   });
+
+  it("renders official SymphoWork logo asset in sidebar brand area", async () => {
+    const rendered = await AppShell({ children: React.createElement("div", null, "Test") });
+    const rootChildren = React.Children.toArray(rendered.props.children) as React.ReactElement<{
+      children?: React.ReactNode;
+    }>[];
+    const aside = rootChildren.find((c) => c && c.type === "aside");
+    const asideChildren = React.Children.toArray(aside!.props.children) as React.ReactElement<{
+      children?: React.ReactNode;
+    }>[];
+    const headerContainer = asideChildren[0];
+    
+    // Check that Image with /symphowork-logo.png is inside the header
+    const headerChildren = React.Children.toArray(headerContainer.props.children) as React.ReactElement<{
+      children?: React.ReactNode;
+      href?: string;
+    }>[];
+    const brandLink = headerChildren[0];
+    expect(brandLink.props.href).toBe("/app");
+    
+    const linkChildren = React.Children.toArray(brandLink.props.children) as React.ReactElement<{
+      src?: string;
+      alt?: string;
+    }>[];
+    const logoImage = linkChildren[0];
+    expect(logoImage.props.src).toBe("/symphowork-logo.png");
+    expect(logoImage.props.alt).toBe("SymphoWork");
+  });
+
+  it("includes permitted navigation items according to role permissions", async () => {
+    const rendered = await AppShell({ children: React.createElement("div", null, "Test") });
+    const rootChildren = React.Children.toArray(rendered.props.children) as React.ReactElement<{
+      children?: React.ReactNode;
+      className?: string;
+    }>[];
+    const aside = rootChildren.find((c) => c && c.type === "aside");
+    const asideChildren = React.Children.toArray(aside!.props.children) as React.ReactElement<{
+      children?: React.ReactNode;
+    }>[];
+    const scrollContainer = asideChildren[1];
+    const scrollChildren = React.Children.toArray(scrollContainer.props.children) as React.ReactElement<{
+      groups?: { title?: string; items: { label: string; href: string }[] }[];
+    }>[];
+
+    const sidebarNav = scrollChildren[0];
+    expect(sidebarNav.props.groups).toBeDefined();
+    const groups = sidebarNav.props.groups!;
+    expect(groups.length).toBe(3);
+    expect(groups[0].title).toBe("Core Modules");
+    expect(groups[0].items).toHaveLength(11);
+    expect(groups[1].title).toBe("Intelligence & Finance");
+    expect(groups[1].items.map((i) => i.href)).toEqual(["/app/settings/billing", "/app/reports"]);
+    expect(groups[2].title).toBe("Administration");
+    expect(groups[2].items.map((i) => i.href)).toEqual(["/app/settings", "/app/settings/workflows"]);
+  });
 });

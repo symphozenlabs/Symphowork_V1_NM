@@ -3,6 +3,132 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast";
+
 type RecordRow = { id: string; attendanceDate: string; status: string };
 type RequestRow = { id: string; status: string; reason: string; submittedAt: string };
-export function RegularizationPanel() { const [records, setRecords] = useState<RecordRow[]>([]); const [requests, setRequests] = useState<RequestRow[]>([]); const [attendanceId, setAttendanceId] = useState(""); const [requestedIn, setRequestedIn] = useState(""); const [requestedOut, setRequestedOut] = useState(""); const [reason, setReason] = useState(""); const [message, setMessage] = useState(""); const [error, setError] = useState(""); const [busy, setBusy] = useState(false); const load = async () => { try { const [attendance, regularization] = await Promise.all([fetch("/api/app/attendance"), fetch("/api/app/attendance/regularization")]); const attendanceBody = await attendance.json(); const regularizationBody = await regularization.json(); if (!attendance.ok || !attendanceBody.success) throw new Error(attendanceBody.error?.message ?? "Unable to load attendance records."); if (!regularization.ok || !regularizationBody.success) throw new Error(regularizationBody.error?.message ?? "Unable to load regularization requests."); setRecords(attendanceBody.records); setRequests(regularizationBody.requests); } catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to load regularization."); } }; useEffect(() => { void load(); }, []); const submit = async (event: React.FormEvent) => { event.preventDefault(); setBusy(true); setError(""); setMessage(""); try { const response = await fetch("/api/app/attendance/regularization", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ attendanceId, requestedIn: requestedIn || undefined, requestedOut: requestedOut || undefined, reason }) }); const body = await response.json(); if (!response.ok || !body.success) throw new Error(body.error?.message ?? "Unable to submit regularization."); setMessage("Regularization request submitted for approval."); setReason(""); await load(); } catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to submit regularization."); } finally { setBusy(false); } }; return <div className="space-y-4 rounded-xl border p-5"><div><h2 className="font-semibold">Attendance regularization</h2><p className="mt-1 text-sm text-muted">Request a correction for a missing or incorrect punch. Approval remains in the existing workflow engine.</p></div><form onSubmit={submit} className="grid gap-3 md:grid-cols-4"><select required aria-label="Attendance record" className="h-10 rounded-lg border bg-surface px-3" value={attendanceId} onChange={(event) => setAttendanceId(event.target.value)}><option value="">Attendance record</option>{records.map((record) => <option key={record.id} value={record.id}>{record.attendanceDate} · {record.status}</option>)}</select><Input type="datetime-local" aria-label="Requested in" value={requestedIn} onChange={(event) => setRequestedIn(event.target.value)} /><Input type="datetime-local" aria-label="Requested out" value={requestedOut} onChange={(event) => setRequestedOut(event.target.value)} /><Input required placeholder="Reason" value={reason} onChange={(event) => setReason(event.target.value)} /><Button type="submit" disabled={busy}>Submit request</Button></form>{error && <p role="alert" className="text-sm text-danger">{error}</p>}{message && <p role="status" className="text-sm text-success">{message}</p>}{requests.length > 0 && <div className="space-y-2">{requests.map((request) => <div key={request.id} className="rounded-lg border p-3 text-sm"><span className="capitalize font-medium">{request.status.replaceAll("_", " ")}</span><span className="ml-2 text-muted">{request.reason}</span></div>)}</div>}</div>; }
+
+export function RegularizationPanel() {
+  const [records, setRecords] = useState<RecordRow[]>([]);
+  const [requests, setRequests] = useState<RequestRow[]>([]);
+  const [attendanceId, setAttendanceId] = useState("");
+  const [requestedIn, setRequestedIn] = useState("");
+  const [requestedOut, setRequestedOut] = useState("");
+  const [reason, setReason] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const { showToast } = useToast();
+
+  const load = async () => {
+    try {
+      const [attendance, regularization] = await Promise.all([
+        fetch("/api/app/attendance"),
+        fetch("/api/app/attendance/regularization")
+      ]);
+      const attendanceBody = await attendance.json();
+      const regularizationBody = await regularization.json();
+      if (!attendance.ok || !attendanceBody.success) throw new Error(attendanceBody.error?.message ?? "Unable to load attendance records.");
+      if (!regularization.ok || !regularizationBody.success) throw new Error(regularizationBody.error?.message ?? "Unable to load regularization requests.");
+      setRecords(attendanceBody.records);
+      setRequests(regularizationBody.requests);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to load regularization.");
+    }
+  };
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const response = await fetch("/api/app/attendance/regularization", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          attendanceId,
+          requestedIn: requestedIn || undefined,
+          requestedOut: requestedOut || undefined,
+          reason
+        })
+      });
+      const body = await response.json();
+      if (!response.ok || !body.success) throw new Error(body.error?.message ?? "Unable to submit regularization.");
+      const succMsg = "Regularization request submitted for approval.";
+      setMessage(succMsg);
+      showToast({ type: "success", title: "Regularization submitted", message: succMsg });
+      setReason("");
+      await load();
+    } catch (cause) {
+      const msg = cause instanceof Error ? cause.message : "Unable to submit regularization.";
+      setError(msg);
+      showToast({ type: "error", title: "Submission failed", message: msg });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4 rounded-xl border p-5 bg-surface shadow-sm">
+      <div>
+        <h2 className="font-semibold text-primary">Attendance regularization</h2>
+        <p className="mt-1 text-sm text-muted">Request a correction for a missing or incorrect punch. Approval remains in the existing workflow engine.</p>
+      </div>
+      <form onSubmit={submit} className="grid gap-3 md:grid-cols-4">
+        <select
+          required
+          aria-label="Attendance record"
+          className="h-10 rounded-lg border bg-surface px-3"
+          value={attendanceId}
+          onChange={(event) => setAttendanceId(event.target.value)}
+        >
+          <option value="">Attendance record</option>
+          {records.map((record) => (
+            <option key={record.id} value={record.id}>
+              {record.attendanceDate} · {record.status}
+            </option>
+          ))}
+        </select>
+        <Input
+          type="datetime-local"
+          aria-label="Requested in"
+          value={requestedIn}
+          onChange={(event) => setRequestedIn(event.target.value)}
+        />
+        <Input
+          type="datetime-local"
+          aria-label="Requested out"
+          value={requestedOut}
+          onChange={(event) => setRequestedOut(event.target.value)}
+        />
+        <Input
+          required
+          placeholder="Reason"
+          value={reason}
+          onChange={(event) => setReason(event.target.value)}
+        />
+        <Button type="submit" disabled={busy}>
+          {busy ? "Submitting…" : "Submit request"}
+        </Button>
+      </form>
+      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+      {message && <p role="status" className="text-sm text-success">{message}</p>}
+      {requests.length > 0 && (
+        <div className="space-y-2">
+          {requests.map((request) => (
+            <div key={request.id} className="rounded-lg border p-3 text-sm bg-surface shadow-sm">
+              <span className="capitalize font-medium text-primary">{request.status.replaceAll("_", " ")}</span>
+              <span className="ml-2 text-muted">{request.reason}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast";
 
 export function OrganizationCreateForm() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export function OrganizationCreateForm() {
   const [error, setError] = useState("");
   const [created, setCreated] = useState("");
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -39,17 +41,27 @@ export function OrganizationCreateForm() {
 
       const body = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setError(body.error?.message ?? "Unable to create organization. Please try again.");
+        const errMsg = body.error?.message ?? "Unable to create organization. Please try again.";
+        setError(errMsg);
+        showToast({ type: "error", title: "Creation failed", message: errMsg });
         setLoading(false);
       } else {
         const org = body.organization;
-        setCreated(org?.name || form.name);
+        const orgName = org?.name || form.name;
+        setCreated(orgName);
+        showToast({
+          type: "success",
+          title: "Organization created",
+          message: `${orgName} has been provisioned successfully.`,
+        });
         setTimeout(() => {
           router.push("/platform/organizations");
         }, 800);
       }
     } catch {
-      setError("The organization could not be created. Check your connection and try again.");
+      const connMsg = "The organization could not be created. Check your connection and try again.";
+      setError(connMsg);
+      showToast({ type: "error", title: "Connection error", message: connMsg });
       setLoading(false);
     }
   }
@@ -85,7 +97,7 @@ export function OrganizationCreateForm() {
       ))}
 
       {error && (
-        <p role="alert" className="rounded-lg bg-[#fff1f1] p-3 text-sm text-destructive">
+        <p role="alert" className="rounded-lg border border-danger-border bg-danger-bg p-3 text-sm text-destructive">
           {error}
         </p>
       )}
@@ -105,7 +117,7 @@ export function OrganizationCreateForm() {
               <p className="text-xs text-muted">&ldquo;{created}&rdquo; is pending approval. Redirecting&hellip;</p>
             </div>
           </div>
-          <p role="status" className="rounded-lg bg-[#dff7ee] p-3 text-sm text-success">
+          <p role="status" className="rounded-lg border border-emerald-200 bg-success-bg p-3 text-sm text-emerald-800">
             Organization &ldquo;{created}&rdquo; created successfully. Redirecting to organizations list&hellip;
           </p>
         </>

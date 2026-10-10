@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast";
 
 export function EmployeeCreateForm() {
   const [form, setForm] = useState({
@@ -14,6 +15,7 @@ export function EmployeeCreateForm() {
   });
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const { showToast } = useToast();
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -30,7 +32,13 @@ export function EmployeeCreateForm() {
       const body = await response.json().catch(() => ({}));
 
       if (response.ok) {
-        setMessage(`Employee ${body.employee?.employeeId} created.`);
+        const succMsg = `Employee ${body.employee?.employeeId ?? ""} created successfully.`;
+        setMessage(succMsg);
+        showToast({
+          type: "success",
+          title: "Employee added",
+          message: `${form.firstName} ${form.lastName} has been enrolled in the directory.`,
+        });
         setForm({
           firstName: "",
           lastName: "",
@@ -39,10 +47,22 @@ export function EmployeeCreateForm() {
           status: "invited",
         });
       } else {
-        setMessage(body.error?.message ?? "Unable to create employee.");
+        const errMsg = body.error?.message ?? "Unable to create employee.";
+        setMessage(errMsg);
+        showToast({
+          type: "error",
+          title: "Enrollment failed",
+          message: errMsg,
+        });
       }
     } catch {
-      setMessage("Network error occurred while creating employee.");
+      const netMsg = "Network error occurred while creating employee.";
+      setMessage(netMsg);
+      showToast({
+        type: "error",
+        title: "Connection error",
+        message: netMsg,
+      });
     } finally {
       setBusy(false);
     }

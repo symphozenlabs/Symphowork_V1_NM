@@ -2,15 +2,146 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 
 type DocumentType = { id: string; name: string };
 type Document = { id: string; fileName: string; status: string; lifecycleStatus: string; scanStatus: string; expiresAt?: string | null };
 
 export function DocumentCenter() {
-  const [types, setTypes] = useState<DocumentType[]>([]); const [documents, setDocuments] = useState<Document[]>([]); const [typeId, setTypeId] = useState(""); const [file, setFile] = useState<File | null>(null); const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false); const [message, setMessage] = useState(""); const [error, setError] = useState("");
-  const load = async () => { setLoading(true); try { const response = await fetch("/api/app/documents"); const body = await response.json(); if (!response.ok || !body.success) throw new Error(body.error?.message ?? "Unable to load documents."); setDocuments(body.documents); } catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to load documents."); } finally { setLoading(false); } };
-  useEffect(() => { void Promise.all([fetch("/api/app/documents/types").then((response) => response.json()).then((body) => { if (body.success) setTypes(body.types); }), load()]); }, []);
-  const upload = async (event: React.FormEvent) => { event.preventDefault(); if (!file || !typeId) return; setBusy(true); setMessage(""); setError(""); const form = new FormData(); form.set("file", file); form.set("documentTypeId", typeId); try { const response = await fetch("/api/app/documents", { method: "POST", body: form }); const body = await response.json(); if (!response.ok || !body.success) throw new Error(body.error?.message ?? "Upload failed."); setMessage("Document uploaded and queued for admission."); setFile(null); await load(); } catch (cause) { setError(cause instanceof Error ? cause.message : "Upload failed."); } finally { setBusy(false); } };
-  const open = async (id: string) => { setError(""); try { const response = await fetch(`/api/app/documents/${id}`); const body = await response.json(); if (!response.ok || !body.success || !body.url) throw new Error(body.error?.message ?? "This document is not available for download yet."); window.location.assign(body.url); } catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to open document."); } };
-  return <div className="space-y-6"><form onSubmit={upload} className="grid gap-3 rounded-xl border p-5 md:grid-cols-[1fr_1fr_auto]"><select required aria-label="Document type" className="h-10 rounded-lg border bg-surface px-3" value={typeId} onChange={(event) => setTypeId(event.target.value)}><option value="">Document type</option>{types.map((type) => <option key={type.id} value={type.id}>{type.name}</option>)}</select><input required aria-label="Document file" type="file" accept="application/pdf,image/jpeg,image/png" onChange={(event) => setFile(event.target.files?.[0] ?? null)} /><Button type="submit" disabled={busy}>{busy ? "Uploading…" : "Upload"}</Button></form>{error && <p role="alert" className="text-sm text-danger">{error}</p>}{message && <p aria-live="polite" className="text-sm text-success">{message}</p>}<div className="space-y-3">{loading ? <p className="text-sm text-muted">Loading documents…</p> : documents.length === 0 ? <p className="text-sm text-muted">No documents uploaded yet.</p> : documents.map((document) => <div key={document.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4"><div><p className="font-medium">{document.fileName}</p><p className="text-sm text-muted">{document.status} · {document.lifecycleStatus} · scan: {document.scanStatus}</p><p className="text-xs text-muted">{document.expiresAt ? `Expires ${document.expiresAt}` : "No expiry"}</p></div><Button size="sm" variant="secondary" disabled={document.scanStatus !== "clean"} onClick={() => open(document.id)}>{document.scanStatus === "clean" ? "Open" : "Unavailable until clean"}</Button></div>)}</div></div>;
+  const [types, setTypes] = useState<DocumentType[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [typeId, setTypeId] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const { showToast } = useToast();
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/app/documents");
+      const body = await response.json();
+      if (!response.ok || !body.success) throw new Error(body.error?.message ?? "Unable to load documents.");
+      setDocuments(body.documents);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to load documents.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void Promise.all([
+      fetch("/api/app/documents/types")
+        .then((response) => response.json())
+        .then((body) => {
+          if (body.success) setTypes(body.types);
+        }),
+      load()
+    ]);
+  }, []);
+
+  const upload = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!file || !typeId) return;
+    setBusy(true);
+    setMessage("");
+    setError("");
+    const form = new FormData();
+    form.set("file", file);
+    form.set("documentTypeId", typeId);
+    try {
+      const response = await fetch("/api/app/documents", { method: "POST", body: form });
+      const body = await response.json();
+      if (!response.ok || !body.success) throw new Error(body.error?.message ?? "Upload failed.");
+      const succMsg = "Document uploaded and queued for admission.";
+      setMessage(succMsg);
+      showToast({ type: "success", title: "Upload successful", message: succMsg });
+      setFile(null);
+      await load();
+    } catch (cause) {
+      const msg = cause instanceof Error ? cause.message : "Upload failed.";
+      setError(msg);
+      showToast({ type: "error", title: "Upload failed", message: msg });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const open = async (id: string) => {
+    setError("");
+    try {
+      const response = await fetch(`/api/app/documents/${id}`);
+      const body = await response.json();
+      if (!response.ok || !body.success || !body.url) throw new Error(body.error?.message ?? "This document is not available for download yet.");
+      window.location.assign(body.url);
+    } catch (cause) {
+      const msg = cause instanceof Error ? cause.message : "Unable to open document.";
+      setError(msg);
+      showToast({ type: "error", title: "Document unavailable", message: msg });
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <form onSubmit={upload} className="grid gap-3 rounded-xl border p-5 md:grid-cols-[1fr_1fr_auto] bg-surface shadow-sm">
+        <select
+          required
+          aria-label="Document type"
+          className="h-10 rounded-lg border bg-surface px-3"
+          value={typeId}
+          onChange={(event) => setTypeId(event.target.value)}
+        >
+          <option value="">Document type</option>
+          {types.map((type) => (
+            <option key={type.id} value={type.id}>
+              {type.name}
+            </option>
+          ))}
+        </select>
+        <input
+          required
+          aria-label="Document file"
+          type="file"
+          accept="application/pdf,image/jpeg,image/png"
+          onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+        />
+        <Button type="submit" disabled={busy}>
+          {busy ? "Uploading…" : "Upload"}
+        </Button>
+      </form>
+      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+      {message && <p aria-live="polite" className="text-sm text-success">{message}</p>}
+      <div className="space-y-3">
+        {loading ? (
+          <p className="text-sm text-muted">Loading documents…</p>
+        ) : documents.length === 0 ? (
+          <p className="text-sm text-muted">No documents uploaded yet.</p>
+        ) : (
+          documents.map((document) => (
+            <div key={document.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4 bg-surface shadow-sm">
+              <div>
+                <p className="font-medium text-primary">{document.fileName}</p>
+                <p className="text-sm text-muted">
+                  {document.status} · {document.lifecycleStatus} · scan: {document.scanStatus}
+                </p>
+                <p className="text-xs text-muted">{document.expiresAt ? `Expires ${document.expiresAt}` : "No expiry"}</p>
+              </div>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={document.scanStatus !== "clean"}
+                onClick={() => open(document.id)}
+              >
+                {document.scanStatus === "clean" ? "Open" : "Unavailable until clean"}
+              </Button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
 }
+

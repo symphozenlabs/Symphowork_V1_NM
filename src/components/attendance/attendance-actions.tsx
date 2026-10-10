@@ -1,15 +1,126 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 
 type RecordRow = { id: string; attendanceDate: string; status: string; netWorkMinutes: number; lateMinutes: number; earlyDepartureMinutes: number; actualFirstIn?: string | null; actualLastOut?: string | null };
 type Punch = { id: string; punchType: string; punchedAt: string };
+
 export function AttendanceActions() {
-  const [records, setRecords] = useState<RecordRow[]>([]); const [punches, setPunches] = useState<Punch[]>([]); const [message, setMessage] = useState(""); const [error, setError] = useState(""); const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false); const [date, setDate] = useState("");
-  const load = useCallback(async () => { setLoading(true); const query = date ? `?date=${encodeURIComponent(date)}` : ""; const response = await fetch(`/api/app/attendance${query}`); const body = await response.json().catch(() => ({})); if (!response.ok) setError(body.error?.message ?? "Unable to load attendance."); else { setRecords(body.records ?? []); setPunches(body.punches ?? []); setError(""); } setLoading(false); }, [date]);
-  useEffect(() => { void load(); }, [load]);
-  async function punch(type: "clock_in" | "clock_out" | "break_start" | "break_end") { setBusy(true); setMessage(""); const response = await fetch("/api/app/attendance/punch", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type }) }); const body = await response.json().catch(() => ({})); if (!response.ok) setError(body.error?.message ?? "Unable to save punch."); else { setMessage("Punch recorded."); await load(); } setBusy(false); }
+  const [records, setRecords] = useState<RecordRow[]>([]);
+  const [punches, setPunches] = useState<Punch[]>([]);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [date, setDate] = useState("");
+  const { showToast } = useToast();
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const query = date ? `?date=${encodeURIComponent(date)}` : "";
+    const response = await fetch(`/api/app/attendance${query}`);
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      setError(body.error?.message ?? "Unable to load attendance.");
+    } else {
+      setRecords(body.records ?? []);
+      setPunches(body.punches ?? []);
+      setError("");
+    }
+    setLoading(false);
+  }, [date]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function punch(type: "clock_in" | "clock_out" | "break_start" | "break_end") {
+    setBusy(true);
+    setMessage("");
+    const response = await fetch("/api/app/attendance/punch", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ type })
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const errMsg = body.error?.message ?? "Unable to save punch.";
+      setError(errMsg);
+      showToast({ type: "error", title: "Punch failed", message: errMsg });
+    } else {
+      const typeLabel = type.replaceAll("_", " ");
+      const succMsg = `Punch recorded: ${typeLabel}.`;
+      setMessage(succMsg);
+      showToast({ type: "success", title: "Attendance recorded", message: succMsg });
+      await load();
+    }
+    setBusy(false);
+  }
+
   const current = records[0];
-  return <div className="space-y-5">{error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}<div className="rounded-xl border p-4"><p className="text-sm text-muted">Current status</p><p className="mt-1 text-2xl font-bold">{loading ? "Loading…" : current?.status ?? "No attendance today"}</p><p className="mt-1 text-sm text-muted">{current?.actualFirstIn ? `Started ${new Date(current.actualFirstIn).toLocaleTimeString()}` : "Not clocked in"}{current?.actualLastOut ? ` · Ended ${new Date(current.actualLastOut).toLocaleTimeString()}` : ""}</p></div><div className="grid gap-2 sm:grid-cols-2"><Button disabled={busy || Boolean(current?.actualFirstIn)} onClick={() => void punch("clock_in")}>Clock in</Button><Button variant="secondary" disabled={busy || !current?.actualFirstIn || Boolean(current?.actualLastOut)} onClick={() => void punch("clock_out")}>Clock out</Button><Button variant="secondary" disabled={busy || !current?.actualFirstIn || Boolean(current?.actualLastOut)} onClick={() => void punch("break_start")}>Start break</Button><Button variant="secondary" disabled={busy || !current?.actualFirstIn || Boolean(current?.actualLastOut)} onClick={() => void punch("break_end")}>End break</Button></div>{message && <p aria-live="polite" className="text-sm text-green-700">{message}</p>}<div className="flex items-center justify-between gap-3"><h2 className="font-semibold">Attendance history</h2><input aria-label="Filter attendance date" type="date" className="h-9 rounded-lg border bg-surface px-2 text-sm" value={date} onChange={(e) => setDate(e.target.value)} /></div>{loading ? <p className="text-sm text-muted">Loading attendance…</p> : records.length === 0 ? <p className="rounded-lg border border-dashed p-5 text-sm text-muted">No attendance records for this date.</p> : <div className="space-y-2">{records.map((record) => <div key={record.id} className="rounded-lg border p-3 text-sm"><div className="flex justify-between"><span className="font-medium">{record.attendanceDate}</span><span className="text-muted">{record.status}</span></div><p className="mt-1 text-muted">{record.netWorkMinutes} work minutes · {record.lateMinutes} late · {record.earlyDepartureMinutes} early departure</p>{record.id === current?.id && punches.length > 0 && <p className="mt-2 text-xs text-muted">Punches: {punches.map((p) => `${p.punchType.replaceAll("_", " ")} ${new Date(p.punchedAt).toLocaleTimeString()}`).join(" · ")}</p>}</div>)}</div>}
-  </div>;
+
+  return (
+    <div className="space-y-5">
+      {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      <div className="rounded-xl border p-4 bg-surface shadow-sm">
+        <p className="text-sm text-muted">Current status</p>
+        <p className="mt-1 text-2xl font-bold text-primary">{loading ? "Loading…" : current?.status ?? "No attendance today"}</p>
+        <p className="mt-1 text-sm text-muted">
+          {current?.actualFirstIn ? `Started ${new Date(current.actualFirstIn).toLocaleTimeString()}` : "Not clocked in"}
+          {current?.actualLastOut ? ` · Ended ${new Date(current.actualLastOut).toLocaleTimeString()}` : ""}
+        </p>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Button disabled={busy || Boolean(current?.actualFirstIn)} onClick={() => void punch("clock_in")}>
+          Clock in
+        </Button>
+        <Button variant="secondary" disabled={busy || !current?.actualFirstIn || Boolean(current?.actualLastOut)} onClick={() => void punch("clock_out")}>
+          Clock out
+        </Button>
+        <Button variant="secondary" disabled={busy || !current?.actualFirstIn || Boolean(current?.actualLastOut)} onClick={() => void punch("break_start")}>
+          Start break
+        </Button>
+        <Button variant="secondary" disabled={busy || !current?.actualFirstIn || Boolean(current?.actualLastOut)} onClick={() => void punch("break_end")}>
+          End break
+        </Button>
+      </div>
+      {message && <p aria-live="polite" className="text-sm text-green-700">{message}</p>}
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-semibold text-primary">Attendance history</h2>
+        <input
+          aria-label="Filter attendance date"
+          type="date"
+          className="h-9 rounded-lg border bg-surface px-2 text-sm"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+      </div>
+      {loading ? (
+        <p className="text-sm text-muted">Loading attendance…</p>
+      ) : records.length === 0 ? (
+        <p className="rounded-lg border border-dashed p-5 text-sm text-muted">No attendance records for this date.</p>
+      ) : (
+        <div className="space-y-2">
+          {records.map((record) => (
+            <div key={record.id} className="rounded-lg border p-3 text-sm bg-surface shadow-sm">
+              <div className="flex justify-between">
+                <span className="font-medium">{record.attendanceDate}</span>
+                <span className="text-muted">{record.status}</span>
+              </div>
+              <p className="mt-1 text-muted">
+                {record.netWorkMinutes} work minutes · {record.lateMinutes} late · {record.earlyDepartureMinutes} early departure
+              </p>
+              {record.id === current?.id && punches.length > 0 && (
+                <p className="mt-2 text-xs text-muted">
+                  Punches: {punches.map((p) => `${p.punchType.replaceAll("_", " ")} ${new Date(p.punchedAt).toLocaleTimeString()}`).join(" · ")}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
+

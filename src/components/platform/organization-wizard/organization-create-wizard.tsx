@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import { VerticalStepNav, CompactStepProgress } from "./wizard-step-indicator";
 import { WizardStepOrganization } from "./wizard-step-organization";
 import { WizardStepContactAddress } from "./wizard-step-contact-address";
@@ -44,6 +45,7 @@ export function OrganizationCreateWizard({
   onSubmittingChange,
 }: OrganizationCreateWizardProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Find default plan (prefer active FREE plan, or first active plan)
@@ -435,11 +437,16 @@ export function OrganizationCreateWizard({
       const body = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setSubmissionError(
+        const errorMsg =
           body.error?.message ||
-            body.message ||
-            "Unable to create organization. Please verify your input and try again."
-        );
+          body.message ||
+          "Unable to create organization. Please verify your input and try again.";
+        setSubmissionError(errorMsg);
+        showToast({
+          type: "error",
+          title: "Organization creation failed",
+          message: errorMsg,
+        });
         setSubmittingState(false);
         return;
       }
@@ -453,6 +460,11 @@ export function OrganizationCreateWizard({
 
       const createdOrg = body.organization;
       setCreatedSuccess(createdOrg?.name || form.name);
+      showToast({
+        type: "success",
+        title: "Organization created",
+        message: `${createdOrg?.name || form.name} has been provisioned.`,
+      });
 
       setTimeout(() => {
         if (onSuccess) {
@@ -466,9 +478,14 @@ export function OrganizationCreateWizard({
         }
       }, 900);
     } catch {
-      setSubmissionError(
-        "A network or server error occurred while creating the organization. Please check your connection and try again."
-      );
+      const netMsg =
+        "A network or server error occurred while creating the organization. Please check your connection and try again.";
+      setSubmissionError(netMsg);
+      showToast({
+        type: "error",
+        title: "Connection error",
+        message: netMsg,
+      });
       setSubmittingState(false);
     }
   };

@@ -7,7 +7,13 @@ export function middleware(request: NextRequest) {
   const hasSession = Boolean(request.cookies.get("symphowork_session")?.value);
   if (isProtected && !hasSession) return NextResponse.redirect(new URL(path.startsWith("/platform") ? "/platform/login" : "/login", request.url));
   if ((path === "/login" || path === "/register") && hasSession) return NextResponse.redirect(new URL("/app", request.url));
-  const response = NextResponse.next();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", path);
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
   response.headers.set("x-request-id", request.headers.get("x-request-id") ?? crypto.randomUUID());
   response.headers.set("x-content-type-options", "nosniff");
   response.headers.set("referrer-policy", "strict-origin-when-cross-origin");

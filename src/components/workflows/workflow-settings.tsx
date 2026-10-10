@@ -2,6 +2,110 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast";
 
 type Definition = { id: string; name: string; code: string; workflowType: string; active: boolean };
-export function WorkflowSettings() { const [definitions, setDefinitions] = useState<Definition[]>([]); const [form, setForm] = useState({ name: "", code: "", workflowType: "leave" }); const [message, setMessage] = useState(""); const load = () => void fetch("/api/app/workflows").then((response) => response.json()).then((body) => { if (body.success) setDefinitions(body.definitions); }); useEffect(load, []); const submit = async (event: React.FormEvent) => { event.preventDefault(); setMessage("Saving workflow…"); const response = await fetch("/api/app/workflows", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...form, steps: [{ name: "Reporting manager", actorType: "reporting_manager" }] }) }); const body = await response.json(); setMessage(body.success ? "Workflow activated." : body.error?.message ?? "Unable to save workflow."); if (body.success) load(); }; return <div className="space-y-6"><div className="grid gap-3">{definitions.length === 0 ? <p className="text-sm text-muted">No workflows configured yet.</p> : definitions.map((definition) => <div key={definition.id} className="flex items-center justify-between rounded-xl border p-4"><div><p className="font-medium">{definition.name}</p><p className="text-sm text-muted">{definition.workflowType} · {definition.code}</p></div><span className="text-sm text-success">{definition.active ? "Active" : "Inactive"}</span></div>)}</div><form onSubmit={submit} className="grid gap-4 border-t pt-5 md:grid-cols-3"><label className="grid gap-1 text-sm">Name<Input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label><label className="grid gap-1 text-sm">Code<Input required value={form.code} onChange={(event) => setForm({ ...form, code: event.target.value })} /></label><label className="grid gap-1 text-sm">Workflow type<select className="h-10 rounded-lg border bg-surface px-3" value={form.workflowType} onChange={(event) => setForm({ ...form, workflowType: event.target.value })}><option value="leave">Leave</option><option value="attendance_regularization">Attendance regularization</option></select></label><div className="md:col-span-3"><Button type="submit">Activate workflow</Button><p aria-live="polite" className="mt-2 text-sm text-muted">{message}</p></div></form></div>; }
+
+export function WorkflowSettings() {
+  const [definitions, setDefinitions] = useState<Definition[]>([]);
+  const [form, setForm] = useState({ name: "", code: "", workflowType: "leave" });
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  const { showToast } = useToast();
+
+  const load = () => {
+    void fetch("/api/app/workflows")
+      .then((response) => response.json())
+      .then((body) => {
+        if (body.success) setDefinitions(body.definitions);
+      });
+  };
+
+  useEffect(load, []);
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setMessage("Saving workflow…");
+    try {
+      const response = await fetch("/api/app/workflows", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          steps: [{ name: "Reporting manager", actorType: "reporting_manager" }]
+        })
+      });
+      const body = await response.json();
+      if (body.success) {
+        const succ = "Workflow activated.";
+        setMessage(succ);
+        showToast({ type: "success", title: "Workflow saved", message: succ });
+        setForm({ name: "", code: "", workflowType: "leave" });
+        load();
+      } else {
+        const errMsg = body.error?.message ?? "Unable to save workflow.";
+        setMessage(errMsg);
+        showToast({ type: "error", title: "Workflow error", message: errMsg });
+      }
+    } catch {
+      const netMsg = "Network error. Please try again.";
+      setMessage(netMsg);
+      showToast({ type: "error", title: "Connection error", message: netMsg });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-3">
+        {definitions.length === 0 ? (
+          <p className="text-sm text-muted">No workflows configured yet.</p>
+        ) : (
+          definitions.map((definition) => (
+            <div key={definition.id} className="flex items-center justify-between rounded-xl border p-4 bg-surface shadow-sm">
+              <div>
+                <p className="font-medium text-primary">{definition.name}</p>
+                <p className="text-sm text-muted">
+                  {definition.workflowType} · {definition.code}
+                </p>
+              </div>
+              <span className="text-sm text-success font-medium">{definition.active ? "Active" : "Inactive"}</span>
+            </div>
+          ))
+        )}
+      </div>
+      <form onSubmit={submit} className="grid gap-4 border-t pt-5 md:grid-cols-3">
+        <label className="grid gap-1 text-sm">
+          Name
+          <Input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
+        </label>
+        <label className="grid gap-1 text-sm">
+          Code
+          <Input required value={form.code} onChange={(event) => setForm({ ...form, code: event.target.value })} />
+        </label>
+        <label className="grid gap-1 text-sm">
+          Workflow type
+          <select
+            className="h-10 rounded-lg border bg-surface px-3"
+            value={form.workflowType}
+            onChange={(event) => setForm({ ...form, workflowType: event.target.value })}
+          >
+            <option value="leave">Leave</option>
+            <option value="attendance_regularization">Attendance regularization</option>
+          </select>
+        </label>
+        <div className="md:col-span-3">
+          <Button type="submit" disabled={busy}>
+            {busy ? "Activating…" : "Activate workflow"}
+          </Button>
+          <p aria-live="polite" className="mt-2 text-sm text-muted">
+            {message}
+          </p>
+        </div>
+      </form>
+    </div>
+  );
+}
+

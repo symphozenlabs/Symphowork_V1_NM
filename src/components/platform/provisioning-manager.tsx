@@ -10,6 +10,7 @@ import {
   ProvisioningJobData,
   ProvisioningProgressModal,
 } from "@/components/platform/provisioning-progress-modal";
+import { useToast } from "@/components/ui/toast";
 
 export interface ProvisioningRowData {
   job: {
@@ -61,6 +62,7 @@ const STORAGE_KEY = "active_provisioning_org_id";
 
 export function ProvisioningManager({ initialRows }: ProvisioningManagerProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [rows, setRows] = useState<ProvisioningRowData[]>(initialRows);
   const [activeJob, setActiveJob] = useState<ProvisioningJobData | null>(null);
   const [adminEmails, setAdminEmails] = useState<Record<string, string>>({});
@@ -181,9 +183,19 @@ export function ProvisioningManager({ initialRows }: ProvisioningManagerProps) {
           // If job finished, stop and clean storage
           if (currentUpdated.job.status === "completed") {
             sessionStorage.removeItem(STORAGE_KEY);
+            showToast({
+              type: "success",
+              title: "Provisioning completed",
+              message: `Workspace for ${currentUpdated.organization.name} is ready.`,
+            });
             router.refresh();
           } else if (currentUpdated.job.status === "failed") {
             sessionStorage.removeItem(STORAGE_KEY);
+            showToast({
+              type: "error",
+              title: "Provisioning failed",
+              message: currentUpdated.job.failureMessage ?? "Provisioning job encountered an error.",
+            });
           }
         }
       } catch {
@@ -199,7 +211,7 @@ export function ProvisioningManager({ initialRows }: ProvisioningManagerProps) {
         pollingRef.current = null;
       }
     };
-  }, [activeJob, router]);
+  }, [activeJob, router, showToast]);
 
   async function startProvisioning(row: ProvisioningRowData) {
     const orgId = row.organization.id;
@@ -249,6 +261,11 @@ export function ProvisioningManager({ initialRows }: ProvisioningManagerProps) {
             : null
         );
         setErrorMessages((prev) => ({ ...prev, [orgId]: errorMsg }));
+        showToast({
+          type: "error",
+          title: "Provisioning error",
+          message: errorMsg,
+        });
       } else {
         // If POST completes synchronously
         const updatedJob = body.job ?? {};
@@ -263,6 +280,11 @@ export function ProvisioningManager({ initialRows }: ProvisioningManagerProps) {
             : null
         );
         sessionStorage.removeItem(STORAGE_KEY);
+        showToast({
+          type: "success",
+          title: "Provisioning initiated",
+          message: `Workspace provisioning started for ${row.organization.name}.`,
+        });
         router.refresh();
       }
     } catch (err: unknown) {
@@ -274,6 +296,11 @@ export function ProvisioningManager({ initialRows }: ProvisioningManagerProps) {
           : null
       );
       setErrorMessages((prev) => ({ ...prev, [orgId]: errorMsg }));
+      showToast({
+        type: "error",
+        title: "Provisioning failed",
+        message: errorMsg,
+      });
     } finally {
       setIsProcessing((prev) => ({ ...prev, [orgId]: false }));
     }
@@ -327,7 +354,7 @@ export function ProvisioningManager({ initialRows }: ProvisioningManagerProps) {
               const rowEmail = adminEmails[organization.id] ?? organization.contactEmail ?? "";
 
               return (
-                <tr key={job.id} className="border-b align-top last:border-0 hover:bg-[#fafcff]/60 transition-colors">
+                <tr key={job.id} className="border-b align-top last:border-0 hover:bg-slate-50/70 transition-colors">
                   {/* Organization Column */}
                   <td className="px-3 py-4">
                     <div className="space-y-2 text-xs">

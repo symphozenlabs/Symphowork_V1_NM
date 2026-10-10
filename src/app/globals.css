@@ -1,39 +1,283 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f8fb;
-  --surface: #ffffff;
-  --foreground: #10233f;
-  --muted: #61708a;
-  --border: #dce4ef;
-  --primary: #155eef;
-  --primary-foreground: #ffffff;
-  --accent: #0da477;
-  --success: #07865f;
-  --warning: #b45309;
-  --destructive: #c24146;
-  --info: #0b78b5;
-  --ring: #8bb4ff;
+  /* CEO-Approved Primary Brand Palette */
+  --primary: #0D3324;
+  --primary-foreground: #FFFFFF;
+  --secondary: #174734;
+  --secondary-foreground: #FFFFFF;
+  --accent: #2D5946;
+  --accent-foreground: #FFFFFF;
+  --background: #F7F8FB;
+  --surface: #FFFFFF;
+  --sidebar-active: #F0F4ED;
+  --sidebar-active-text: #0D3324;
+  --foreground: #0B1930;
+  --text-primary: #0B1930;
+  --muted: #64748B;
+  --text-secondary: #64748B;
+  --border: #E2E8F0;
+
+  /* Status & Feedback Semantic Tokens */
+  --success: #174734;
+  --success-bg: #E5F2EB;
+  --success-border: #C6E2D2;
+  --destructive: #D92D45;
+  --danger: #D92D45;
+  --danger-bg: #FFF7F8;
+  --danger-border: #FECDD3;
+  --warning: #B45309;
+  --warning-bg: #FEF3C7;
+  --warning-border: #FDE68A;
+  --info: #0284C7;
+  --info-bg: #E0F2FE;
+  --info-border: #BAE6FD;
+
+  /* Interactive & Focus Tokens */
+  --ring: #0D3324;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-border: var(--border);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
   --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-active-text: var(--sidebar-active-text);
+  --color-foreground: var(--foreground);
+  --color-text-primary: var(--text-primary);
+  --color-muted: var(--muted);
+  --color-text-secondary: var(--text-secondary);
+  --color-border: var(--border);
   --color-success: var(--success);
-  --color-warning: var(--warning);
+  --color-success-bg: var(--success-bg);
+  --color-success-border: var(--success-border);
   --color-destructive: var(--destructive);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-border: var(--danger-border);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-border: var(--warning-border);
   --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-info-border: var(--info-border);
   --color-ring: var(--ring);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-manrope), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-* { border-color: var(--border); }
-body { background: var(--background); color: var(--foreground); font-family: Arial, sans-serif; }
-*:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Interactive Auth Flip Transition */
+.auth-flip-perspective {
+  perspective: 1200px;
+}
+.auth-flip-card {
+  position: relative;
+  width: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.auth-flip-card.is-flipped {
+  transform: rotateY(180deg);
+}
+.auth-card-face {
+  width: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: opacity 0.3s ease;
+}
+.auth-card-front {
+  transform: rotateY(0deg);
+}
+.auth-card-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  transform: rotateY(180deg);
+}
+.auth-flip-card.is-flipped .auth-card-back {
+  position: relative;
+  height: auto;
+  overflow: visible;
+  pointer-events: auto;
+}
+.auth-flip-card.is-flipped .auth-card-front {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+.auth-flip-card:not(.is-flipped) .auth-card-back {
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+.auth-flip-card:not(.is-flipped) .auth-card-front {
+  position: relative;
+  height: auto;
+  overflow: visible;
+  pointer-events: auto;
+}
+
+@media (max-width: 640px) {
+  .auth-flip-perspective {
+    perspective: none;
+  }
+  .auth-flip-card {
+    transform: none !important;
+    transition: height 0.3s ease;
+  }
+  .auth-card-face {
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
+  }
+  .auth-card-front {
+    transform: none !important;
+  }
+  .auth-card-back {
+    transform: none !important;
+    display: none;
+  }
+  .auth-flip-card.is-flipped .auth-card-front {
+    display: none;
+  }
+  .auth-flip-card.is-flipped .auth-card-back {
+    display: block;
+    position: relative;
+  }
+}
+
+/* Executive Motion System */
+@keyframes heroEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUpShort {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes commandAmbientGlow {
+  0%, 100% {
+    opacity: 0.12;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.22;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes commandDataPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.animate-hero-entrance {
+  animation: heroEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUpShort 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.command-ambient-glow {
+  animation: commandAmbientGlow 8s ease-in-out infinite;
+}
+
+.command-data-pulse {
+  animation: commandDataPulse 2.8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+
+  .command-ambient-glow,
+  .command-data-pulse {
+    animation: none !important;
+  }
+
+  .auth-flip-card {
+    transition: none !important;
+    transform: none !important;
+  }
+  .auth-flip-card .auth-card-front {
+    display: block;
+  }
+  .auth-flip-card.is-flipped .auth-card-front {
+    display: none !important;
+  }
+  .auth-flip-card:not(.is-flipped) .auth-card-back {
+    display: none !important;
+  }
+  .auth-flip-card.is-flipped .auth-card-back {
+    display: block !important;
+    transform: none !important;
+    position: relative !important;
+  }
+}
+
+

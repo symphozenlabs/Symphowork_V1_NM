@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authorizePlatform, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
 import { listProvisioningJobs } from "@/modules/platform/operations";
@@ -37,19 +36,35 @@ export default async function ProvisioningPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Badge>Provisioning</Badge>
-        <h1 className="mt-3 text-3xl font-bold">Provisioning operations</h1>
-        <p className="mt-2 text-sm text-muted">
-          Process organization setup, roles, subscription, and primary-admin invitation from one place.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+              Orchestration Engine
+            </span>
+            <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-600 font-medium">
+              {rows.length} {rows.length === 1 ? "pipeline job" : "pipeline jobs"}
+            </span>
+          </div>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Tenant Provisioning Pipeline
+          </h1>
+          <p className="mt-1 text-sm text-muted">
+            End-to-end multi-step orchestration pipeline: workspace isolation, database roles, plan subscriptions, and owner credential dispatch.
+          </p>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Provisioning jobs</CardTitle>
+      <Card className="border-border/80 bg-surface shadow-xs">
+        <CardHeader className="border-b border-border/50 pb-4">
+          <CardTitle className="text-base font-semibold text-foreground">
+            Pipeline Orchestration Registry
+          </CardTitle>
+          <p className="text-xs text-muted">
+            Inspect real-time stage progress, retry failed pipeline jobs, or re-dispatch owner invitations
+          </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <ProvisioningManager initialRows={serializedRows} />
         </CardContent>
       </Card>

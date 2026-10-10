@@ -189,7 +189,7 @@ export function ProvisioningProgressModal({
         </div>
 
         {/* Real Backend Stages Checklist */}
-        <div className="mt-6 space-y-3 rounded-xl border border-slate-100 bg-[#f9fafc] p-4">
+        <div className="mt-6 space-y-3 rounded-xl border border-border/60 bg-slate-50 p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">
             Provisioning Stages
           </p>

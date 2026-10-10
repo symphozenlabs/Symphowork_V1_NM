@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FeatureEditor } from "@/components/platform/feature-editor";
 import { planCodeSchema, planNameSchema } from "@/modules/platform/validation";
+import { useToast } from "@/components/ui/toast";
 
 export interface PlanItem {
   id: string;
@@ -47,6 +48,7 @@ export function PlanManagement({
 }: PlanManagementProps) {
   const [plans, setPlans] = useState<PlanItem[]>(initialPlans);
   const [features, setFeatures] = useState<Record<string, PlanFeatureItem[]>>(initialFeatures);
+  const { showToast } = useToast();
 
   // Success toast state
   const [successToast, setSuccessToast] = useState<{ title: string; message?: string } | null>(null);
@@ -155,7 +157,13 @@ export function PlanManagement({
       const body = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setCreateError(body.error?.message ?? "Unable to create plan. Please try again.");
+        const errorMsg = body.error?.message ?? "Unable to create plan. Please try again.";
+        setCreateError(errorMsg);
+        showToast({
+          type: "error",
+          title: "Failed to create plan",
+          message: errorMsg,
+        });
         setCreateLoading(false);
         return;
       }
@@ -167,9 +175,16 @@ export function PlanManagement({
       };
 
       setPlans((prev) => [newPlan, ...prev]);
+      const successTitle = "Plan created successfully.";
+      const successMsg = `Plan \u201c${newPlan.name}\u201d (${newPlan.code}) is now available.`;
       setSuccessToast({
-        title: "Plan created successfully.",
-        message: `Plan \u201c${newPlan.name}\u201d (${newPlan.code}) is now available.`,
+        title: successTitle,
+        message: successMsg,
+      });
+      showToast({
+        type: "success",
+        title: successTitle,
+        message: successMsg,
       });
 
       // Reset form
@@ -185,7 +200,13 @@ export function PlanManagement({
       setCreateActive(true);
       setCreateError("");
     } catch {
-      setCreateError("Network error. Please check your connection and try again.");
+      const netMsg = "Network error. Please check your connection and try again.";
+      setCreateError(netMsg);
+      showToast({
+        type: "error",
+        title: "Connection error",
+        message: netMsg,
+      });
     } finally {
       setCreateLoading(false);
     }
@@ -251,7 +272,13 @@ export function PlanManagement({
       const body = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setEditError(body.error?.message ?? "Unable to update plan. Please try again.");
+        const errorMsg = body.error?.message ?? "Unable to update plan. Please try again.";
+        setEditError(errorMsg);
+        showToast({
+          type: "error",
+          title: "Failed to update plan",
+          message: errorMsg,
+        });
         setEditLoading(false);
         return;
       }
@@ -263,13 +290,26 @@ export function PlanManagement({
       };
 
       setPlans((prev) => prev.map((p) => (p.id === updatedPlan.id ? updatedPlan : p)));
+      const successTitle = "Plan updated successfully.";
+      const successMsg = `Plan \u201c${updatedPlan.name}\u201d (${updatedPlan.code}) has been saved.`;
       setSuccessToast({
-        title: "Plan updated successfully.",
-        message: `Plan \u201c${updatedPlan.name}\u201d (${updatedPlan.code}) has been saved.`,
+        title: successTitle,
+        message: successMsg,
+      });
+      showToast({
+        type: "success",
+        title: successTitle,
+        message: successMsg,
       });
       setEditingPlan(null);
     } catch {
-      setEditError("Network error. Please check your connection and try again.");
+      const netMsg = "Network error. Please check your connection and try again.";
+      setEditError(netMsg);
+      showToast({
+        type: "error",
+        title: "Connection error",
+        message: netMsg,
+      });
     } finally {
       setEditLoading(false);
     }
@@ -302,7 +342,13 @@ export function PlanManagement({
       const body = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setDeleteError(body.error?.message ?? "Unable to delete plan.");
+        const errorMsg = body.error?.message ?? "Unable to delete plan.";
+        setDeleteError(errorMsg);
+        showToast({
+          type: "error",
+          title: "Failed to delete plan",
+          message: errorMsg,
+        });
         setDeleteLoading(false);
         return;
       }
@@ -314,12 +360,25 @@ export function PlanManagement({
       setPlans((prev) => prev.filter((p) => p.id !== deletedId));
       setDeletingPlan(null);
       setDeleteError("");
+      const successTitle = "Plan deleted successfully.";
+      const successMsg = `Plan \u201c${deletedName}\u201d (${deletedCode}) has been removed.`;
       setSuccessToast({
-        title: "Plan deleted successfully.",
-        message: `Plan \u201c${deletedName}\u201d (${deletedCode}) has been removed.`,
+        title: successTitle,
+        message: successMsg,
+      });
+      showToast({
+        type: "success",
+        title: successTitle,
+        message: successMsg,
       });
     } catch {
-      setDeleteError("Network error. Check connection and try again.");
+      const netMsg = "Network error. Check connection and try again.";
+      setDeleteError(netMsg);
+      showToast({
+        type: "error",
+        title: "Connection error",
+        message: netMsg,
+      });
     } finally {
       setDeleteLoading(false);
     }
@@ -343,7 +402,13 @@ export function PlanManagement({
       const body = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setDeleteError(body.error?.message ?? "Unable to deactivate plan.");
+        const errorMsg = body.error?.message ?? "Unable to deactivate plan.";
+        setDeleteError(errorMsg);
+        showToast({
+          type: "error",
+          title: "Failed to deactivate plan",
+          message: errorMsg,
+        });
         setDeactivateLoading(false);
         return;
       }
@@ -358,12 +423,25 @@ export function PlanManagement({
       const code = deletingPlan.code;
       setDeletingPlan(null);
       setDeleteError("");
+      const successTitle = "Plan deactivated successfully.";
+      const successMsg = `Plan \u201c${name}\u201d (${code}) has been set to Inactive.`;
       setSuccessToast({
-        title: "Plan deactivated successfully.",
-        message: `Plan \u201c${name}\u201d (${code}) has been set to Inactive.`,
+        title: successTitle,
+        message: successMsg,
+      });
+      showToast({
+        type: "success",
+        title: successTitle,
+        message: successMsg,
       });
     } catch {
-      setDeleteError("Failed to deactivate plan. Please try again.");
+      const errMsg = "Failed to deactivate plan. Please try again.";
+      setDeleteError(errMsg);
+      showToast({
+        type: "error",
+        title: "Deactivation error",
+        message: errMsg,
+      });
     } finally {
       setDeactivateLoading(false);
     }
@@ -561,7 +639,7 @@ export function PlanManagement({
             {createError && (
               <div
                 role="alert"
-                className="mb-4 rounded-lg bg-[#fff1f1] p-3 text-sm text-destructive"
+                className="mb-4 rounded-lg border border-danger-border bg-danger-bg p-3 text-sm text-destructive"
               >
                 {createError}
               </div>
@@ -766,7 +844,7 @@ export function PlanManagement({
             {editError && (
               <div
                 role="alert"
-                className="mt-4 rounded-lg bg-[#fff1f1] p-3 text-sm text-destructive"
+                className="mt-4 rounded-lg border border-danger-border bg-danger-bg p-3 text-sm text-destructive"
               >
                 {editError}
               </div>
@@ -964,7 +1042,7 @@ export function PlanManagement({
             {deleteError && (
               <div
                 role="alert"
-                className="mt-4 rounded-lg bg-[#fff1f1] p-3 text-sm text-destructive"
+                className="mt-4 rounded-lg border border-danger-border bg-danger-bg p-3 text-sm text-destructive"
               >
                 <p className="font-semibold mb-1">Cannot delete plan</p>
                 <p>{deleteError}</p>

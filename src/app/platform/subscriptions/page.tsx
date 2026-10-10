@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authorizePlatform, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
 import { listSubscriptions } from "@/modules/platform/commercial";
@@ -76,22 +75,35 @@ export default async function SubscriptionsPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <Badge>Commercial operations</Badge>
-        <h1 className="mt-3 text-3xl font-bold">Subscriptions</h1>
-        <p className="mt-2 text-sm text-muted">
-          Administrative subscription state, tier entitlements, and provider identifiers.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+              Commercial Operations
+            </span>
+            <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-600 font-medium">
+              {result.total} {result.total === 1 ? "subscription" : "subscriptions"}
+            </span>
+          </div>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Organization Subscriptions
+          </h1>
+          <p className="mt-1 text-sm text-muted">
+            Administrative subscription lifecycles, billing intervals, tier assignments, and external provider customer links.
+          </p>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            Organization subscriptions{" "}
-            <span className="ml-2 text-sm font-normal text-muted">({result.total})</span>
+      <Card className="border-border/80 bg-surface shadow-xs">
+        <CardHeader className="border-b border-border/50 pb-4">
+          <CardTitle className="text-base font-semibold text-foreground">
+            Active Subscription Registry
           </CardTitle>
+          <p className="text-xs text-muted">
+            Search by tenant name, filter by status or billing cadence, and manage tier allocations
+          </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <SubscriptionManagement
             initialRows={serializedRows}
             total={result.total}

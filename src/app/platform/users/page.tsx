@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import { authorizePlatform, PLATFORM_PERMISSIONS, platformRoleLabel } from "@/modules/platform/authorization";
 import { listPlatformUsers } from "@/modules/platform/operations";
 import { PlatformUserList } from "@/components/platform/platform-user-list";
@@ -41,12 +40,23 @@ export default async function PlatformUsersPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <Badge>Platform identity</Badge>
-        <h1 className="mt-3 text-3xl font-bold">Platform users</h1>
-        <p className="mt-2 text-sm text-muted">
-          Platform roles are separate from organization memberships.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+              Platform Identity
+            </span>
+            <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-600 font-medium">
+              {result.total} {result.total === 1 ? "administrator" : "administrators"}
+            </span>
+          </div>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Platform Users & Roles
+          </h1>
+          <p className="mt-1 text-sm text-muted">
+            Platform operator accounts and privileged authorization levels. Platform roles operate strictly outside organization tenant memberships.
+          </p>
+        </div>
       </div>
 
       <PlatformUserList

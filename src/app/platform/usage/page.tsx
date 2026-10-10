@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authorizePlatform, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
 import { listOrganizationUsage, type PaginatedUsageResult } from "@/modules/platform/commercial";
@@ -65,22 +64,35 @@ export default async function UsagePage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <Badge>Licensing</Badge>
-        <h1 className="mt-3 text-3xl font-bold">Usage & licensing</h1>
-        <p className="mt-2 text-sm text-muted">
-          Active employees are counted from the existing employee lifecycle model.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+              Workforce Licensing
+            </span>
+            <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-600 font-medium">
+              {result.total} {result.total === 1 ? "organization" : "organizations"} monitored
+            </span>
+          </div>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Usage & Seat Allocation
+          </h1>
+          <p className="mt-1 text-sm text-muted">
+            Live tenant workforce telemetry compared against contractual plan employee limits. Active employees derive strictly from the core workforce model.
+          </p>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            Employee capacity{" "}
-            <span className="ml-2 text-sm font-normal text-muted">({result.total})</span>
+      <Card className="border-border/80 bg-surface shadow-xs">
+        <CardHeader className="border-b border-border/50 pb-4">
+          <CardTitle className="text-base font-semibold text-foreground">
+            Tenant Capacity Registry
           </CardTitle>
+          <p className="text-xs text-muted">
+            Track seat utilization ratios, identify over-limit tenants, and review licensing headroom
+          </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <UsageManagement
             initialRows={serializedRows}
             total={result.total}

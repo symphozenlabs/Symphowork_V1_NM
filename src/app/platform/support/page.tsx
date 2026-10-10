@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import { authorizePlatform, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
 import { searchSupportOrganizations } from "@/modules/platform/support";
 import { SupportOrganizationList } from "@/components/platform/support-organization-list";
@@ -38,12 +37,23 @@ export default async function SupportPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <Badge>Support operations</Badge>
-        <h1 className="mt-3 text-3xl font-bold">Organization support view</h1>
-        <p className="mt-2 text-sm text-muted">
-          Operational context only. This does not grant tenant membership or unrestricted employee data access.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+              Support Operations
+            </span>
+            <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-600 font-medium">
+              {result.total} {result.total === 1 ? "organization" : "organizations"} available
+            </span>
+          </div>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Organization Support Console
+          </h1>
+          <p className="mt-1 text-sm text-muted">
+            Read-only operational troubleshooting view. Support mode maintains strict tenant boundary isolation and never bypasses row-level employee privacy gates.
+          </p>
+        </div>
       </div>
 
       <SupportOrganizationList

@@ -1,31 +1,48 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button"; // adjust import if you have a button component, else use a plain button
+import React, { useState } from "react";
+import { LogOut } from "lucide-react";
+import { Button, type ButtonProps } from "@/components/ui/button";
+import { LogoutConfirmDialog } from "@/components/auth/logout-confirm-dialog";
 
-export default function LogoutButton({ redirectTo = "/login" }: { redirectTo?: string } = {}) {
-  const router = useRouter();
+export interface LogoutButtonProps {
+  redirectTo?: string;
+  className?: string;
+  variant?: ButtonProps["variant"];
+  size?: ButtonProps["size"];
+  children?: React.ReactNode;
+  showIcon?: boolean;
+}
 
-  const handleLogout = async () => {
-    try {
-      const res = await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-      if (res.ok) {
-        // After successful logout, redirect to target login page
-        router.push(redirectTo);
-      } else {
-        console.error("Logout failed", await res.text());
-      }
-    } catch (e) {
-      console.error("Logout error", e);
-    }
-  };
+export default function LogoutButton({
+  redirectTo = "/",
+  className = "ml-2",
+  variant = "ghost",
+  size = "sm",
+  children = "Logout",
+  showIcon = false,
+}: LogoutButtonProps = {}) {
+  const [open, setOpen] = useState(false);
 
   return (
-    <Button variant="ghost" size="sm" onClick={handleLogout} className="ml-2">
-      Logout
-    </Button>
+    <>
+      <Button
+        type="button"
+        variant={variant}
+        size={size}
+        onClick={() => setOpen(true)}
+        className={className}
+        aria-haspopup="dialog"
+      >
+        {showIcon && <LogOut className="size-3.5" aria-hidden="true" />}
+        <span>{children}</span>
+      </Button>
+
+      <LogoutConfirmDialog
+        open={open}
+        onOpenChange={setOpen}
+        redirectTo={redirectTo}
+      />
+    </>
   );
 }

@@ -2,10 +2,10 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Search, Clock, History } from "lucide-react";
 
 export interface SerializedAuditRow {
   audit: {
@@ -108,58 +108,97 @@ export function PlatformAuditList({
   const totalPages = Math.max(1, pageCount);
 
   return (
-    <Card>
-      <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <CardTitle>Recent events</CardTitle>
-        <div className="w-full sm:w-72">
+    <Card className="border-border/80 bg-surface shadow-xs">
+      <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border/50 pb-4">
+        <div>
+          <CardTitle className="text-base font-semibold text-foreground">
+            Governance Ledger Events
+          </CardTitle>
+          <p className="text-xs text-muted">
+            Chronological audit stream recording security, authorization, and tenant lifecycle activity
+          </p>
+        </div>
+        <div className="relative w-full sm:w-72">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted pointer-events-none" />
           <Input
             type="search"
-            placeholder="Search audit events..."
+            placeholder="Search audit events…"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             aria-label="Search audit events"
+            className="pl-8 bg-slate-50/50 text-sm focus:bg-white"
           />
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-4">
         {isPending && (
-          <div className="text-xs text-muted">Updating results…</div>
+          <div className="text-xs text-muted animate-pulse">Updating audit stream…</div>
         )}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-xl border border-border/70">
           <table className="w-full text-left text-sm">
-            <thead className="border-b text-xs uppercase tracking-wide text-muted">
+            <thead className="bg-slate-50/70 border-b border-border/70 text-xs font-semibold text-muted uppercase tracking-wider">
               <tr>
-                <th className="px-3 py-3">Time</th>
-                <th className="px-3 py-3">Actor</th>
-                <th className="px-3 py-3">Action</th>
-                <th className="px-3 py-3">Resource</th>
-                <th className="px-3 py-3">Organization</th>
+                <th className="px-4 py-3">Timestamp</th>
+                <th className="px-4 py-3">Actor</th>
+                <th className="px-4 py-3">Action Event</th>
+                <th className="px-4 py-3">Resource</th>
+                <th className="px-4 py-3">Scope / Tenant</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-border/50">
               {rows.map(({ audit, actor, organization }) => (
-                <tr key={audit.id} className="border-b last:border-0">
-                  <td className="px-3 py-4 text-muted">{audit.createdAt}</td>
-                  <td className="px-3 py-4">{actor?.name ?? "System"}</td>
-                  <td className="px-3 py-4">
-                    <Badge>{audit.action}</Badge>
+                <tr
+                  key={audit.id}
+                  className="hover:bg-slate-50/70 transition-colors"
+                >
+                  <td className="px-4 py-3 text-xs text-muted whitespace-nowrap">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-3 w-3 text-slate-400" />
+                      <span>{audit.createdAt}</span>
+                    </div>
                   </td>
-                  <td className="px-3 py-4">{audit.resource}</td>
-                  <td className="px-3 py-4 text-muted">
-                    {organization?.name ?? audit.organizationId ?? "Platform"}
+                  <td className="px-4 py-3">
+                    <span className="font-semibold text-xs text-foreground">
+                      {actor?.name ?? "Platform System"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="inline-block rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-700">
+                      {audit.action}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted font-mono">
+                    {audit.resource}
+                  </td>
+                  <td className="px-4 py-3 text-xs">
+                    {organization?.name ? (
+                      <span className="font-medium text-slate-800">{organization.name}</span>
+                    ) : audit.organizationId ? (
+                      <span className="font-mono text-slate-500">{audit.organizationId.slice(0, 8)}…</span>
+                    ) : (
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                        Global Platform
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
           {!rows.length && (
-            <p className="p-8 text-center text-sm text-muted">No platform events recorded.</p>
+            <div className="p-8 text-center">
+              <History className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-foreground">No audit events recorded</p>
+              <p className="mt-1 text-xs text-muted">
+                No events matched your search query.
+              </p>
+            </div>
           )}
         </div>
 
         {/* Pagination Footer with Rows per page selector */}
-        <div className="flex flex-col items-center justify-between gap-4 border-t bg-muted/10 px-4 py-3 sm:flex-row">
-          <div className="flex flex-wrap items-center gap-4 text-sm text-muted">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-border/50 bg-slate-50/60 rounded-xl px-4 py-3 sm:flex-row">
+          <div className="flex flex-wrap items-center gap-4 text-xs text-muted">
             <div>
               Showing <span className="font-semibold text-foreground">{startRecord}</span> to{" "}
               <span className="font-semibold text-foreground">{endRecord}</span> of{" "}
@@ -174,7 +213,7 @@ export function PlatformAuditList({
                 id="rows-per-page"
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="rounded-lg border bg-surface px-2 py-1 text-xs focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+                className="rounded-lg border border-border/80 bg-surface px-2 py-1 text-xs focus:outline-hidden focus:ring-2 focus:ring-primary/20"
               >
                 <option value={10}>10</option>
                 <option value={25}>25</option>
@@ -185,7 +224,7 @@ export function PlatformAuditList({
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-sm text-muted">
+            <span className="text-xs text-muted">
               Page <span className="font-semibold text-foreground">{page}</span> of{" "}
               <span className="font-semibold text-foreground">{totalPages}</span>
             </span>
