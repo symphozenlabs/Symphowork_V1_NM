@@ -1,22 +1,10 @@
-import Link from "next/link";
-import { AuthCard } from "@/components/auth/auth-card";
-import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
+import { AuthFlipView } from "@/components/auth/auth-flip-view";
+
+export const metadata = {
+  title: "Account Recovery | SymphoWork",
+  description: "Recover your SymphoWork operator account with secure password reset.",
+};
 
 export default function ForgotPasswordPage() {
-  return (
-    <AuthCard
-      title="Forgot password"
-      description="Enter your registered email address to receive a secure password recovery link."
-      footer={
-        <>
-          Remembered your credentials?{" "}
-          <Link href="/login" className="font-semibold text-primary hover:underline">
-            Sign in
-          </Link>
-        </>
-      }
-    >
-      <ForgotPasswordForm />
-    </AuthCard>
-  );
+  return <AuthFlipView initialMode="forgot-password" />;
 }

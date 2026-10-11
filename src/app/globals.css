@@ -74,12 +74,17 @@
   border-color: var(--border);
 }
 
+html {
+  overflow-x: clip;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
 }
 
 *:focus-visible {
@@ -87,7 +92,7 @@ body {
   outline-offset: 2px;
 }
 
-/* Interactive Auth Flip Transition */
+/* Interactive Auth Flip Transition (Tri-State: Login, Register, Forgot Password) */
 .auth-flip-perspective {
   perspective: 1200px;
 }
@@ -95,11 +100,19 @@ body {
   position: relative;
   width: 100%;
   transform-style: preserve-3d;
-  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+.auth-flip-card.state-login {
+  transform: rotateY(0deg);
+}
+.auth-flip-card.state-register,
 .auth-flip-card.is-flipped {
   transform: rotateY(180deg);
 }
+.auth-flip-card.state-forgot {
+  transform: rotateY(-180deg);
+}
+
 .auth-card-face {
   width: 100%;
   backface-visibility: hidden;
@@ -109,38 +122,71 @@ body {
 .auth-card-front {
   transform: rotateY(0deg);
 }
-.auth-card-back {
+.auth-card-back-register {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   transform: rotateY(180deg);
 }
-.auth-flip-card.is-flipped .auth-card-back {
-  position: relative;
-  height: auto;
-  overflow: visible;
-  pointer-events: auto;
-}
-.auth-flip-card.is-flipped .auth-card-front {
+.auth-card-back-forgot {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 100%;
-  overflow: hidden;
-  pointer-events: none;
+  transform: rotateY(-180deg);
 }
-.auth-flip-card:not(.is-flipped) .auth-card-back {
-  height: 100%;
-  overflow: hidden;
-  pointer-events: none;
-}
-.auth-flip-card:not(.is-flipped) .auth-card-front {
+
+/* Stacking & layout visibility per active face */
+.auth-flip-card.state-login .auth-card-front {
   position: relative;
   height: auto;
   overflow: visible;
   pointer-events: auto;
+  opacity: 1;
+}
+.auth-flip-card.state-login .auth-card-back-register,
+.auth-flip-card.state-login .auth-card-back-forgot {
+  position: absolute;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.auth-flip-card.state-register .auth-card-back-register,
+.auth-flip-card.is-flipped:not(.state-forgot) .auth-card-back-register {
+  position: relative;
+  height: auto;
+  overflow: visible;
+  pointer-events: auto;
+  opacity: 1;
+}
+.auth-flip-card.state-register .auth-card-front,
+.auth-flip-card.state-register .auth-card-back-forgot,
+.auth-flip-card.is-flipped:not(.state-forgot) .auth-card-front,
+.auth-flip-card.is-flipped:not(.state-forgot) .auth-card-back-forgot {
+  position: absolute;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.auth-flip-card.state-forgot .auth-card-back-forgot {
+  position: relative;
+  height: auto;
+  overflow: visible;
+  pointer-events: auto;
+  opacity: 1;
+}
+.auth-flip-card.state-forgot .auth-card-front,
+.auth-flip-card.state-forgot .auth-card-back-register {
+  position: absolute;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
 }
 
 @media (max-width: 640px) {
@@ -149,25 +195,39 @@ body {
   }
   .auth-flip-card {
     transform: none !important;
-    transition: height 0.3s ease;
+    transition: height 0.35s ease;
   }
   .auth-card-face {
     backface-visibility: visible;
     -webkit-backface-visibility: visible;
-  }
-  .auth-card-front {
     transform: none !important;
   }
-  .auth-card-back {
-    transform: none !important;
-    display: none;
-  }
-  .auth-flip-card.is-flipped .auth-card-front {
-    display: none;
-  }
-  .auth-flip-card.is-flipped .auth-card-back {
+  .auth-flip-card.state-login .auth-card-front {
     display: block;
     position: relative;
+  }
+  .auth-flip-card.state-login .auth-card-back-register,
+  .auth-flip-card.state-login .auth-card-back-forgot {
+    display: none !important;
+  }
+  .auth-flip-card.state-register .auth-card-back-register,
+  .auth-flip-card.is-flipped:not(.state-forgot) .auth-card-back-register {
+    display: block !important;
+    position: relative;
+  }
+  .auth-flip-card.state-register .auth-card-front,
+  .auth-flip-card.state-register .auth-card-back-forgot,
+  .auth-flip-card.is-flipped:not(.state-forgot) .auth-card-front,
+  .auth-flip-card.is-flipped:not(.state-forgot) .auth-card-back-forgot {
+    display: none !important;
+  }
+  .auth-flip-card.state-forgot .auth-card-back-forgot {
+    display: block !important;
+    position: relative;
+  }
+  .auth-flip-card.state-forgot .auth-card-front,
+  .auth-flip-card.state-forgot .auth-card-back-register {
+    display: none !important;
   }
 }
 
@@ -246,6 +306,16 @@ body {
   transform-origin: center;
 }
 
+@keyframes hudRailDash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.hud-rail-dash {
+  animation: hudRailDash 1.4s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -260,23 +330,43 @@ body {
     animation: none !important;
   }
 
+  .hud-live-particle,
+  .hud-rail-dash {
+    animation: none !important;
+  }
+
   .auth-flip-card {
     transition: none !important;
     transform: none !important;
   }
-  .auth-flip-card .auth-card-front {
-    display: block;
-  }
-  .auth-flip-card.is-flipped .auth-card-front {
-    display: none !important;
-  }
-  .auth-flip-card:not(.is-flipped) .auth-card-back {
-    display: none !important;
-  }
-  .auth-flip-card.is-flipped .auth-card-back {
+  .auth-flip-card.state-login .auth-card-front {
     display: block !important;
     transform: none !important;
     position: relative !important;
+  }
+  .auth-flip-card.state-login .auth-card-back-register,
+  .auth-flip-card.state-login .auth-card-back-forgot {
+    display: none !important;
+  }
+
+  .auth-flip-card.state-register .auth-card-back-register {
+    display: block !important;
+    transform: none !important;
+    position: relative !important;
+  }
+  .auth-flip-card.state-register .auth-card-front,
+  .auth-flip-card.state-register .auth-card-back-forgot {
+    display: none !important;
+  }
+
+  .auth-flip-card.state-forgot .auth-card-back-forgot {
+    display: block !important;
+    transform: none !important;
+    position: relative !important;
+  }
+  .auth-flip-card.state-forgot .auth-card-front,
+  .auth-flip-card.state-forgot .auth-card-back-register {
+    display: none !important;
   }
 }
 

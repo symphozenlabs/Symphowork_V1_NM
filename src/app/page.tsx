@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
-  Activity,
   ArrowRight,
   Banknote,
   BarChart3,
@@ -23,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Reveal } from "@/components/ui/reveal";
 import { getSessionUser } from "@/modules/identity/auth";
+import { EnterpriseJourneyMap } from "@/components/journey/enterprise-journey-map";
 
 export default async function Home() {
   const user = await getSessionUser();
@@ -117,227 +117,189 @@ export default async function Home() {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur-md">
-        <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen flex-col bg-white text-[#0D3324] overflow-x-hidden">
+      {/* ================================================================ */}
+      {/* TOP NAVIGATION BAR (WHITE + GREEN PALETTE MATCHING REFERENCE)     */}
+      {/* ================================================================ */}
+      <header className="sticky top-0 z-40 w-full border-b border-emerald-100/80 bg-white/95 backdrop-blur-md">
+        <div className="mx-auto flex h-16 sm:h-18 max-w-[1600px] items-center justify-between px-3 sm:px-6 lg:px-10">
           <Link
             href="/"
-            className="flex items-center gap-2 sm:gap-3 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg shrink-0"
+            className="flex items-center gap-2 sm:gap-2.5 transition-opacity hover:opacity-90 rounded-lg shrink-0"
             aria-label="SymphoWork Home"
           >
             <Image
               src="/symphowork-symbol.png"
               alt="SymphoWork Symbol"
-              width={34}
-              height={34}
+              width={30}
+              height={30}
               priority
-              className="h-8 sm:h-9.5 w-auto object-contain"
+              className="h-7 sm:h-8.5 w-auto object-contain"
             />
-            <span className="text-lg sm:text-xl font-bold tracking-tight text-[#0D3324]">
-              Sympho<span className="text-[#174734]">Work</span>
+            <span className="text-base sm:text-xl font-bold tracking-tight text-[#0D3324]">
+              Sympho<span className="text-[#10B981]">Work</span>
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-8 md:flex" aria-label="Main navigation">
-            <a
-              href="#capabilities"
-              className="text-sm font-medium text-muted transition-colors hover:text-primary"
-            >
-              Capabilities
-            </a>
-            <a
-              href="#architecture"
-              className="text-sm font-medium text-muted transition-colors hover:text-primary"
-            >
-              Platform Architecture
-            </a>
-            <a
-              href="#governance"
-              className="text-sm font-medium text-muted transition-colors hover:text-primary"
-            >
-              Security & Governance
-            </a>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Button asChild variant="ghost" size="sm" className="font-semibold text-foreground hover:bg-slate-100">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            <Button asChild variant="ghost" size="sm" className="font-semibold text-xs sm:text-sm px-2 sm:px-3 text-[#0D3324] hover:bg-emerald-50">
               <Link href="/login">Sign in</Link>
             </Button>
-            <Button asChild size="sm" className="font-semibold shadow-xs">
-              <Link href="/register">Create account</Link>
+            <Button
+              asChild
+              size="sm"
+              className="font-bold text-xs sm:text-sm bg-[#10B981] hover:bg-[#059669] text-white shadow-xs rounded-full px-2.5 sm:px-4.5 gap-1 sm:gap-1.5 shrink-0 whitespace-nowrap"
+            >
+              <Link href="/register">
+                <span>Create account</span>
+                <ArrowRight className="size-3 sm:size-3.5" />
+              </Link>
             </Button>
           </div>
         </div>
       </header>
 
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden border-b border-border bg-gradient-to-b from-surface via-background to-background py-10 sm:py-14 lg:py-18">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-10">
-              {/* Hero Left: Headline, Value Proposition, and Primary Actions */}
-              <div className="space-y-5 lg:col-span-7 animate-hero-entrance">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/10 px-3.5 py-1 text-xs font-semibold text-primary">
-                  <span className="size-2 rounded-full bg-emerald-600 animate-pulse" />
-                  <span>SymphoWork Enterprise HCM Platform</span>
+        {/* ================================================================ */}
+        {/* SPLIT HERO SECTION: 35% LEFT HERO (WHITE BG), 65% 3D ADVENTURE   */}
+        {/* ================================================================ */}
+        <section
+          id="journey-map"
+          className="relative overflow-hidden border-b border-emerald-100/60 bg-gradient-to-b from-white via-[#F6FAF7] to-white py-6 sm:py-8 lg:py-10"
+        >
+          {/* Subtle environmental ambient light */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute -top-10 left-10 size-[500px] rounded-full bg-emerald-100/50 blur-[130px]" />
+            <div className="absolute bottom-10 right-10 size-[600px] rounded-full bg-teal-100/40 blur-[140px]" />
+          </div>
+
+          <div className="relative mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-10">
+            <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-10 items-center">
+              {/* LEFT COLUMN: ~35% OF VIEWPORT (PREDOMINANTLY WHITE / LIGHT NEUTRAL) */}
+              <div className="lg:col-span-5 xl:col-span-4 space-y-6 animate-hero-entrance z-10">
+                {/* Animated Platform-Status Indicator */}
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/90 bg-emerald-50/90 px-3 py-1 text-[11px] sm:text-xs font-semibold text-emerald-800 shadow-xs backdrop-blur-xs max-w-full">
+                  <span className="relative flex size-2 shrink-0">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex size-2 rounded-full bg-[#10B981]" />
+                  </span>
+                  <span className="truncate">Platform Operational · All 19 HCM Modules Online</span>
                 </div>
 
-                <h1 className="text-3xl font-extrabold tracking-tight text-primary sm:text-5xl lg:text-5xl xl:text-6xl leading-[1.12]">
-                  Unified people operations, payroll, and workforce governance.
+                {/* Confident Main Headline */}
+                <h1 className="text-3xl sm:text-5xl lg:text-[2.9rem] xl:text-[3.4rem] font-extrabold tracking-tight text-[#0D3324] leading-[1.08] break-words">
+                  Unified People Operations for Every Stage of{" "}
+                  <span className="text-[#10B981]">Your Growth.</span>
                 </h1>
 
-                <p className="max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
-                  SymphoWork integrates core employee lifecycles, timezone-aware attendance,
-                  effective-dated payroll calculation, candidate pipelines, and tenant collaboration
-                  into a unified, multi-tenant platform.
+                {/* Concise Description of Employee Lifecycle */}
+                <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-xl">
+                  From organization genesis and employee onboarding to shift attendance, leave approvals, payroll, and enterprise intelligence — SymphoWork orchestrates your complete workforce lifecycle in one tenant-isolated platform.
                 </p>
 
-                {/* Clear, balanced primary & secondary CTAs (No repetitive duplicates) */}
-                <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
-                  <Button asChild size="lg" className="h-12 px-6 gap-2 text-sm font-semibold shadow-xs">
+                {/* Primary & Secondary Call to Actions */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
+                  <Button
+                    asChild
+                    size="lg"
+                    className="h-12 px-8 sm:min-w-[160px] justify-center gap-2 text-sm sm:text-base font-semibold bg-[#0D3324] hover:bg-[#174734] text-white shadow-md cursor-pointer"
+                  >
                     <Link href="/login">
-                      Sign in to workspace
-                      <ArrowRight className="size-4" />
+                      Sign in
+                      <ArrowRight className="size-4 text-[#10B981]" />
                     </Link>
                   </Button>
-                  <Button asChild variant="secondary" size="lg" className="h-12 px-6 text-sm font-semibold border border-border">
-                    <Link href="/register">Create organization account</Link>
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="outline"
+                    className="h-12 px-8 sm:min-w-[160px] justify-center text-sm sm:text-base font-semibold bg-white hover:bg-slate-50 text-[#0D3324] border-slate-300 shadow-xs cursor-pointer"
+                  >
+                    <Link href="/register">Get Started</Link>
                   </Button>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-5 pt-3 text-xs font-medium text-muted">
+                {/* Three Product Benefits with Green Checkmarks */}
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2 text-xs font-medium text-[#174734]">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="size-4 text-emerald-700" />
+                    <CheckCircle2 className="size-4 text-[#10B981] shrink-0" />
                     <span>Tenant-isolated security</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="size-4 text-emerald-700" />
+                    <CheckCircle2 className="size-4 text-[#10B981] shrink-0" />
                     <span>Role-based permissions</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="size-4 text-emerald-700" />
-                    <span>Multi-step approval engine</span>
+                    <CheckCircle2 className="size-4 text-[#10B981] shrink-0" />
+                    <span>Complete employee lifecycle</span>
+                  </div>
+                </div>
+
+                {/* Verified Product Facts Row */}
+                <div className="pt-4 border-t border-slate-200/80 flex items-center gap-5 sm:gap-8 text-xs text-slate-500">
+                  <div>
+                    <div className="text-xl font-bold text-[#0D3324] tracking-tight">19+</div>
+                    <div className="text-[11px] text-slate-500">Integrated Modules</div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold text-[#0D3324] tracking-tight">100%</div>
+                    <div className="text-[11px] text-slate-500">Postgres RLS</div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold text-[#0D3324] tracking-tight">∞</div>
+                    <div className="text-[11px] text-slate-500">Built for Scale</div>
                   </div>
                 </div>
               </div>
 
-              {/* Hero Right Visual: Distinctive Architectural Inspector (No duplicate login button) */}
-              <div className="lg:col-span-5 animate-hero-entrance">
-                <div className="relative mx-auto max-w-md overflow-hidden rounded-2xl border border-border/80 bg-surface p-6 sm:p-7 shadow-[0_12px_40px_rgba(13,51,36,0.06)]">
-                  {/* Inspector Header */}
-                  <div className="flex items-center justify-between border-b border-border/70 pb-4">
-                    <div className="flex items-center gap-3">
-                      <Image
-                        src="/symphowork-symbol.png"
-                        alt="SymphoWork Symbol"
-                        width={36}
-                        height={36}
-                        className="h-9 w-auto object-contain"
-                      />
-                      <div>
-                        <h2 className="text-sm font-bold text-primary">SymphoWork HCM</h2>
-                        <p className="text-[11px] text-muted">Platform Architecture</p>
-                      </div>
-                    </div>
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800 border border-emerald-200">
-                      <Activity className="size-3 text-emerald-700" />
-                      <span>Cluster Active</span>
-                    </span>
-                  </div>
-
-                  {/* Inspector Content: Architectural Metrics and Real Modules */}
-                  <div className="mt-5 space-y-4">
-                    <div className="rounded-xl border border-border/80 bg-background/80 p-3.5">
-                      <div className="flex items-center justify-between text-xs font-semibold text-muted">
-                        <span>Unified Operating Engine</span>
-                        <span className="font-mono text-primary font-bold">8 Native Modules</span>
-                      </div>
-                      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                        <div className="flex items-center gap-2 rounded-lg bg-surface p-2 font-medium text-foreground border border-border/50">
-                          <UsersRound className="size-3.5 text-primary" />
-                          <span>Workforce</span>
-                        </div>
-                        <div className="flex items-center gap-2 rounded-lg bg-surface p-2 font-medium text-foreground border border-border/50">
-                          <Clock3 className="size-3.5 text-primary" />
-                          <span>Attendance</span>
-                        </div>
-                        <div className="flex items-center gap-2 rounded-lg bg-surface p-2 font-medium text-foreground border border-border/50">
-                          <Banknote className="size-3.5 text-primary" />
-                          <span>Payroll</span>
-                        </div>
-                        <div className="flex items-center gap-2 rounded-lg bg-surface p-2 font-medium text-foreground border border-border/50">
-                          <BriefcaseBusiness className="size-3.5 text-primary" />
-                          <span>Recruitment</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Platform Governance Highlights (Truthful capability summary instead of redundant button) */}
-                    <div className="rounded-xl border border-border/80 bg-surface p-4 text-xs text-muted">
-                      <div className="flex items-center justify-between font-semibold text-foreground">
-                        <span>Governance & Isolation</span>
-                        <span className="text-[11px] text-emerald-700 font-bold">Postgres RLS</span>
-                      </div>
-                      <p className="mt-1.5 leading-relaxed text-[11.5px]">
-                        Multi-tenant partition enforcement ensures strict boundary isolation across all organization entities, compensation calculations, and audit ledgers.
-                      </p>
-                      <div className="mt-3.5 flex items-center justify-between border-t border-border/60 pt-3 text-[11px]">
-                        <span className="font-medium text-muted">Deterministic RBAC</span>
-                        <a
-                          href="#capabilities"
-                          className="font-semibold text-primary hover:underline inline-flex items-center gap-1"
-                        >
-                          Explore capabilities
-                          <ArrowRight className="size-3" />
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              {/* RIGHT COLUMN: ~65% OF VIEWPORT (THE 3D ADVENTURE WORLD) */}
+              <div className="lg:col-span-7 xl:col-span-8 relative z-10 w-full">
+                <EnterpriseJourneyMap />
               </div>
             </div>
           </div>
         </section>
 
-        {/* Product Capabilities Section */}
-        <section id="capabilities" className="border-b border-border py-14 md:py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* ================================================================ */}
+        {/* BOTTOM INFORMATION CARDS: COMPREHENSIVE CAPABILITIES (LIGHT BG)  */}
+        {/* ================================================================ */}
+        <section id="capabilities" className="border-b border-emerald-100/60 py-10 md:py-14 bg-[#F8FAF9]">
+          <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-10">
             <Reveal>
               <div className="mx-auto max-w-3xl text-center">
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                <span className="inline-flex items-center rounded-full bg-emerald-100 px-3.5 py-1 text-xs font-semibold text-emerald-800 border border-emerald-200">
                   Integrated Capabilities
                 </span>
-                <h2 className="mt-3 text-3xl font-bold tracking-tight text-primary sm:text-4xl">
+                <h2 className="mt-3 text-3xl font-bold tracking-tight text-[#0D3324] sm:text-4xl">
                   Comprehensive tools for modern workforce administration.
                 </h2>
-                <p className="mt-2 text-base text-muted">
+                <p className="mt-2 text-base text-slate-600">
                   Each module is natively engineered into SymphoWork with strict tenant scoping and unified RBAC policies.
                 </p>
               </div>
             </Reveal>
 
-            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-8 sm:mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {capabilities.map((cap, index) => {
                 const Icon = cap.icon;
                 return (
-                  <Reveal key={cap.title} delayMs={index * 50}>
-                    <Card className="flex h-full flex-col justify-between border-border/80 bg-surface transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-md">
+                  <Reveal key={cap.title} delayMs={index * 45}>
+                    <Card className="flex h-full flex-col justify-between border-slate-200/80 bg-white transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-500/40 hover:shadow-lg shadow-xs">
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
-                          <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                          <div className="flex size-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100">
                             <Icon className="size-5" />
                           </div>
-                          <Badge variant="neutral" className="text-[10px]">
+                          <Badge variant="neutral" className="text-[10px] bg-slate-100 text-slate-700 border-slate-200">
                             {cap.badge}
                           </Badge>
                         </div>
-                        <CardTitle className="mt-4 text-base font-bold text-foreground">
+                        <CardTitle className="mt-4 text-base font-bold text-[#0D3324]">
                           {cap.title}
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="pt-0">
-                        <CardDescription className="text-xs leading-relaxed text-muted">
+                        <CardDescription className="text-xs leading-relaxed text-slate-600">
                           {cap.description}
                         </CardDescription>
                       </CardContent>
@@ -349,45 +311,44 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Platform Architecture & Governance Section */}
-        <section id="architecture" className="border-b border-border bg-surface py-14 md:py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* ================================================================ */}
+        {/* PLATFORM ARCHITECTURE & GOVERNANCE SECTION (LIGHT BG)            */}
+        {/* ================================================================ */}
+        <section id="architecture" className="border-b border-emerald-100/60 bg-white py-12 md:py-16">
+          <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-10">
             <div className="grid items-center gap-10 lg:grid-cols-12">
-              {/* Architecture narrative */}
               <div className="space-y-4 lg:col-span-5">
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                <span className="inline-flex items-center rounded-full bg-emerald-100 px-3.5 py-1 text-xs font-semibold text-emerald-800 border border-emerald-200">
                   Enterprise Architecture
                 </span>
-                <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
+                <h2 className="text-3xl font-bold tracking-tight text-[#0D3324] sm:text-4xl">
                   Built on strict security and governance foundations.
                 </h2>
-                <p className="text-sm leading-relaxed text-muted sm:text-base">
+                <p className="text-sm leading-relaxed text-slate-600 sm:text-base">
                   SymphoWork provides institutional confidence through deterministic tenant isolation,
                   cryptographic session handling, and configurable policy workflows.
                 </p>
-                {/* Purposeful architecture anchor instead of repeated login button */}
                 <div className="pt-2">
-                  <div className="inline-flex items-center gap-2 rounded-lg bg-sidebar-active px-3.5 py-2 text-xs font-semibold text-sidebar-active-text border border-primary/10">
-                    <ShieldCheck className="size-4 text-primary" />
+                  <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3.5 py-2 text-xs font-semibold text-emerald-800 border border-emerald-200">
+                    <ShieldCheck className="size-4 text-emerald-600" />
                     <span>Zero Data Cross-Contamination Guarantee</span>
                   </div>
                 </div>
               </div>
 
-              {/* Architecture pillars cards */}
               <div className="grid gap-4 sm:grid-cols-2 lg:col-span-7">
                 {architecturePillars.map((pillar, index) => {
                   const Icon = pillar.icon;
                   return (
                     <Reveal key={pillar.title} delayMs={index * 60}>
-                      <div className="h-full rounded-2xl border border-border/80 bg-background p-6 transition-colors hover:border-primary/40 shadow-xs">
-                        <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-white">
+                      <div className="h-full rounded-2xl border border-slate-200/80 bg-[#F8FAF9] p-6 transition-all duration-200 hover:-translate-y-1 hover:border-emerald-400/40 shadow-xs">
+                        <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-200">
                           <Icon className="size-5" />
                         </div>
-                        <h3 className="mt-4 text-base font-semibold text-foreground">
+                        <h3 className="mt-4 text-base font-semibold text-[#0D3324]">
                           {pillar.title}
                         </h3>
-                        <p className="mt-2 text-xs leading-relaxed text-muted">
+                        <p className="mt-2 text-xs leading-relaxed text-slate-600">
                           {pillar.description}
                         </p>
                       </div>
@@ -399,33 +360,34 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Closing Action Banner */}
-        <section id="governance" className="bg-primary text-white py-14 md:py-18">
-          <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
+        {/* ================================================================ */}
+        {/* CLOSING ACTION BANNER (DEEP GREEN BRAND ACCENT BANNER)           */}
+        {/* ================================================================ */}
+        <section id="governance" className="py-10 md:py-14 px-4 sm:px-6 lg:px-10">
+          <div className="mx-auto max-w-[1400px] rounded-3xl bg-[#0D3324] text-white py-14 px-6 sm:px-12 text-center shadow-xl">
             <div className="mx-auto mb-6 flex items-center justify-center">
               <Image
                 src="/symphowork-logo-white.png"
                 alt="SymphoWork Logo"
                 width={200}
                 height={56}
-                className="h-16 w-auto object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
+                className="h-14 w-auto object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
               />
             </div>
 
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-white">
               Ready to unify your workforce operations?
             </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-[#A3B899] sm:text-base">
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-emerald-200 sm:text-base">
               Onboard your organization to access automated attendance, effective-dated payroll,
               and cross-functional team collaboration in minutes.
             </p>
 
-            {/* Purposeful closing CTAs: Onboarding primary, Console secondary */}
-            <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button
                 asChild
                 size="lg"
-                className="bg-white text-primary hover:bg-[#F0F4ED] shadow-sm font-semibold h-12 px-6"
+                className="bg-[#10B981] text-white hover:bg-[#059669] shadow-sm font-bold h-13 px-7 cursor-pointer"
               >
                 <Link href="/register">
                   Get started with organization onboarding
@@ -436,7 +398,7 @@ export default async function Home() {
                 asChild
                 variant="outline"
                 size="lg"
-                className="border-white/30 text-white hover:bg-white/10 hover:text-white h-12 px-6"
+                className="border-white/30 text-white hover:bg-white/10 hover:text-white h-13 px-7 cursor-pointer"
               >
                 <Link href="/platform/login">Platform console access</Link>
               </Button>
@@ -446,8 +408,8 @@ export default async function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-surface py-10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-4 text-center sm:flex-row sm:text-left sm:px-6 lg:px-8">
+      <footer className="border-t border-slate-200 bg-white py-10">
+        <div className="mx-auto flex max-w-[1600px] flex-col items-center justify-between gap-6 px-4 text-center sm:flex-row sm:text-left sm:px-6 lg:px-10">
           <div className="flex items-center gap-3">
             <Image
               src="/symphowork-symbol.png"
@@ -456,25 +418,25 @@ export default async function Home() {
               height={36}
               className="h-8.5 w-auto object-contain"
             />
-            <div className="text-left border-l border-border/80 pl-3">
-              <p className="text-xs font-bold text-primary">SymphoWork HCM</p>
-              <p className="text-[11px] text-muted">Enterprise People Operations Platform</p>
+            <div className="text-left border-l border-slate-200 pl-3">
+              <p className="text-xs font-bold text-[#0D3324]">SymphoWork HCM</p>
+              <p className="text-[11px] text-slate-500">Enterprise People Operations Platform</p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-muted">
-            <Link href="/login" className="transition-colors hover:text-primary">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-600">
+            <Link href="/login" className="transition-colors hover:text-[#10B981]">
               Workspace Login
             </Link>
-            <Link href="/platform/login" className="transition-colors hover:text-primary">
+            <Link href="/platform/login" className="transition-colors hover:text-[#10B981]">
               Platform Console
             </Link>
-            <Link href="/register" className="transition-colors hover:text-primary">
+            <Link href="/register" className="transition-colors hover:text-[#10B981]">
               Register Organization
             </Link>
           </div>
 
-          <p className="text-xs text-muted">
+          <p className="text-xs text-slate-500">
             © {new Date().getFullYear()} SymphoWork Inc. All rights reserved.
           </p>
         </div>
@@ -482,4 +444,3 @@ export default async function Home() {
     </div>
   );
 }
-

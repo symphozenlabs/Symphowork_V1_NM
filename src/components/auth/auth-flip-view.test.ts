@@ -22,6 +22,10 @@ describe("AuthFlipView component", () => {
     // Verifies register face is also rendered on back side
     expect(html).toContain("Create your account");
     expect(html).toContain("Sign in");
+
+    // Verifies forgot-password face is also rendered on recovery face
+    expect(html).toContain("Forgot password");
+    expect(html).toContain("Account Recovery Enclave");
   });
 
   it("renders with initialMode='register' with flipped card state", () => {
@@ -30,6 +34,17 @@ describe("AuthFlipView component", () => {
     );
 
     expect(html).toContain("is-flipped");
+    expect(html).toContain("state-register");
     expect(html).toContain("Create your account");
+  });
+
+  it("renders with initialMode='forgot-password' with recovery card state", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(AuthFlipView, { initialMode: "forgot-password" })
+    );
+
+    expect(html).toContain("state-forgot");
+    expect(html).toContain("Forgot password");
+    expect(html).toContain("Account Recovery Enclave");
   });
 });

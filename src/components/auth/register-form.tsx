@@ -132,6 +132,7 @@ export function RegisterForm() {
           value={form.fullName}
           onChange={(e) => setForm({ ...form, fullName: e.target.value })}
           disabled={loading}
+          className="h-11 sm:h-11.5 text-sm sm:text-base px-3.5 rounded-xl shadow-xs"
         />
       </div>
 
@@ -148,6 +149,7 @@ export function RegisterForm() {
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
           disabled={loading}
+          className="h-11 sm:h-11.5 text-sm sm:text-base px-3.5 rounded-xl shadow-xs"
         />
       </div>
 
@@ -165,11 +167,11 @@ export function RegisterForm() {
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             disabled={loading}
-            className="pr-10"
+            className="h-11 sm:h-11.5 text-sm sm:text-base px-3.5 pr-11 rounded-xl shadow-xs"
           />
           <button
             type="button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md p-1"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg p-1.5 cursor-pointer"
             onClick={() => setShowPassword((prev) => !prev)}
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
@@ -218,11 +220,11 @@ export function RegisterForm() {
             value={form.confirmPassword}
             onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
             disabled={loading}
-            className="pr-10"
+            className="h-11 sm:h-11.5 text-sm sm:text-base px-3.5 pr-11 rounded-xl shadow-xs"
           />
           <button
             type="button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md p-1"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg p-1.5 cursor-pointer"
             onClick={() => setShowConfirmPassword((prev) => !prev)}
             aria-label={showConfirmPassword ? "Hide password" : "Show password"}
           >
@@ -235,7 +237,11 @@ export function RegisterForm() {
         </div>
       </div>
 
-      <Button className="w-full mt-2" type="submit" disabled={loading}>
+      <Button
+        className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold rounded-xl shadow-xs mt-3 cursor-pointer"
+        type="submit"
+        disabled={loading}
+      >
         {loading ? (
           <>
             <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
