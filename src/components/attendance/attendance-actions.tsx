@@ -9,6 +9,7 @@ type Punch = { id: string; punchType: string; punchedAt: string };
 export function AttendanceActions() {
   const [records, setRecords] = useState<RecordRow[]>([]);
   const [punches, setPunches] = useState<Punch[]>([]);
+  const [hasShift, setHasShift] = useState<boolean | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -26,6 +27,9 @@ export function AttendanceActions() {
     } else {
       setRecords(body.records ?? []);
       setPunches(body.punches ?? []);
+      if (typeof body.hasShift === "boolean") {
+        setHasShift(body.hasShift);
+      }
       setError("");
     }
     setLoading(false);
@@ -62,6 +66,14 @@ export function AttendanceActions() {
 
   return (
     <div className="space-y-5">
+      {hasShift === false && (
+        <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          <p className="font-semibold text-amber-900">No Work Shift Assigned</p>
+          <p className="mt-0.5 text-xs text-amber-700">
+            An organization administrator must configure and assign a work shift to your employee profile before attendance can be recorded.
+          </p>
+        </div>
+      )}
       {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       <div className="rounded-xl border p-4 bg-surface shadow-sm">
         <p className="text-sm text-muted">Current status</p>
@@ -72,7 +84,7 @@ export function AttendanceActions() {
         </p>
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
-        <Button disabled={busy || Boolean(current?.actualFirstIn)} onClick={() => void punch("clock_in")}>
+        <Button disabled={busy || hasShift === false || Boolean(current?.actualFirstIn)} onClick={() => void punch("clock_in")}>
           Clock in
         </Button>
         <Button variant="secondary" disabled={busy || !current?.actualFirstIn || Boolean(current?.actualLastOut)} onClick={() => void punch("clock_out")}>

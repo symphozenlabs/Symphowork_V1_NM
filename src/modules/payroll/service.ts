@@ -77,7 +77,7 @@ export async function calculatePayrollRun(input: { organizationId: string; userI
   const holidayRows = await db.select().from(holidays).where(and(eq(holidays.organizationId, input.organizationId), gte(holidays.holidayDate, period.periodStart), lte(holidays.holidayDate, period.periodEnd), eq(holidays.status, "active")));
   const holidaySet = new Set(holidayRows.map((row) => row.holidayDate));
   const allDates = daysBetween(period.periodStart, period.periodEnd);
-  const workingDates = allDates.filter((date) => workingDaySet.size === 0 || (workingDaySet.has(new Date(`${date}T00:00:00Z`).getUTCDay() || 7) && !holidaySet.has(date)));
+  const workingDates = allDates.filter((date) => workingDaySet.size === 0 || (workingDaySet.has(new Date(`${date}T00:00:00Z`).getUTCDay()) && !holidaySet.has(date)));
   const existingRuns = await db.select().from(payrollRuns).where(and(eq(payrollRuns.organizationId, input.organizationId), eq(payrollRuns.periodId, period.id), inArray(payrollRuns.status, ["processing", "under_review", "approved", "finalized", "locked"])));
   if (existingRuns.length) throw new AppError("VALIDATION_ERROR", "An active payroll run already exists for this period.", 409);
   const runNumber = `RUN-${period.year}-${String(period.month).padStart(2, "0")}-${Date.now()}`;

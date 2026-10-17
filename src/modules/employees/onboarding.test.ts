@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { employeeHistory, employees, onboarding, onboardingChecklistItems } from "@/db/schema";
+import { departments, employeeHistory, employees, onboarding, onboardingChecklistItems, shifts } from "@/db/schema";
 
 const resolveTenantContext = vi.fn();
 const authorize = vi.fn();
@@ -8,10 +8,12 @@ const recordAudit = vi.fn();
 const insertedRecords: Array<{ table: unknown; values: unknown }> = [];
 const updatedRecords: Array<{ table: unknown; values: unknown }> = [];
 
-let mockEmployee: { id: string; organizationId: string; status: string } | null = null;
+let mockEmployee: { id: string; organizationId: string; status: string; joiningDate?: string | null; departmentId?: string | null; shiftId?: string | null } | null = null;
 let mockOnboarding: { id: string; employeeId: string; organizationId: string; status: string; completedAt: Date | null } | null = null;
 let mockPendingItems: Array<{ id: string; status: string }> = [];
 let mockChecklistItem: { id: string; onboardingId: string; organizationId: string; status: string } | null = null;
+let mockDepartments: Array<{ id: string; organizationId: string; status: string }> = [];
+let mockShifts: Array<{ id: string; organizationId: string; status: string }> = [];
 
 const db = {
   select: vi.fn(() => ({
@@ -25,6 +27,12 @@ const db = {
         }
         if (table === onboardingChecklistItems) {
           return Promise.resolve(mockPendingItems);
+        }
+        if (table === departments) {
+          return Promise.resolve(mockDepartments);
+        }
+        if (table === shifts) {
+          return Promise.resolve(mockShifts);
         }
         return Promise.resolve([]);
       }),
@@ -84,7 +92,12 @@ describe("employee onboarding API lifecycle and idempotency", () => {
       id: employeeId,
       organizationId,
       status: "onboarding",
+      joiningDate: "2026-10-15",
+      departmentId: "dept-1111",
+      shiftId: "shift-1111",
     };
+    mockDepartments = [{ id: "dept-1111", organizationId, status: "active" }];
+    mockShifts = [{ id: "shift-1111", organizationId, status: "active" }];
     mockOnboarding = {
       id: "onb-4444",
       employeeId,
@@ -215,5 +228,59 @@ describe("employee onboarding API lifecycle and idempotency", () => {
     expect(response.status).toBe(200);
     expect(body.success).toBe(true);
     expect(updatedRecords.some((r) => r.table === onboardingChecklistItems)).toBe(true);
+  });
+
+  it("rejects POST completion when joiningDate is missing", async () => {
+    mockEmployee!.joiningDate = null;
+    const context = { params: Promise.resolve({ employeeId }) };
+    const response = await POST(new Request("http://localhost/api/app/employees/emp-2222/onboarding", { method: "POST" }), context);
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.error?.message).toBe("Joining date is required before onboarding can be completed.");
+  });
+
+  it("rejects POST completion when department is missing for a mandatory role", async () => {
+    mockEmployee!.departmentId = null;
+    const context = { params: Promise.resolve({ employeeId }) };
+    const response = await POST(new Request("http://localhost/api/app/employees/emp-2222/onboarding", { method: "POST" }), context);
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.error?.message).toBe("Department is required for this role before completing onboarding.");
+  });
+
+  it("rejects POST completion when assigned department is inactive", async () => {
+    mockDepartments = [{ id: "dept-1111", organizationId, status: "inactive" }];
+    const context = { params: Promise.resolve({ employeeId }) };
+    const response = await POST(new Request("http://localhost/api/app/employees/emp-2222/onboarding", { method: "POST" }), context);
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.error?.message).toBe("Assigned department is not active.");
+  });
+
+  it("rejects POST completion when assigned department belongs to another tenant", async () => {
+    mockDepartments = []; // not found in this organization
+    const context = { params: Promise.resolve({ employeeId }) };
+    const response = await POST(new Request("http://localhost/api/app/employees/emp-2222/onboarding", { method: "POST" }), context);
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.error?.message).toBe("Assigned department does not belong to this organization.");
+  });
+
+  it("rejects POST completion when assigned shift belongs to another tenant", async () => {
+    mockShifts = []; // not found in this organization
+    const context = { params: Promise.resolve({ employeeId }) };
+    const response = await POST(new Request("http://localhost/api/app/employees/emp-2222/onboarding", { method: "POST" }), context);
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.error?.message).toBe("Assigned shift does not belong to this organization.");
+  });
+
+  it("rejects POST completion when assigned shift is inactive", async () => {
+    mockShifts = [{ id: "shift-1111", organizationId, status: "inactive" }];
+    const context = { params: Promise.resolve({ employeeId }) };
+    const response = await POST(new Request("http://localhost/api/app/employees/emp-2222/onboarding", { method: "POST" }), context);
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.error?.message).toBe("Assigned shift is not active.");
   });
 });

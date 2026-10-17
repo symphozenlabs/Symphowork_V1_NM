@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const requireSession = vi.fn();
 const withTenantTransaction = vi.fn();
+const withUserTransaction = vi.fn(async (_userId: string, cb: (tx: unknown) => Promise<unknown>) => cb(db));
 
 const db = {
   query: {
@@ -15,7 +16,7 @@ const db = {
 };
 
 vi.mock("@/modules/identity/auth", () => ({ requireSession }));
-vi.mock("@/db/client", () => ({ db, withTenantTransaction }));
+vi.mock("@/db/client", () => ({ db, withTenantTransaction, withUserTransaction }));
 
 const { resolveTenantContext } = await import("@/modules/tenancy/context");
 

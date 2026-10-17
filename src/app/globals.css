@@ -316,6 +316,82 @@ body {
   animation: hudRailDash 1.4s linear infinite;
 }
 
+@keyframes navProgress {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Subtle continuous ambient animation for auth branding panel */
+@keyframes authAmbientDrift1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(35px, 25px) scale(1.08);
+  }
+  66% {
+    transform: translate(-20px, 40px) scale(0.96);
+  }
+}
+
+@keyframes authAmbientDrift2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(-40px, -30px) scale(1.12);
+  }
+}
+
+@keyframes authAmbientDrift3 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translate(25px, -35px) scale(1.06);
+    opacity: 0.35;
+  }
+}
+
+@keyframes authMeshMove {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.auth-ambient-mesh {
+  background: radial-gradient(circle at 25% 25%, rgba(52, 211, 153, 0.08), transparent 55%),
+              radial-gradient(circle at 75% 75%, rgba(45, 89, 70, 0.14), transparent 55%);
+  background-size: 140% 140%;
+  animation: authMeshMove 24s ease infinite;
+}
+
+.auth-ambient-orb-1 {
+  animation: authAmbientDrift1 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+.auth-ambient-orb-2 {
+  animation: authAmbientDrift2 26s ease-in-out infinite;
+  will-change: transform;
+}
+
+.auth-ambient-orb-3 {
+  animation: authAmbientDrift3 22s ease-in-out infinite;
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -323,6 +399,14 @@ body {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+  }
+
+  .auth-ambient-mesh,
+  .auth-ambient-orb-1,
+  .auth-ambient-orb-2,
+  .auth-ambient-orb-3 {
+    animation: none !important;
+    transform: none !important;
   }
 
   .command-ambient-glow,

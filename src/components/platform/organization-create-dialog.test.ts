@@ -54,4 +54,32 @@ describe("OrganizationCreateDialog - Lazy Loading & Plans On-Demand", () => {
     expect(html).toContain("Create organization");
     expect(fetchSpy).not.toHaveBeenCalled();
   });
+
+  it("accepts defaultOpen prop without error", () => {
+    const mockPlans = [
+      {
+        id: "plan-pro",
+        code: "PRO",
+        name: "Pro Plan",
+        description: "Enterprise tier",
+        monthlyPriceCents: 4900,
+        annualPriceCents: 49000,
+        currency: "INR",
+        trialDays: 14,
+        maxUsers: 50,
+        maxStorageBytes: 10737418240,
+        billingInterval: "monthly",
+        active: true,
+      },
+    ];
+
+    const element = React.createElement<OrganizationCreateDialogProps>(OrganizationCreateDialog, {
+      initialPlans: mockPlans,
+      defaultOpen: true,
+    });
+    const html = renderToStaticMarkup(element);
+    expect(html).toContain("Create organization");
+    expect(element.props.defaultOpen).toBe(true);
+  });
 });
+

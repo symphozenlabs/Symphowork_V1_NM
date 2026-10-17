@@ -4,6 +4,8 @@ import { db } from "@/db/client";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { authorize } from "@/modules/tenancy/authorization";
+import { updateDepartment, deleteDepartment } from "@/modules/departments/service";
+import { departmentUpdateSchema } from "@/modules/departments/validation";
 
 const definitions = {
   departments: { table: "departments", permission: "department.update", fields: ["name", "code", "description", "status"] },
@@ -21,6 +23,14 @@ export async function PATCH(request: Request, context: { params: Promise<{ resou
     const tenant = await resolveTenantContext();
     if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     const { resource, itemId } = await context.params;
+
+    if (resource === "departments") {
+      const rawInput = await request.json();
+      const validatedInput = departmentUpdateSchema.parse(rawInput);
+      const updated = await updateDepartment(tenant.organization.id, tenant.user.id, itemId, validatedInput);
+      return NextResponse.json({ success: true, item: updated });
+    }
+
     const definition = definitions[resource as keyof typeof definitions];
     if (!definition) throw new AppError("NOT_FOUND", "Master-data resource was not found.", 404);
     await authorize({ organizationId: tenant.organization.id, permission: definition.permission as never });
@@ -39,6 +49,13 @@ export async function DELETE(_request: Request, context: { params: Promise<{ res
     const tenant = await resolveTenantContext();
     if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     const { resource, itemId } = await context.params;
+
+    if (resource === "departments") {
+      // Safely deactivate via department service ensuring owner-only authorization
+      await deleteDepartment(tenant.organization.id, tenant.user.id, itemId, true);
+      return NextResponse.json({ success: true });
+    }
+
     const definition = definitions[resource as keyof typeof definitions];
     if (!definition) throw new AppError("NOT_FOUND", "Master-data resource was not found.", 404);
     await authorize({ organizationId: tenant.organization.id, permission: definition.permission as never });

@@ -1,6 +1,6 @@
 import { and, eq, gt, sql } from "drizzle-orm";
 import { withInvitationTokenTransaction, type DbTransaction } from "@/db/client";
-import { employees, invitations, memberships, onboarding, organizations, roles, users } from "@/db/schema";
+import { auditLogs, employees, invitations, memberships, onboarding, organizations, roles, users } from "@/db/schema";
 import { hashPassword, hashToken, verifyPassword } from "@/lib/crypto";
 import { AppError } from "@/lib/errors";
 import { recordAuditInTransaction } from "@/lib/audit";
@@ -34,7 +34,56 @@ export async function getInvitationPreview(token: string) {
     if (organization.status !== "active") {
       throw new AppError("FORBIDDEN", "This organization has not been activated yet. Please contact the platform administrator.", 403);
     }
-    return { organization: { name: organization.name, slug: organization.slug }, invitedEmail: invitation.invitedEmail, expiresAt: invitation.expiresAt };
+
+    const query = transaction.query as Partial<DbTransaction["query"]>;
+    let fullName: string | undefined;
+
+    // 1. If invitation is linked to an employee record, check employee display name
+    if (invitation.employeeId && query.employees?.findFirst) {
+      const emp = await query.employees.findFirst({
+        where: eq(employees.id, invitation.employeeId),
+      });
+      if (emp?.displayName?.trim()) {
+        fullName = emp.displayName.trim();
+      }
+    }
+
+    // 2. If owner invitation or not yet found, check organization creation audit log
+    if (!fullName && query.auditLogs?.findFirst) {
+      const creationLog = await query.auditLogs.findFirst({
+        where: and(
+          eq(auditLogs.organizationId, invitation.organizationId),
+          eq(auditLogs.action, "organization_creation")
+        ),
+      });
+      if (creationLog?.metadata) {
+        try {
+          const parsed = typeof creationLog.metadata === "string" ? JSON.parse(creationLog.metadata) : (creationLog.metadata as { ownerFullName?: string });
+          if (typeof parsed?.ownerFullName === "string" && parsed.ownerFullName.trim()) {
+            fullName = parsed.ownerFullName.trim();
+          }
+        } catch {
+          // Ignore JSON parse errors
+        }
+      }
+    }
+
+    // 3. If an existing user matches the invited email, use their full name
+    if (!fullName && query.users?.findFirst) {
+      const existingUser = await query.users.findFirst({
+        where: eq(users.email, normalizeEmail(invitation.invitedEmail)),
+      });
+      if (existingUser?.fullName?.trim()) {
+        fullName = existingUser.fullName.trim();
+      }
+    }
+
+    return {
+      organization: { name: organization.name, slug: organization.slug },
+      invitedEmail: invitation.invitedEmail,
+      expiresAt: invitation.expiresAt,
+      fullName: fullName || undefined,
+    };
   });
 }
 

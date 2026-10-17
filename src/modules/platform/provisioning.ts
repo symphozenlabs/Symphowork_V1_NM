@@ -108,6 +108,46 @@ export async function approveOrganization(organizationId: string, actorUserId: s
   return organization;
 }
 
+export async function syncOrganizationRolePermissions(
+  organizationId: string,
+  txArg?: Parameters<Parameters<typeof withPlatformTransaction>[0]>[0]
+) {
+  const runner = async (tx: Parameters<Parameters<typeof withPlatformTransaction>[0]>[0]) => {
+    const roleRows = await tx.select().from(roles).where(eq(roles.organizationId, organizationId));
+    const roleMap = new Map(roleRows.map((role) => [role.key, role]));
+    for (const key of SYSTEM_ROLES.filter((candidate) => candidate !== "PLATFORM_OWNER")) {
+      if (!roleMap.has(key)) {
+        const [role] = await tx.insert(roles).values({ organizationId, key, name: key.replaceAll("_", " "), isSystem: true }).returning();
+        roleMap.set(key, role);
+      }
+    }
+
+    if (ALL_PERMISSION_KEYS.length > 0) {
+      await tx.insert(permissions).values(ALL_PERMISSION_KEYS.map((key) => ({ key }))).onConflictDoNothing();
+    }
+    const permissionRows = await tx.select().from(permissions);
+    const permissionByKey = new Map(permissionRows.map((permission) => [permission.key, permission]));
+    const rolePermissionValues: Array<{ roleId: string; permissionId: string }> = [];
+    for (const [roleKey, permissionKeys] of Object.entries(ROLE_PERMISSIONS)) {
+      const role = roleMap.get(roleKey);
+      if (!role) continue;
+      for (const permissionKey of permissionKeys) {
+        const permission = permissionByKey.get(permissionKey);
+        if (permission) {
+          rolePermissionValues.push({ roleId: role.id, permissionId: permission.id });
+        }
+      }
+    }
+    if (rolePermissionValues.length > 0) {
+      await tx.insert(rolePermissions).values(rolePermissionValues).onConflictDoNothing();
+    }
+    return { roleCount: roleMap.size, syncedCount: rolePermissionValues.length };
+  };
+
+  if (txArg) return runner(txArg);
+  return withPlatformTransaction(runner);
+}
+
 export async function runProvisioning(organizationId: string, primaryAdminEmail: string, actorUserId?: string) {
   const initialJob = await withPlatformTransaction((tx) =>
     tx.query.provisioningJobs.findFirst({ where: eq(provisioningJobs.organizationId, organizationId) })
@@ -122,44 +162,10 @@ export async function runProvisioning(organizationId: string, primaryAdminEmail:
       .where(eq(provisioningJobs.id, initialJob.id))
   );
 
-  // Stage 2: Create roles
-  const roleByKey = await withPlatformTransaction(async (tx) => {
-    const roleRows = await tx.select().from(roles).where(eq(roles.organizationId, organizationId));
-    const map = new Map(roleRows.map((role) => [role.key, role]));
-    for (const key of SYSTEM_ROLES.filter((candidate) => candidate !== "PLATFORM_OWNER")) {
-      if (!map.has(key)) {
-        const [role] = await tx.insert(roles).values({ organizationId, key, name: key.replaceAll("_", " "), isSystem: true }).returning();
-        map.set(key, role);
-      }
-    }
-    return map;
-  });
-
-  // Stage 3: Mark step to permissions and seed permissions
-  await withPlatformTransaction((tx) =>
-    tx.update(provisioningJobs).set({ currentStep: "permissions", updatedAt: new Date() }).where(eq(provisioningJobs.id, initialJob.id))
-  );
-
+  // Stage 2 & 3: Sync roles and permissions
   await withPlatformTransaction(async (tx) => {
-    if (ALL_PERMISSION_KEYS.length > 0) {
-      await tx.insert(permissions).values(ALL_PERMISSION_KEYS.map((key) => ({ key }))).onConflictDoNothing();
-    }
-    const permissionRows = await tx.select().from(permissions);
-    const permissionByKey = new Map(permissionRows.map((permission) => [permission.key, permission]));
-    const rolePermissionValues: Array<{ roleId: string; permissionId: string }> = [];
-    for (const [roleKey, permissionKeys] of Object.entries(ROLE_PERMISSIONS)) {
-      const role = roleByKey.get(roleKey);
-      if (!role) continue;
-      for (const permissionKey of permissionKeys) {
-        const permission = permissionByKey.get(permissionKey);
-        if (permission) {
-          rolePermissionValues.push({ roleId: role.id, permissionId: permission.id });
-        }
-      }
-    }
-    if (rolePermissionValues.length > 0) {
-      await tx.insert(rolePermissions).values(rolePermissionValues).onConflictDoNothing();
-    }
+    await syncOrganizationRolePermissions(organizationId, tx);
+    await tx.update(provisioningJobs).set({ currentStep: "permissions", updatedAt: new Date() }).where(eq(provisioningJobs.id, initialJob.id));
   });
 
   // Stage 4: Mark step to subscription and activate or create subscription
@@ -192,7 +198,10 @@ export async function runProvisioning(organizationId: string, primaryAdminEmail:
 
   let invitationToken: string | undefined;
   const completed = await withPlatformTransaction(async (tx) => {
-    const ownerRole = roleByKey.get("ORGANIZATION_OWNER");
+    const [ownerRole] = await tx
+      .select()
+      .from(roles)
+      .where(and(eq(roles.organizationId, organizationId), eq(roles.key, "ORGANIZATION_OWNER")));
     if (!ownerRole) throw new AppError("PROVISIONING_FAILED", "Owner role could not be initialized.", 500);
     const existingInvitation = await tx.query.invitations.findFirst({
       where: and(eq(invitations.organizationId, organizationId), eq(invitations.invitedEmail, primaryAdminEmail.toLowerCase()), eq(invitations.status, "pending"))

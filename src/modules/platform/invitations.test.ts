@@ -66,6 +66,8 @@ function createFixture(overrides: Record<string, unknown> = {}) {
       users: { findFirst: vi.fn().mockResolvedValue(null) },
       memberships: { findFirst: vi.fn().mockResolvedValue(undefined) },
       roles: { findFirst: vi.fn().mockResolvedValue({ id: roleId, organizationId, key: "ORGANIZATION_OWNER" }) },
+      auditLogs: { findFirst: vi.fn().mockResolvedValue(null) },
+      employees: { findFirst: vi.fn().mockResolvedValue(null) },
     },
     insert: vi.fn((table: unknown) => ({
       values: vi.fn((values: unknown) => {
@@ -215,5 +217,28 @@ describe("invitation acceptance transaction behavior", () => {
     expect(preview.organization.name).toBe("Test Org");
     expect(preview.organization.slug).toBe("test-org");
     expect(preview.invitedEmail).toBe("owner@example.com");
+    expect(preview.fullName).toBeUndefined();
+  });
+
+  it("populates owner fullName from audit log in invitation preview", async () => {
+    const fixture = createFixture();
+    fixture.tx.query.auditLogs = {
+      findFirst: vi.fn().mockResolvedValue({
+        metadata: JSON.stringify({ ownerFullName: "Dr. Jane Vance" }),
+      }),
+    };
+    const preview = await getInvitationPreview(token);
+
+    expect(preview.fullName).toBe("Dr. Jane Vance");
+  });
+
+  it("populates employee displayName in invitation preview if employeeId exists", async () => {
+    const fixture = createFixture({ employeeId: "emp-uuid" });
+    fixture.tx.query.employees = {
+      findFirst: vi.fn().mockResolvedValue({ displayName: "Jane Doe" }),
+    };
+    const preview = await getInvitationPreview(token);
+
+    expect(preview.fullName).toBe("Jane Doe");
   });
 });

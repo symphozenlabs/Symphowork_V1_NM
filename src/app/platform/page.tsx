@@ -79,7 +79,7 @@ export default async function PlatformOverviewPage() {
             <Link href="/platform/organizations">View all organizations</Link>
           </Button>
           <Button size="sm" asChild className="gap-1.5 shadow-xs">
-            <Link href="/platform/organizations/new">
+            <Link href="/platform/organizations?create=true">
               <Plus className="size-4" aria-hidden="true" />
               <span>Create organization</span>
             </Link>

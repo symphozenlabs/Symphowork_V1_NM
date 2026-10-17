@@ -11,7 +11,46 @@ type Preview = {
   organization: { name: string; slug: string };
   invitedEmail: string;
   expiresAt: string;
+  fullName?: string;
 };
+
+export type PasswordStrengthLevel = "empty" | "weak" | "fair" | "good" | "strong";
+
+export interface PasswordStrength {
+  level: PasswordStrengthLevel;
+  score: number;
+  label: string;
+  colorClass: string;
+}
+
+export function getPasswordStrength(password: string): PasswordStrength {
+  if (!password) {
+    return { level: "empty", score: 0, label: "", colorClass: "bg-muted/30" };
+  }
+
+  const length = password.length;
+  const hasLower = /[a-z]/.test(password);
+  const hasUpper = /[A-Z]/.test(password);
+  const hasDigit = /\d/.test(password);
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
+
+  const criteriaCount = [hasLower, hasUpper, hasDigit, hasSpecial].filter(Boolean).length;
+  const meetsBasePolicy = length >= 12 && hasLower && hasUpper && hasDigit;
+
+  if (length < 8 || criteriaCount <= 1) {
+    return { level: "weak", score: 1, label: "Weak", colorClass: "bg-rose-500" };
+  }
+
+  if (!meetsBasePolicy) {
+    return { level: "fair", score: 2, label: "Fair", colorClass: "bg-amber-500" };
+  }
+
+  if (hasSpecial || length >= 16) {
+    return { level: "strong", score: 4, label: "Strong", colorClass: "bg-emerald-600" };
+  }
+
+  return { level: "good", score: 3, label: "Good", colorClass: "bg-emerald-500" };
+}
 
 export function InvitationAcceptForm({ token }: { token: string }) {
   const [preview, setPreview] = useState<Preview>();
@@ -25,12 +64,17 @@ export function InvitationAcceptForm({ token }: { token: string }) {
   const [done, setDone] = useState(false);
   const { showToast } = useToast();
 
+  const strength = getPasswordStrength(password);
+
   useEffect(() => {
     fetch(`/api/auth/invitations/accept/preview?token=${encodeURIComponent(token)}`)
       .then(async (response) => {
         const body = await response.json();
         if (!response.ok) throw new Error(body.error?.message ?? "Invitation unavailable.");
         setPreview(body.invitation);
+        if (body.invitation?.fullName) {
+          setFullName((prev) => (prev ? prev : body.invitation.fullName));
+        }
       })
       .catch((cause) => setError(cause instanceof Error ? cause.message : "Invitation unavailable."));
   }, [token]);
@@ -176,7 +220,7 @@ export function InvitationAcceptForm({ token }: { token: string }) {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             disabled={loading}
-            aria-describedby="invitation-password-requirements"
+            aria-describedby="invitation-password-requirements invitation-password-strength"
             className="pr-10"
           />
           <button
@@ -192,6 +236,48 @@ export function InvitationAcceptForm({ token }: { token: string }) {
             )}
           </button>
         </div>
+
+        {/* Dynamic Password Strength Meter (Password field only) */}
+        {password.length > 0 && (
+          <div id="invitation-password-strength" className="space-y-1 pt-1" aria-live="polite">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted">Password strength</span>
+              <span
+                className={`font-semibold ${
+                  strength.level === "weak"
+                    ? "text-rose-600 dark:text-rose-400"
+                    : strength.level === "fair"
+                      ? "text-amber-600 dark:text-amber-400"
+                      : strength.level === "good"
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-emerald-700 dark:text-emerald-300"
+                }`}
+                data-testid="password-strength-label"
+              >
+                {strength.label}
+              </span>
+            </div>
+            <div
+              role="progressbar"
+              aria-label="Password strength"
+              aria-valuenow={strength.score}
+              aria-valuemin={0}
+              aria-valuemax={4}
+              aria-valuetext={strength.label}
+              className="grid grid-cols-4 gap-1.5 h-1.5 w-full"
+            >
+              {[1, 2, 3, 4].map((step) => (
+                <div
+                  key={step}
+                  className={`h-full rounded-full transition-colors duration-200 ${
+                    step <= strength.score ? strength.colorClass : "bg-muted/20"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         <p id="invitation-password-requirements" className="text-xs text-muted">
           Use at least 12 characters with uppercase, lowercase, and numeric characters.
         </p>
@@ -212,6 +298,11 @@ export function InvitationAcceptForm({ token }: { token: string }) {
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
             disabled={loading}
+            aria-describedby={
+              confirmPassword.length > 0 && password !== confirmPassword
+                ? "invitation-confirm-password-error"
+                : undefined
+            }
             className="pr-10"
           />
           <button
@@ -227,6 +318,11 @@ export function InvitationAcceptForm({ token }: { token: string }) {
             )}
           </button>
         </div>
+        {confirmPassword.length > 0 && password !== confirmPassword && (
+          <p id="invitation-confirm-password-error" className="text-xs text-destructive" role="alert">
+            Passwords do not match.
+          </p>
+        )}
       </div>
 
       {error && (

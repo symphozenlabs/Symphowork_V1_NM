@@ -22,6 +22,7 @@ vi.mock("@/modules/tenancy/context", () => ({
 vi.mock("@/modules/tenancy/authorization", () => ({
   getRolePermissionSet: vi.fn().mockResolvedValue(
     new Set([
+      "employee.read",
       "organization.settings.read",
       "workflow.manage",
       "billing.view",
@@ -163,4 +164,71 @@ describe("Sidebar vertical scrolling and layout structure", () => {
     expect(groups[2].title).toBe("Administration");
     expect(groups[2].items.map((i) => i.href)).toEqual(["/app/settings", "/app/settings/workflows"]);
   });
+
+  it("hides People and Approvals from sidebar for EMPLOYEE without relevant permissions", async () => {
+    const { getRolePermissionSet } = await import("@/modules/tenancy/authorization");
+    vi.mocked(getRolePermissionSet).mockResolvedValueOnce(
+      new Set([
+        "attendance.read",
+        "leave.read",
+        "expense.read",
+        "payroll.viewself",
+        "payslip.view",
+      ])
+    );
+
+    const rendered = await AppShell({ children: React.createElement("div", null, "Test") });
+    const rootChildren = React.Children.toArray(rendered.props.children) as React.ReactElement<{
+      children?: React.ReactNode;
+      className?: string;
+    }>[];
+    const aside = rootChildren.find((c) => c && c.type === "aside");
+    const asideChildren = React.Children.toArray(aside!.props.children) as React.ReactElement<{
+      children?: React.ReactNode;
+    }>[];
+    const scrollContainer = asideChildren[1];
+    const scrollChildren = React.Children.toArray(scrollContainer.props.children) as React.ReactElement<{
+      groups?: { title?: string; items: { label: string; href: string }[] }[];
+    }>[];
+
+    const sidebarNav = scrollChildren[0];
+    const groups = sidebarNav.props.groups!;
+    const coreGroup = groups.find((g) => g.title === "Core Modules");
+    expect(coreGroup).toBeDefined();
+    const coreHrefs = coreGroup!.items.map((i) => i.href);
+    expect(coreHrefs).not.toContain("/app/employees");
+    expect(coreHrefs).not.toContain("/app/approvals");
+    expect(coreHrefs).toContain("/app/directory");
+    expect(coreGroup!.items).toHaveLength(10);
+  });
+
+  it("retains People and Approvals for ORGANIZATION_OWNER", async () => {
+    const { resolveTenantContext } = await import("@/modules/tenancy/context");
+    vi.mocked(resolveTenantContext).mockResolvedValueOnce({
+      organization: { id: "org-1", name: "SymphoWork Test" },
+      membership: { roleId: "role-owner", status: "active" },
+      role: { key: "ORGANIZATION_OWNER" },
+    } as never);
+
+    const rendered = await AppShell({ children: React.createElement("div", null, "Test") });
+    const rootChildren = React.Children.toArray(rendered.props.children) as React.ReactElement<{
+      children?: React.ReactNode;
+    }>[];
+    const aside = rootChildren.find((c) => c && c.type === "aside");
+    const asideChildren = React.Children.toArray(aside!.props.children) as React.ReactElement<{
+      children?: React.ReactNode;
+    }>[];
+    const scrollContainer = asideChildren[1];
+    const scrollChildren = React.Children.toArray(scrollContainer.props.children) as React.ReactElement<{
+      groups?: { title?: string; items: { label: string; href: string }[] }[];
+    }>[];
+
+    const sidebarNav = scrollChildren[0];
+    const groups = sidebarNav.props.groups!;
+    const coreGroup = groups.find((g) => g.title === "Core Modules");
+    const coreHrefs = coreGroup!.items.map((i) => i.href);
+    expect(coreHrefs).toContain("/app/employees");
+    expect(coreHrefs).toContain("/app/approvals");
+  });
 });
+

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/modules/identity/auth";
 import { resolveTenantContext } from "@/modules/tenancy/context";
-import { authorize } from "@/modules/tenancy/authorization";
+import { authorize, can } from "@/modules/tenancy/authorization";
 import { MasterDataManager } from "@/components/settings/master-data-manager";
 import { Sliders, GitFork, CreditCard } from "lucide-react";
 
@@ -21,6 +21,13 @@ export default async function OrganizationSettingsPage() {
   } catch {
     redirect("/app");
   }
+
+  const canViewBilling = await can({
+    userId: user.id,
+    organizationId: tenant.organization.id,
+    permission: "billing.view",
+    user,
+  });
 
   return (
     <div className="space-y-6">
@@ -53,13 +60,15 @@ export default async function OrganizationSettingsPage() {
             <GitFork className="h-3.5 w-3.5 text-primary" />
             Approval Workflows
           </Link>
-          <Link
-            href="/app/settings/billing"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-slate-50"
-          >
-            <CreditCard className="h-3.5 w-3.5 text-primary" />
-            Billing & Usage
-          </Link>
+          {canViewBilling && (
+            <Link
+              href="/app/settings/billing"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-slate-50"
+            >
+              <CreditCard className="h-3.5 w-3.5 text-primary" />
+              Billing & Usage
+            </Link>
+          )}
         </div>
       </div>
 

@@ -55,6 +55,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   chat: MessageCircle,
   billing: Banknote,
   reports: BarChart3,
+  departments: Building2,
   settings: Settings2,
   workflows: Settings2,
   // Platform Console icons
@@ -74,6 +75,11 @@ const ICON_MAP: Record<string, LucideIcon> = {
 
 export function SidebarNav({ groups }: { groups: NavGroupDef[] }) {
   const pathname = usePathname();
+  const [navigatingHref, setNavigatingHref] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setNavigatingHref(null);
+  }, [pathname]);
 
   const allHrefs = React.useMemo(
     () => groups.flatMap((group) => group.items.map((item) => item.href)),
@@ -93,12 +99,13 @@ export function SidebarNav({ groups }: { groups: NavGroupDef[] }) {
             )}
             {group.items.map((item) => {
               const Icon = ICON_MAP[item.iconKey] || LayoutDashboard;
-              const active = isRouteActive(pathname, item.href, allHrefs);
+              const active = isRouteActive(navigatingHref ?? pathname, item.href, allHrefs);
 
               return (
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => setNavigatingHref(item.href)}
                   className={cn(
                     "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none",
                     active

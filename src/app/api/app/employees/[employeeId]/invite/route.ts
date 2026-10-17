@@ -8,6 +8,8 @@ import { recordAudit } from "@/lib/audit";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { authorize } from "@/modules/tenancy/authorization";
 import { buildInvitationUrl, sendInvitationEmail } from "@/lib/email";
+import { canAssignRole } from "@/modules/rbac/permissions";
+import { isOrganizationOwnerEmployee, isActorPrivilegedForOwnerRecord } from "@/modules/employees/service";
 
 export async function POST(
   request: Request,
@@ -26,6 +28,7 @@ export async function POST(
     const { employeeId } = await context.params;
     const body = (await request.json().catch(() => ({}))) as {
       email?: string;
+      roleKey?: string;
       resend?: boolean;
     };
 
@@ -43,6 +46,18 @@ export async function POST(
       throw new AppError("NOT_FOUND", "Employee was not found.", 404);
     }
 
+    const isOwner = await isOrganizationOwnerEmployee(tenant.organization.id, employee.id);
+    if (isOwner) {
+      const isPrivileged = await isActorPrivilegedForOwnerRecord(tenant.organization.id, tenant.user.id);
+      if (!isPrivileged) {
+        throw new AppError(
+          "FORBIDDEN",
+          "The Organization Owner employee record is protected from modification by other tenant roles.",
+          403
+        );
+      }
+    }
+
     const email = (
       body.email ??
       employee.personalEmail ??
@@ -51,23 +66,6 @@ export async function POST(
 
     if (!email) {
       throw new AppError("VALIDATION_ERROR", "An employee email is required.", 400);
-    }
-
-    const role = await withTenantTransaction(tenant.organization.id, (tx) =>
-      tx.query.roles.findFirst({
-        where: and(
-          eq(roles.organizationId, tenant.organization!.id),
-          eq(roles.key, "EMPLOYEE")
-        ),
-      })
-    );
-
-    if (!role) {
-      throw new AppError(
-        "PROVISIONING_FAILED",
-        "The employee role is not provisioned.",
-        500
-      );
     }
 
     const existing = await db.query.invitations.findFirst({
@@ -85,6 +83,39 @@ export async function POST(
       );
     }
 
+    // Determine target role:
+    // When resending, strictly preserve the existing authorized intendedRole.
+    // When newly inviting, use body.roleKey or default to "EMPLOYEE".
+    const targetRoleKey = (body.resend && existing?.intendedRole)
+      ? existing.intendedRole
+      : (body.roleKey?.trim() || "EMPLOYEE");
+
+    const actorRoleKey = tenant.role?.key;
+    if (!canAssignRole(actorRoleKey, targetRoleKey)) {
+      throw new AppError(
+        "FORBIDDEN",
+        `You are not authorized to assign or invite users with role ${targetRoleKey}.`,
+        403
+      );
+    }
+
+    const role = await withTenantTransaction(tenant.organization.id, (tx) =>
+      tx.query.roles.findFirst({
+        where: and(
+          eq(roles.organizationId, tenant.organization!.id),
+          eq(roles.key, targetRoleKey)
+        ),
+      })
+    );
+
+    if (!role) {
+      throw new AppError(
+        "PROVISIONING_FAILED",
+        `The role ${targetRoleKey} is not provisioned for this organization.`,
+        500
+      );
+    }
+
     const token = createOpaqueToken();
 
     const invitation = existing
@@ -93,6 +124,7 @@ export async function POST(
             .update(invitations)
             .set({
               invitedEmail: email,
+              intendedRole: role.key,
               tokenHash: hashToken(token),
               expiresAt: new Date(Date.now() + 7 * 86_400_000),
               updatedAt: new Date(),
@@ -126,6 +158,7 @@ export async function POST(
       action: body.resend ? "employee_invitation_resent" : "employee_invited",
       resource: "employee",
       resourceId: employee.id,
+      metadata: { intendedRole: role.key },
     });
 
     const delivery = await sendInvitationEmail({
@@ -149,6 +182,7 @@ export async function POST(
       invitation: {
         id: invitation.id,
         status: invitation.status,
+        intendedRole: invitation.intendedRole,
         delivery,
       },
       invitationUrl,

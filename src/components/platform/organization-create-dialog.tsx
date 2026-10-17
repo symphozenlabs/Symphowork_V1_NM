@@ -25,18 +25,58 @@ const OrganizationCreateWizard = dynamic(
 
 export interface OrganizationCreateDialogProps {
   initialPlans?: PlanSummary[];
+  defaultOpen?: boolean;
 }
 
 export function OrganizationCreateDialog({
   initialPlans,
+  defaultOpen = false,
 }: OrganizationCreateDialogProps = {}) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [plans, setPlans] = useState<PlanSummary[]>(initialPlans ?? []);
   const [isLoadingPlans, setIsLoadingPlans] = useState(false);
   const [plansError, setPlansError] = useState<string | null>(null);
   const activeAbortController = useRef<AbortController | null>(null);
   const router = useRouter();
+
+  const stripCreateQueryParam = useCallback(() => {
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      let changed = false;
+      if (url.searchParams.has("create")) {
+        url.searchParams.delete("create");
+        changed = true;
+      }
+      if (url.searchParams.get("action") === "create") {
+        url.searchParams.delete("action");
+        changed = true;
+      }
+      if (changed) {
+        const newUrl =
+          url.pathname + (url.search ? url.search : "") + (url.hash ? url.hash : "");
+        window.history.replaceState(null, "", newUrl);
+      }
+    }
+  }, []);
+
+  // Open automatically if requested via prop or route query param
+  useEffect(() => {
+    if (defaultOpen) {
+      setOpen(true);
+      stripCreateQueryParam();
+    } else if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (
+        url.searchParams.get("create") === "true" ||
+        url.searchParams.get("create") === "1" ||
+        url.searchParams.get("action") === "create"
+      ) {
+        setOpen(true);
+        stripCreateQueryParam();
+      }
+    }
+  }, [defaultOpen, stripCreateQueryParam]);
 
   // Sync if initialPlans are provided/updated externally
   useEffect(() => {
@@ -106,6 +146,12 @@ export function OrganizationCreateDialog({
         active: Boolean(p.active),
       }));
 
+      if (mapped.length === 0) {
+        throw new Error(
+          "No active subscription plans found. Please configure plans in Platform Console."
+        );
+      }
+
       setPlans(mapped);
       setPlansError(null);
     } catch (err: unknown) {
@@ -119,9 +165,9 @@ export function OrganizationCreateDialog({
       setPlansError(message);
     } finally {
       if (activeAbortController.current === controller) {
-        setIsLoadingPlans(false);
         activeAbortController.current = null;
       }
+      setIsLoadingPlans(false);
     }
   }, []);
 
@@ -130,22 +176,40 @@ export function OrganizationCreateDialog({
     if (open && plans.length === 0 && !isLoadingPlans && !plansError) {
       fetchPlans();
     }
+  }, [open, plans.length, isLoadingPlans, plansError, fetchPlans]);
+
+  // Clean up any in-flight request only when component unmounts
+  useEffect(() => {
     return () => {
-      // Abort in-flight requests when dialog closes
       if (activeAbortController.current) {
         activeAbortController.current.abort();
         activeAbortController.current = null;
       }
     };
-  }, [open, plans.length, isLoadingPlans, plansError, fetchPlans]);
+  }, []);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (isSubmitting) return;
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      stripCreateQueryParam();
+      if (activeAbortController.current) {
+        activeAbortController.current.abort();
+        activeAbortController.current = null;
+      }
+      setIsLoadingPlans(false);
+    }
+  };
 
   const handleSuccess = () => {
+    stripCreateQueryParam();
     setOpen(false);
     router.refresh();
   };
 
   const handleCancel = () => {
     if (!isSubmitting) {
+      stripCreateQueryParam();
       setOpen(false);
     }
   };
@@ -162,10 +226,7 @@ export function OrganizationCreateDialog({
 
       <Dialog.Root
         open={open}
-        onOpenChange={(nextOpen) => {
-          if (isSubmitting) return;
-          setOpen(nextOpen);
-        }}
+        onOpenChange={handleOpenChange}
       >
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs transition-opacity data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
@@ -197,7 +258,7 @@ export function OrganizationCreateDialog({
                     </div>
                     <button
                       type="button"
-                      onClick={() => setOpen(false)}
+                      onClick={() => handleOpenChange(false)}
                       aria-label="Close dialog"
                       className="cursor-pointer rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
                     >
@@ -232,7 +293,7 @@ export function OrganizationCreateDialog({
                     </div>
                     <button
                       type="button"
-                      onClick={() => setOpen(false)}
+                      onClick={() => handleOpenChange(false)}
                       aria-label="Close dialog"
                       className="cursor-pointer rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
                     >
@@ -254,7 +315,7 @@ export function OrganizationCreateDialog({
                         type="button"
                         variant="secondary"
                         size="sm"
-                        onClick={() => setOpen(false)}
+                        onClick={() => handleOpenChange(false)}
                       >
                         Cancel
                       </Button>

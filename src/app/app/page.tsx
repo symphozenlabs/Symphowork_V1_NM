@@ -4,6 +4,8 @@ import { Overview } from "@/components/dashboard/overview";
 import { AppError } from "@/lib/errors";
 import { getSessionUser } from "@/modules/identity/auth";
 import { resolveTenantContext } from "@/modules/tenancy/context";
+import { can, canAny } from "@/modules/tenancy/authorization";
+import { APPROVAL_PERMISSIONS } from "@/modules/rbac/permissions";
 
 export default async function WorkspacePage() {
   const user = await getSessionUser();
@@ -51,5 +53,33 @@ export default async function WorkspacePage() {
     redirect("/platform");
   }
 
-  return <Overview fullName={user.fullName} />;
+  const [canReadEmployees, canViewApprovals, canViewAts] = await Promise.all([
+    can({
+      userId: user.id,
+      organizationId: tenant.organization.id,
+      permission: "employee.read",
+      user,
+    }),
+    canAny({
+      userId: user.id,
+      organizationId: tenant.organization.id,
+      permissions: APPROVAL_PERMISSIONS,
+      user,
+    }),
+    can({
+      userId: user.id,
+      organizationId: tenant.organization.id,
+      permission: "ats.view",
+      user,
+    }),
+  ]);
+
+  return (
+    <Overview
+      fullName={user.fullName}
+      canReadEmployees={canReadEmployees}
+      canViewApprovals={canViewApprovals}
+      canViewAts={canViewAts}
+    />
+  );
 }

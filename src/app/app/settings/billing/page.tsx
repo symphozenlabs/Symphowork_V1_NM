@@ -3,9 +3,26 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/modules/identity/auth";
 import { BillingOverview } from "@/components/billing/billing-overview";
 import { ArrowLeft, CreditCard, ShieldCheck } from "lucide-react";
-
 export default async function BillingPage() {
-  if (!(await getSessionUser())) redirect("/login");
+  const user = await getSessionUser();
+  if (!user) redirect("/login");
+
+  const { resolveTenantContext } = await import("@/modules/tenancy/context");
+  const { can } = await import("@/modules/tenancy/authorization");
+
+  const tenant = await resolveTenantContext();
+  if (!tenant.organization) redirect("/platform");
+
+  const canViewBilling = await can({
+    userId: user.id,
+    organizationId: tenant.organization.id,
+    permission: "billing.view",
+    user,
+  });
+
+  if (!canViewBilling) {
+    redirect("/app/settings");
+  }
 
   return (
     <div className="space-y-6">

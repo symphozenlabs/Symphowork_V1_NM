@@ -9,20 +9,9 @@ import { getSessionUser } from "@/modules/identity/auth";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { getRolePermissionSet } from "@/modules/tenancy/authorization";
 import LogoutButton from "@/components/layout/logout-button";
-
-const baseNavItems = [
-  { label: "Overview", href: "/app", iconKey: "overview" },
-  { label: "People", href: "/app/employees", iconKey: "people" },
-  { label: "Attendance", href: "/app/attendance", iconKey: "attendance" },
-  { label: "Leave", href: "/app/leave", iconKey: "leave" },
-  { label: "Approvals", href: "/app/approvals", iconKey: "approvals" },
-  { label: "Expenses", href: "/app/expenses", iconKey: "expenses" },
-  { label: "Payroll", href: "/app/payroll", iconKey: "payroll" },
-  { label: "Payslips", href: "/app/payroll/payslips", iconKey: "payslips" },
-  { label: "Recruitment", href: "/app/recruitment", iconKey: "recruitment" },
-  { label: "Projects & tasks", href: "/app/work", iconKey: "work" },
-  { label: "Internal chat", href: "/app/chat", iconKey: "chat" },
-];
+import { NavigationProgress } from "@/components/layout/navigation-progress";
+import { isAssignedDepartmentManager } from "@/modules/departments/service";
+import { APPROVAL_PERMISSIONS } from "@/modules/rbac/permissions";
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser();
@@ -30,6 +19,10 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   let canManageWorkflows = false;
   let canViewBilling = false;
   let canViewReports = false;
+  let isOrganizationOwner = false;
+  let isDepartmentManager = false;
+  let canViewPeople = false;
+  let canViewApprovals = false;
 
   if (user) {
     try {
@@ -40,12 +33,21 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           canManageWorkflows = true;
           canViewBilling = true;
           canViewReports = true;
+          isOrganizationOwner = true;
+          canViewPeople = true;
+          canViewApprovals = true;
         } else {
+          isOrganizationOwner = tenant.role?.key === "ORGANIZATION_OWNER";
           const permSet = await getRolePermissionSet(tenant.membership.roleId);
           canManageSettings = permSet.has("organization.settings.read");
           canManageWorkflows = permSet.has("workflow.manage");
           canViewBilling = permSet.has("billing.view");
           canViewReports = permSet.has("report.employee");
+          canViewPeople = isOrganizationOwner || permSet.has("employee.read");
+          canViewApprovals = isOrganizationOwner || APPROVAL_PERMISSIONS.some((p) => permSet.has(p));
+          if (!isOrganizationOwner) {
+            isDepartmentManager = (await isAssignedDepartmentManager(tenant.organization.id, user.id)) || permSet.has("department.create") || permSet.has("department.manage");
+          }
         }
       }
     } catch {
@@ -53,11 +55,27 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const coreNavItems = [
+    { label: "Overview", href: "/app", iconKey: "overview" },
+    ...(canViewPeople
+      ? [{ label: "People", href: "/app/employees", iconKey: "people" }]
+      : [{ label: "Directory", href: "/app/directory", iconKey: "people" }]),
+    { label: "Attendance", href: "/app/attendance", iconKey: "attendance" },
+    { label: "Leave", href: "/app/leave", iconKey: "leave" },
+    ...(canViewApprovals ? [{ label: "Approvals", href: "/app/approvals", iconKey: "approvals" }] : []),
+    { label: "Expenses", href: "/app/expenses", iconKey: "expenses" },
+    { label: "Payroll", href: "/app/payroll", iconKey: "payroll" },
+    { label: "Payslips", href: "/app/payroll/payslips", iconKey: "payslips" },
+    { label: "Recruitment", href: "/app/recruitment", iconKey: "recruitment" },
+    { label: "Projects & tasks", href: "/app/work", iconKey: "work" },
+    { label: "Internal chat", href: "/app/chat", iconKey: "chat" },
+  ];
+
   // Construct structured navigation groups
   const navGroups: NavGroupDef[] = [
     {
       title: "Core Modules",
-      items: baseNavItems,
+      items: coreNavItems,
     },
   ];
 
@@ -75,7 +93,11 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     });
   }
 
+  const canAccessDepartments = isOrganizationOwner || isDepartmentManager;
   const adminItems = [];
+  if (canAccessDepartments) {
+    adminItems.push({ label: "Departments", href: "/app/departments", iconKey: "departments" });
+  }
   if (canManageSettings) {
     adminItems.push({ label: "Organization settings", href: "/app/settings", iconKey: "settings" });
   }
@@ -91,7 +113,8 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
   // Flatten items for mobile navigation drawer
   const mobileNavItems = [
-    ...baseNavItems.map(({ label, href }) => ({ label, href })),
+    ...coreNavItems.map(({ label, href }) => ({ label, href })),
+    ...(canAccessDepartments ? [{ label: "Departments", href: "/app/departments" }] : []),
     ...(canViewBilling ? [{ label: "Billing & usage", href: "/app/settings/billing" }] : []),
     ...(canViewReports ? [{ label: "Reports", href: "/app/reports" }] : []),
     ...(canManageSettings ? [{ label: "Organization settings", href: "/app/settings" }] : []),
@@ -100,6 +123,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
+      <React.Suspense fallback={null}>
+        <NavigationProgress />
+      </React.Suspense>
       {/* 
         Desktop Sidebar:
         Strictly preserves classnames required by layout tests:

@@ -25,7 +25,7 @@ vi.mock("@/db/client", () => ({
   db,
 }));
 
-const { can, authorize } = await import("./authorization");
+const { can, authorize, canAny, authorizeAny } = await import("./authorization");
 
 describe("tenancy authorization", () => {
   beforeEach(() => {
@@ -223,6 +223,106 @@ describe("tenancy authorization", () => {
         status: 403,
       });
       expect(db.query.users.findFirst).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("canAny and authorizeAny helpers", () => {
+    it("canAny returns true when PLATFORM_OWNER even without organizationId", async () => {
+      const result = await canAny({
+        userId: "admin-1",
+        permissions: ["workflow.approve" as never, "leave.approve" as never],
+        user: { id: "admin-1", platformRole: "PLATFORM_OWNER" },
+      });
+      expect(result).toBe(true);
+    });
+
+    it("canAny returns true when role has any of the requested permissions", async () => {
+      const membership = {
+        id: "mem-1",
+        userId: "user-member",
+        organizationId: "org-1",
+        roleId: "role-approver",
+        status: "active",
+      };
+      db.query.memberships.findFirst.mockResolvedValueOnce(membership);
+
+      db.select.mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          innerJoin: vi.fn().mockReturnValue({
+            where: vi.fn().mockResolvedValue([
+              { key: "leave.approve" },
+            ]),
+          }),
+        }),
+      });
+
+      const result = await canAny({
+        userId: "user-member",
+        organizationId: "org-1",
+        permissions: ["workflow.approve" as never, "leave.approve" as never],
+        user: { id: "user-member", platformRole: "NONE" },
+      });
+
+      expect(result).toBe(true);
+    });
+
+    it("canAny returns false when role lacks all of the requested permissions", async () => {
+      const membership = {
+        id: "mem-emp",
+        userId: "user-emp",
+        organizationId: "org-1",
+        roleId: "role-employee",
+        status: "active",
+      };
+      db.query.memberships.findFirst.mockResolvedValueOnce(membership);
+
+      db.select.mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          innerJoin: vi.fn().mockReturnValue({
+            where: vi.fn().mockResolvedValue([
+              { key: "attendance.read" },
+              { key: "leave.read" },
+            ]),
+          }),
+        }),
+      });
+
+      const result = await canAny({
+        userId: "user-emp",
+        organizationId: "org-1",
+        permissions: ["workflow.approve" as never, "leave.approve" as never],
+        user: { id: "user-emp", platformRole: "NONE" },
+      });
+
+      expect(result).toBe(false);
+    });
+
+    it("authorizeAny throws FORBIDDEN 403 when user lacks permissions", async () => {
+      const sessionUser = { id: "user-emp", platformRole: "NONE" };
+      requireSession.mockResolvedValueOnce(sessionUser);
+      db.query.memberships.findFirst.mockResolvedValueOnce(null);
+
+      await expect(
+        authorizeAny({
+          organizationId: "org-1",
+          permissions: ["workflow.approve" as never],
+        })
+      ).rejects.toMatchObject({
+        code: "FORBIDDEN",
+        status: 403,
+      });
+    });
+
+    it("authorizeAny succeeds and returns user when authorized", async () => {
+      const sessionUser = { id: "user-admin", platformRole: "PLATFORM_OWNER" };
+      requireSession.mockResolvedValueOnce(sessionUser);
+
+      const user = await authorizeAny({
+        organizationId: "org-1",
+        permissions: ["workflow.approve" as never],
+      });
+
+      expect(user).toEqual(sessionUser);
     });
   });
 });

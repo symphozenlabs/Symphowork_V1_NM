@@ -1,3 +1,4 @@
+import React from "react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { and, eq } from "drizzle-orm";
@@ -6,6 +7,7 @@ import { employeeHistory, employees } from "@/db/schema";
 import { getSessionUser } from "@/modules/identity/auth";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { can } from "@/modules/tenancy/authorization";
+import { isOrganizationOwnerEmployee } from "@/modules/employees/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmployeeInvitationActions } from "@/components/employees/employee-invitation-actions";
 import { OnboardingChecklist } from "@/components/employees/onboarding-checklist";
@@ -29,6 +31,17 @@ export default async function EmployeeDetailsPage({
   const tenant = await resolveTenantContext();
   if (!tenant.organization) redirect("/platform");
 
+  // Restrict access to roles authorized to view employee details
+  const canRead = await can({
+    userId: user.id,
+    organizationId: tenant.organization.id,
+    permission: "employee.read",
+    user,
+  });
+  if (!canRead) {
+    redirect("/app");
+  }
+
   const { employeeId } = await params;
   const [employee] = await db
     .select()
@@ -42,18 +55,34 @@ export default async function EmployeeDetailsPage({
 
   if (!employee) notFound();
 
-  const [canInvite, canOnboard] = await Promise.all([
+  // Prevent HR Admin / non-owner from accessing their own employee management/onboarding profile.
+  // Legitimate personal profile management is accessed via /app/profile.
+  if (employee.userId === user.id && tenant.role?.key !== "ORGANIZATION_OWNER") {
+    redirect("/app/employees");
+  }
+
+  const isOwnerRecord = await isOrganizationOwnerEmployee(tenant.organization.id, employee.id);
+  const isOwnerViewer =
+    tenant.role?.key === "ORGANIZATION_OWNER" ||
+    Boolean(user.platformRole && user.platformRole !== "NONE");
+
+  const [canInviteRaw, canOnboardRaw] = await Promise.all([
     can({
       userId: user.id,
       organizationId: tenant.organization.id,
       permission: "employee.invite",
+      user,
     }),
     can({
       userId: user.id,
       organizationId: tenant.organization.id,
       permission: "employee.onboard",
+      user,
     }),
   ]);
+
+  const canInvite = isOwnerRecord && !isOwnerViewer ? false : canInviteRaw;
+  const canOnboard = isOwnerRecord && !isOwnerViewer ? false : canOnboardRaw;
 
   const history = await db
     .select()
@@ -116,12 +145,19 @@ export default async function EmployeeDetailsPage({
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            {canInvite && (
-              <EmployeeInvitationActions
-                employeeId={employee.id}
-                email={employee.personalEmail ?? employee.workEmail}
-                status={employee.status}
-              />
+            {isOwnerRecord && !isOwnerViewer ? (
+              <span className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200/90 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 shadow-2xs">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                Protected Organization Owner
+              </span>
+            ) : (
+              canInvite && (
+                <EmployeeInvitationActions
+                  employeeId={employee.id}
+                  email={employee.personalEmail ?? employee.workEmail}
+                  status={employee.status}
+                />
+              )
             )}
           </div>
         </div>
@@ -201,7 +237,17 @@ export default async function EmployeeDetailsPage({
             </div>
           </CardHeader>
           <CardContent className="pt-4">
-            {canOnboard ? (
+            {isOwnerRecord && !isOwnerViewer ? (
+              <div className="rounded-xl border border-dashed border-emerald-200/70 bg-emerald-50/30 p-6 text-center">
+                <ShieldCheck className="h-6 w-6 text-emerald-600 mx-auto mb-1.5" />
+                <p className="text-xs font-semibold text-emerald-800">
+                  Organization Owner Record Protected
+                </p>
+                <p className="mt-1 text-[11px] text-muted max-w-xs mx-auto">
+                  Onboarding, account status, and role configurations for the Organization Owner cannot be modified by other tenant roles.
+                </p>
+              </div>
+            ) : canOnboard ? (
               <OnboardingChecklist employeeId={employee.id} />
             ) : (
               <div className="rounded-xl border border-dashed border-border/70 p-6 text-center">

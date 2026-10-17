@@ -107,19 +107,56 @@ export function EmployeeInvitationActions({
     }
   }
 
+  async function revoke() {
+    if (busy) return;
+    setBusy(true);
+    setMessage(undefined);
+
+    try {
+      const response = await fetch(`/api/app/employees/${employeeId}/invite/revoke`, {
+        method: "POST",
+      });
+      const body = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setMessage(body.error?.message ?? "Unable to revoke invitation.");
+      } else {
+        setMessage("Invitation revoked.");
+        router.refresh();
+      }
+    } catch {
+      setMessage("Network error occurred while revoking invitation.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <>
       <div className="space-y-2">
         {status === "active" ? (
           <span className="text-sm text-muted">Account active</span>
         ) : (
-          <Button
-            size="sm"
-            disabled={busy || !email}
-            onClick={() => void invite(status === "invited")}
-          >
-            {busy ? "Sending…" : status === "invited" ? "Resend invitation" : "Invite employee"}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              disabled={busy || !email}
+              onClick={() => void invite(status === "invited")}
+            >
+              {busy ? "Sending…" : status === "invited" ? "Resend invitation" : "Invite employee"}
+            </Button>
+            {status === "invited" && (
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={busy}
+                onClick={() => void revoke()}
+                className="text-rose-700 hover:bg-rose-50 border border-rose-200 text-xs"
+              >
+                Revoke
+              </Button>
+            )}
+          </div>
         )}
         {!email && <p className="text-xs text-muted">Add an employee email before inviting.</p>}
         {message && (

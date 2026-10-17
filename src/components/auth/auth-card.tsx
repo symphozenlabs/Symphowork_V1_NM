@@ -26,15 +26,17 @@ export function AuthCard({
   return (
     <div className="min-h-screen w-full lg:grid lg:grid-cols-12 bg-background">
       {/* Left Column: Executive Brand & Capability Showcase (Desktop lg+) */}
-      <div className="relative hidden lg:col-span-5 lg:flex lg:flex-col lg:justify-between bg-gradient-to-br from-[#0D3324] via-[#174734] to-[#0A261B] p-10 xl:p-14 text-white overflow-hidden shadow-2xl">
-        {/* Subtle decorative background accents */}
-        <div className="pointer-events-none absolute inset-0 opacity-10" aria-hidden="true">
-          <div className="absolute -top-24 -left-24 size-96 rounded-full bg-emerald-400 blur-3xl" />
-          <div className="absolute -bottom-24 -right-24 size-96 rounded-full bg-accent blur-3xl" />
+      <div className="relative hidden lg:col-span-5 lg:sticky lg:top-0 lg:h-screen lg:max-h-screen lg:flex lg:flex-col lg:justify-between bg-gradient-to-br from-[#0D3324] via-[#174734] to-[#0A261B] p-8 xl:p-12 text-white overflow-hidden shadow-2xl">
+        {/* Subtle, continuous ambient moving background animation */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+          <div className="auth-ambient-mesh absolute -inset-[20%] opacity-40" />
+          <div className="auth-ambient-orb-1 absolute -top-24 -left-24 size-80 xl:size-96 rounded-full bg-emerald-400/20 blur-3xl" />
+          <div className="auth-ambient-orb-2 absolute top-1/2 -right-24 size-72 xl:size-80 rounded-full bg-emerald-300/15 blur-3xl" />
+          <div className="auth-ambient-orb-3 absolute -bottom-24 left-1/4 size-80 xl:size-96 rounded-full bg-accent/25 blur-3xl" />
         </div>
 
         {/* Brand Header */}
-        <div className="relative z-10 space-y-6">
+        <div className="relative z-10 space-y-4 xl:space-y-5 shrink-0">
           <Link
             href="/"
             className="group inline-flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded-xl transition-transform hover:scale-[1.02]"
@@ -46,29 +48,31 @@ export function AuthCard({
               width={240}
               height={80}
               priority
-              className="h-16 xl:h-20 w-auto object-contain drop-shadow-[0_6px_20px_rgba(0,0,0,0.45)]"
+              className="h-14 xl:h-18 w-auto object-contain drop-shadow-[0_6px_20px_rgba(0,0,0,0.45)]"
             />
           </Link>
 
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold backdrop-blur-xs">
-            <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>
-              {isPlatformConsole
-                ? "Platform Multi-Tenant Cluster Console"
-                : "Enterprise Human Capital Management"}
-            </span>
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold backdrop-blur-xs">
+              <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>
+                {isPlatformConsole
+                  ? "Platform Multi-Tenant Cluster Console"
+                  : "Enterprise Human Capital Management"}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Narrative & Value Proposition */}
-        <div className="relative z-10 space-y-8 my-auto py-10">
-          <div className="space-y-3">
-            <h2 className="text-3xl font-extrabold tracking-tight text-white xl:text-4xl leading-tight">
+        <div className="relative z-10 space-y-6 xl:space-y-8 my-auto py-4 xl:py-6">
+          <div className="space-y-2.5">
+            <h2 className="text-2xl font-extrabold tracking-tight text-white xl:text-3xl leading-tight">
               {isPlatformConsole
                 ? "Unified control over multi-tenant infrastructure."
                 : "Transform workforce operations with certainty."}
             </h2>
-            <p className="text-sm text-slate-200/90 leading-relaxed max-w-md">
+            <p className="text-xs xl:text-sm text-slate-200/90 leading-relaxed max-w-md">
               {isPlatformConsole
                 ? "Enterprise orchestration for workspace provisioning, commercial subscription tiers, system telemetry, and governance audit trails."
                 : "A unified platform orchestrating employee lifecycles, attendance tracking, shift scheduling, automated leave policies, and payroll."}
@@ -76,7 +80,7 @@ export function AuthCard({
           </div>
 
           {/* Capability Highlights */}
-          <div className="space-y-3.5 max-w-md">
+          <div className="space-y-3 xl:space-y-3.5 max-w-md">
             {isPlatformConsole ? (
               <>
                 <div className="flex items-start gap-3">
@@ -136,12 +140,12 @@ export function AuthCard({
         </div>
 
         {/* Security & Regulatory Footer */}
-        <div className="relative z-10 border-t border-white/10 pt-6">
+        <div className="relative z-10 border-t border-white/10 pt-4 xl:pt-5 shrink-0">
           <div className="flex items-center gap-2 text-xs text-slate-300">
             <ShieldCheck className="size-4 text-emerald-400 shrink-0" aria-hidden="true" />
             <span>High-integrity enterprise architecture · Zero-trust role enforcement</span>
           </div>
-          <p className="mt-2 text-[11px] text-slate-400">
+          <p className="mt-1.5 text-[11px] text-slate-400">
             © {new Date().getFullYear()} SymphoWork Inc. All rights reserved.
           </p>
         </div>
@@ -169,7 +173,7 @@ export function AuthCard({
 
         {/* Centered Form Card with Generous Proportions */}
         <div className="mx-auto my-auto w-full max-w-lg">
-          <div className="rounded-2xl border border-[#DCE6DA] bg-surface p-8 sm:p-10 shadow-[0_12px_40px_rgba(13,51,36,0.06)]">
+          <div className="rounded-2xl border border-[#DCE6DA] bg-surface p-6 sm:p-10 shadow-[0_12px_40px_rgba(13,51,36,0.06)]">
             <header className="space-y-2">
               <div className="inline-flex items-center gap-1.5 rounded-md bg-sidebar-active px-2.5 py-1 text-xs font-semibold text-sidebar-active-text border border-primary/10">
                 <Lock className="size-3 text-primary" aria-hidden="true" />

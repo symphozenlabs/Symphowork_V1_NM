@@ -148,6 +148,11 @@ const db = {
     invitations: {
       findFirst: vi.fn().mockImplementation(() => Promise.resolve(mockInvitations[0] ?? null)),
     },
+    roles: {
+      findFirst: vi.fn().mockImplementation(() =>
+        Promise.resolve({ id: "role-emp", key: "EMPLOYEE", name: "Employee" })
+      ),
+    },
   },
 };
 
@@ -298,6 +303,7 @@ describe("Employee invitation resend flow", () => {
     resolveTenantContext.mockResolvedValue({
       organization: { id: organizationId, name: "Acme Corp" },
       user: { id: userId },
+      role: { id: "role-owner", key: "ORGANIZATION_OWNER" },
     });
     authorize.mockResolvedValue({ id: userId });
 

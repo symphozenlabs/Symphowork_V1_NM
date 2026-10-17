@@ -2,14 +2,47 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authorizePlatform, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
 import { listPlatformOrganizations } from "@/modules/platform/operations";
+import { listPlans } from "@/modules/platform/commercial";
 import { OrganizationListTable } from "@/components/platform/organization-list-table";
 import { OrganizationCreateDialog } from "@/components/platform/organization-create-dialog";
+import type { PlanSummary } from "@/components/platform/organization-wizard/types";
 
-export default async function OrganizationsPage() {
+export default async function OrganizationsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   try {
     await authorizePlatform(PLATFORM_PERMISSIONS.organizationView);
   } catch {
     redirect("/platform/login");
+  }
+
+  const params = searchParams ? await searchParams : {};
+  const autoOpen =
+    params?.create === "true" ||
+    params?.create === "1" ||
+    params?.action === "create";
+
+  let plansData: PlanSummary[] = [];
+  try {
+    const rawPlans = await listPlans();
+    plansData = rawPlans.map((p) => ({
+      id: p.id,
+      code: p.code,
+      name: p.name,
+      description: p.description,
+      monthlyPriceCents: p.monthlyPriceCents,
+      annualPriceCents: p.annualPriceCents,
+      currency: p.currency,
+      trialDays: p.trialDays,
+      maxUsers: p.maxUsers,
+      maxStorageBytes: p.maxStorageBytes,
+      billingInterval: p.billingInterval,
+      active: p.active,
+    }));
+  } catch {
+    plansData = [];
   }
 
   const result = await listPlatformOrganizations({ pageSize: 50 });
@@ -43,7 +76,10 @@ export default async function OrganizationsPage() {
           </p>
         </div>
         <div className="shrink-0">
-          <OrganizationCreateDialog />
+          <OrganizationCreateDialog
+            defaultOpen={autoOpen}
+            initialPlans={plansData}
+          />
         </div>
       </div>
 

@@ -1,11 +1,29 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/modules/identity/auth";
+import { resolveTenantContext } from "@/modules/tenancy/context";
+import { canAny } from "@/modules/tenancy/authorization";
+import { APPROVAL_PERMISSIONS } from "@/modules/rbac/permissions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApprovalInbox } from "@/components/approvals/approval-inbox";
 import { ClipboardCheck, ShieldCheck } from "lucide-react";
 
 export default async function ApprovalsPage() {
-  if (!(await getSessionUser())) redirect("/login");
+  const user = await getSessionUser();
+  if (!user) redirect("/login");
+
+  const tenant = await resolveTenantContext();
+  if (!tenant.organization) redirect("/platform");
+
+  const canAccess = await canAny({
+    userId: user.id,
+    organizationId: tenant.organization.id,
+    permissions: APPROVAL_PERMISSIONS,
+    user,
+  });
+
+  if (!canAccess) {
+    redirect("/app");
+  }
 
   return (
     <div className="space-y-6">

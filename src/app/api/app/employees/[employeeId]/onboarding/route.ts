@@ -1,11 +1,23 @@
 import { NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/db/client";
-import { employeeHistory, employees, onboarding, onboardingChecklistItems } from "@/db/schema";
+import {
+  departments,
+  employeeHistory,
+  employees,
+  invitations,
+  memberships,
+  onboarding,
+  onboardingChecklistItems,
+  roles,
+  shifts,
+  teams,
+} from "@/db/schema";
 import { errorResponse, AppError } from "@/lib/errors";
 import { recordAudit } from "@/lib/audit";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { authorize } from "@/modules/tenancy/authorization";
+import { isOrganizationOwnerEmployee, isActorPrivilegedForOwnerRecord } from "@/modules/employees/service";
 
 export async function GET(_request: Request, context: { params: Promise<{ employeeId: string }> }) {
   try {
@@ -39,6 +51,18 @@ export async function PATCH(request: Request, context: { params: Promise<{ emplo
       .from(employees)
       .where(and(eq(employees.id, employeeId), eq(employees.organizationId, tenant.organization.id)));
     if (!employee) throw new AppError("NOT_FOUND", "Employee was not found.", 404);
+
+    const isOwner = await isOrganizationOwnerEmployee(tenant.organization.id, employee.id);
+    if (isOwner) {
+      const isPrivileged = await isActorPrivilegedForOwnerRecord(tenant.organization.id, tenant.user.id);
+      if (!isPrivileged) {
+        throw new AppError(
+          "FORBIDDEN",
+          "The Organization Owner onboarding records are protected from modification by other tenant roles.",
+          403
+        );
+      }
+    }
 
     const [record] = await db
       .select()
@@ -78,6 +102,18 @@ export async function POST(_request: Request, context: { params: Promise<{ emplo
       .from(employees)
       .where(and(eq(employees.id, employeeId), eq(employees.organizationId, tenant.organization.id)));
     if (!employee) throw new AppError("NOT_FOUND", "Employee was not found.", 404);
+
+    const isOwner = await isOrganizationOwnerEmployee(tenant.organization.id, employee.id);
+    if (isOwner) {
+      const isPrivileged = await isActorPrivilegedForOwnerRecord(tenant.organization.id, tenant.user.id);
+      if (!isPrivileged) {
+        throw new AppError(
+          "FORBIDDEN",
+          "The Organization Owner onboarding records are protected from modification by other tenant roles.",
+          403
+        );
+      }
+    }
     const [record] = await db
       .select()
       .from(onboarding)
@@ -91,8 +127,135 @@ export async function POST(_request: Request, context: { params: Promise<{ emplo
     const pending = await db
       .select()
       .from(onboardingChecklistItems)
-      .where(and(eq(onboardingChecklistItems.onboardingId, record.id), eq(onboardingChecklistItems.status, "pending")));
+      .where(and(eq(onboardingChecklistItems.onboardingId, record.id), ne(onboardingChecklistItems.status, "completed")));
     if (pending.length) throw new AppError("VALIDATION_ERROR", "Complete all onboarding checklist items first.", 400);
+
+    // Verify joiningDate before activation
+    if (!employee.joiningDate) {
+      throw new AppError("VALIDATION_ERROR", "Joining date is required before onboarding can be completed.", 400);
+    }
+
+    // Determine employee role to enforce role-specific requirements
+    let employeeRole: string | null = null;
+    if (employee.userId) {
+      try {
+        const [mem] = await db
+          .select({ roleKey: roles.key })
+          .from(memberships)
+          .innerJoin(roles, eq(roles.id, memberships.roleId))
+          .where(
+            and(
+              eq(memberships.organizationId, tenant.organization.id),
+              eq(memberships.userId, employee.userId),
+              eq(memberships.status, "active")
+            )
+          )
+          .limit(1);
+        if (mem?.roleKey) employeeRole = mem.roleKey;
+      } catch {}
+    }
+    if (!employeeRole) {
+      try {
+        const [inv] = await db
+          .select({ intendedRole: invitations.intendedRole })
+          .from(invitations)
+          .where(
+            and(
+              eq(invitations.organizationId, tenant.organization.id),
+              eq(invitations.employeeId, employee.id)
+            )
+          )
+          .limit(1);
+        if (inv?.intendedRole) employeeRole = inv.intendedRole;
+      } catch {}
+    }
+    if (!employeeRole) {
+      try {
+        const historyEvents = await db
+          .select({ newValue: employeeHistory.newValue })
+          .from(employeeHistory)
+          .where(
+            and(
+              eq(employeeHistory.organizationId, tenant.organization.id),
+              eq(employeeHistory.employeeId, employee.id),
+              eq(employeeHistory.eventType, "joining")
+            )
+          )
+          .limit(1);
+        if (historyEvents[0]?.newValue) {
+          try {
+            const parsed = JSON.parse(historyEvents[0].newValue);
+            if (parsed?.targetRole) employeeRole = parsed.targetRole;
+          } catch {}
+        }
+      } catch {}
+    }
+
+    // Department validation (mandatory for MANAGER, TEAM_LEAD, PROJECT_MANAGER, EMPLOYEE)
+    const departmentMandatoryRoles = ["MANAGER", "TEAM_LEAD", "PROJECT_MANAGER", "EMPLOYEE"];
+    const isDeptMandatory = !employeeRole || departmentMandatoryRoles.includes(employeeRole);
+    if (isDeptMandatory && !employee.departmentId) {
+      throw new AppError("VALIDATION_ERROR", "Department is required for this role before completing onboarding.", 400);
+    }
+
+    if (employee.departmentId) {
+      const [dept] = await db
+        .select()
+        .from(departments)
+        .where(
+          and(
+            eq(departments.id, employee.departmentId),
+            eq(departments.organizationId, tenant.organization.id)
+          )
+        );
+      if (!dept) {
+        throw new AppError("VALIDATION_ERROR", "Assigned department does not belong to this organization.", 400);
+      }
+      if (dept.status !== "active") {
+        throw new AppError("VALIDATION_ERROR", "Assigned department is not active.", 400);
+      }
+    }
+
+    // Shift validation (must belong to same organization and be active)
+    if (employee.shiftId) {
+      const [shift] = await db
+        .select()
+        .from(shifts)
+        .where(
+          and(
+            eq(shifts.id, employee.shiftId),
+            eq(shifts.organizationId, tenant.organization.id)
+          )
+        );
+      if (!shift) {
+        throw new AppError("VALIDATION_ERROR", "Assigned shift does not belong to this organization.", 400);
+      }
+      if (shift.status !== "active") {
+        throw new AppError("VALIDATION_ERROR", "Assigned shift is not active.", 400);
+      }
+    }
+
+    // Team validation (must belong to same organization, be active, and belong to assigned department)
+    if (employee.teamId) {
+      const [team] = await db
+        .select()
+        .from(teams)
+        .where(
+          and(
+            eq(teams.id, employee.teamId),
+            eq(teams.organizationId, tenant.organization.id)
+          )
+        );
+      if (!team) {
+        throw new AppError("VALIDATION_ERROR", "Assigned team does not belong to this organization.", 400);
+      }
+      if (team.status !== "active") {
+        throw new AppError("VALIDATION_ERROR", "Assigned team is not active.", 400);
+      }
+      if (!employee.departmentId || team.departmentId !== employee.departmentId) {
+        throw new AppError("VALIDATION_ERROR", "Assigned team does not belong to the assigned department.", 400);
+      }
+    }
 
     const [updated] = await db
       .update(onboarding)

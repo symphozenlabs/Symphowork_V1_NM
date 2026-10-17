@@ -28,7 +28,17 @@ type Metric = {
   icon: typeof UsersRound;
 };
 
-export function Overview({ fullName }: { fullName: string }) {
+export function Overview({
+  fullName,
+  canReadEmployees,
+  canViewApprovals,
+  canViewAts,
+}: {
+  fullName: string;
+  canReadEmployees?: boolean;
+  canViewApprovals?: boolean;
+  canViewAts?: boolean;
+}) {
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -37,58 +47,61 @@ export function Overview({ fullName }: { fullName: string }) {
     let active = true;
     const load = async () => {
       try {
+        const shouldFetchEmployees = canReadEmployees !== false;
+        const shouldFetchApprovals = canViewApprovals !== false;
+
         const [employeesResponse, approvalsResponse, notificationsResponse] =
           await Promise.all([
-            fetch("/api/app/employees?limit=1"),
-            fetch("/api/app/approvals"),
+            shouldFetchEmployees ? fetch("/api/app/employees?limit=1") : Promise.resolve(null),
+            shouldFetchApprovals ? fetch("/api/app/approvals") : Promise.resolve(null),
             fetch("/api/app/notifications?unread=true"),
           ]);
         const [employeesBody, approvalsBody, notificationsBody] =
           await Promise.all([
-            employeesResponse.json(),
-            approvalsResponse.json(),
-            notificationsResponse.json(),
+            employeesResponse ? employeesResponse.json().catch(() => null) : Promise.resolve(null),
+            approvalsResponse ? approvalsResponse.json().catch(() => null) : Promise.resolve(null),
+            notificationsResponse ? notificationsResponse.json().catch(() => null) : Promise.resolve(null),
           ]);
 
         if (!active) return;
 
-        const pendingApprovalsCount = approvalsBody.success && Array.isArray(approvalsBody.tasks)
-          ? approvalsBody.tasks.filter((task: { status: string }) => task.status === "pending").length
-          : 0;
+        const nextMetrics: Metric[] = [];
 
-        setMetrics([
-          {
+        if (shouldFetchEmployees && employeesResponse?.ok && employeesBody?.success) {
+          nextMetrics.push({
             label: "Workforce Directory",
-            value: employeesBody.success
-              ? String(employeesBody.total ?? employeesBody.employees?.length ?? 0)
-              : "—",
-            note: employeesBody.success ? "Active team members" : "Unavailable",
+            value: String(employeesBody.total ?? employeesBody.employees?.length ?? 0),
+            note: "Active team members",
             href: "/app/employees",
             icon: UsersRound,
-          },
-          {
+          });
+        }
+
+        if (shouldFetchApprovals && approvalsResponse?.ok && approvalsBody?.success) {
+          const pendingApprovalsCount = Array.isArray(approvalsBody.tasks)
+            ? approvalsBody.tasks.filter((task: { status: string }) => task.status === "pending").length
+            : 0;
+
+          nextMetrics.push({
             label: "Pending Approvals",
-            value: approvalsBody.success ? String(pendingApprovalsCount) : "—",
-            note: approvalsBody.success
-              ? pendingApprovalsCount === 0
-                ? "All caught up"
-                : "Action required"
-              : "Unavailable",
+            value: String(pendingApprovalsCount),
+            note: pendingApprovalsCount === 0 ? "All caught up" : "Action required",
             href: "/app/approvals",
             icon: Clock3,
-          },
-          {
+          });
+        }
+
+        if (notificationsBody?.success) {
+          nextMetrics.push({
             label: "Unread Notifications",
-            value: notificationsBody.success ? String(notificationsBody.unreadCount ?? 0) : "—",
-            note: notificationsBody.success
-              ? notificationsBody.unreadCount > 0
-                ? "Requires review"
-                : "No unread alerts"
-              : "Unavailable",
+            value: String(notificationsBody.unreadCount ?? 0),
+            note: notificationsBody.unreadCount > 0 ? "Requires review" : "No unread alerts",
             href: "/app/notifications",
             icon: Bell,
-          },
-        ]);
+          });
+        }
+
+        setMetrics(nextMetrics);
       } catch (cause) {
         if (active)
           setError(cause instanceof Error ? cause.message : "Some workspace metrics are unavailable.");
@@ -101,7 +114,7 @@ export function Overview({ fullName }: { fullName: string }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [canReadEmployees, canViewApprovals]);
 
   const timeGreeting = () => {
     const hour = new Date().getHours();
@@ -139,13 +152,17 @@ export function Overview({ fullName }: { fullName: string }) {
       icon: CreditCard,
       badge: "Payroll",
     },
-    {
-      title: "Talent & ATS",
-      description: "Track candidate pipelines, job requisitions, and recruitment intelligence.",
-      href: "/app/recruitment",
-      icon: Briefcase,
-      badge: "Hiring",
-    },
+    ...(canViewAts
+      ? [
+          {
+            title: "Talent & ATS",
+            description: "Track candidate pipelines, job requisitions, and recruitment intelligence.",
+            href: "/app/recruitment",
+            icon: Briefcase,
+            badge: "Hiring",
+          },
+        ]
+      : []),
     {
       title: "Documents & Vault",
       description: "Browse organization policies, compliance files, and personal records.",
