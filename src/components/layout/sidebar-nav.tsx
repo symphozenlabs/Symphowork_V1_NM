@@ -73,6 +73,15 @@ const ICON_MAP: Record<string, LucideIcon> = {
   audit: Activity,
 };
 
+const HIGH_FREQUENCY_ROUTES = new Set([
+  "/app",
+  "/app/employees",
+  "/app/departments",
+  "/app/attendance",
+  "/app/leave",
+  "/app/approvals",
+]);
+
 export function SidebarNav({ groups }: { groups: NavGroupDef[] }) {
   const pathname = usePathname();
   const [navigatingHref, setNavigatingHref] = React.useState<string | null>(null);
@@ -105,6 +114,7 @@ export function SidebarNav({ groups }: { groups: NavGroupDef[] }) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={HIGH_FREQUENCY_ROUTES.has(item.href) ? true : undefined}
                   onClick={() => setNavigatingHref(item.href)}
                   className={cn(
                     "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none",

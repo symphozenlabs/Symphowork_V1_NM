@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ import {
   ONBOARDING_WIZARD_STEPS,
   type OnboardingWizardStepId,
   type OnboardingWizardFormState,
+  type MasterDataItem,
+  type ManagerSummary,
 } from "./types";
 
 interface OnboardingWizardProps {
@@ -64,6 +66,75 @@ export function OnboardingWizard({
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [resendError, setResendError] = useState<string | null>(null);
 
+  // Shared master data states
+  const [departments, setDepartments] = useState<MasterDataItem[]>([]);
+  const [designations, setDesignations] = useState<MasterDataItem[]>([]);
+  const [locations, setLocations] = useState<MasterDataItem[]>([]);
+  const [shifts, setShifts] = useState<MasterDataItem[]>([]);
+  const [employmentTypes, setEmploymentTypes] = useState<MasterDataItem[]>([]);
+  const [managers, setManagers] = useState<ManagerSummary[]>([]);
+  const [isLoadingMasterData, setIsLoadingMasterData] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadMasterData() {
+      setIsLoadingMasterData(true);
+      try {
+        const [
+          deptRes,
+          desigRes,
+          locRes,
+          shiftRes,
+          typeRes,
+          empRes,
+        ] = await Promise.allSettled([
+          fetch("/api/app/master-data/departments").then((r) => r.json()),
+          fetch("/api/app/master-data/designations").then((r) => r.json()),
+          fetch("/api/app/master-data/locations").then((r) => r.json()),
+          fetch("/api/app/master-data/shifts").then((r) => r.json()),
+          fetch("/api/app/master-data/employment-types").then((r) => r.json()),
+          fetch("/api/app/employees?pageSize=100").then((r) => r.json()),
+        ]);
+
+        if (!isMounted) return;
+
+        if (deptRes.status === "fulfilled" && deptRes.value.items) {
+          setDepartments(deptRes.value.items);
+        }
+        if (desigRes.status === "fulfilled" && desigRes.value.items) {
+          setDesignations(desigRes.value.items);
+        }
+        if (locRes.status === "fulfilled" && locRes.value.items) {
+          setLocations(locRes.value.items);
+        }
+        if (shiftRes.status === "fulfilled" && shiftRes.value.items) {
+          setShifts(shiftRes.value.items);
+        }
+        if (typeRes.status === "fulfilled" && typeRes.value.items) {
+          setEmploymentTypes(typeRes.value.items);
+        }
+        if (empRes.status === "fulfilled" && empRes.value.rows) {
+          setManagers(
+            empRes.value.rows.map((e: { id: string; displayName: string; employeeId: string }) => ({
+              id: e.id,
+              displayName: e.displayName,
+              employeeId: e.employeeId,
+            }))
+          );
+        }
+      } catch {
+        // Fall back gracefully
+      } finally {
+        if (isMounted) setIsLoadingMasterData(false);
+      }
+    }
+
+    void loadMasterData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleFormChange = (patch: Partial<OnboardingWizardFormState>) => {
     setForm((prev) => ({ ...prev, ...patch }));
     // Clear relevant errors
@@ -96,18 +167,23 @@ export function OnboardingWizard({
       errors.workEmail = "Please enter a valid work email address.";
     }
 
-    const isDeptRequired = [
-      "MANAGER",
-      "TEAM_LEAD",
-      "PROJECT_MANAGER",
-      "EMPLOYEE",
-    ].includes(form.targetRole);
+    const isHrRole = form.targetRole === "HR_ADMIN" || form.targetRole === "HR_EXECUTIVE";
+    const isDeptRequired =
+      isHrRole ||
+      [
+        "MANAGER",
+        "TEAM_LEAD",
+        "PROJECT_MANAGER",
+        "EMPLOYEE",
+      ].includes(form.targetRole);
 
     if (isDeptRequired && !form.departmentId) {
-      errors.departmentId = `Department assignment is required for ${form.targetRole} role.`;
+      errors.departmentId = isHrRole
+        ? "HR department assignment is required for HR roles."
+        : `Department assignment is required for ${form.targetRole} role.`;
     }
 
-    if (form.teamId && !form.departmentId) {
+    if (!isHrRole && form.teamId && !form.departmentId) {
       errors.teamId = "A department must be selected before assigning a team.";
     }
 
@@ -133,6 +209,7 @@ export function OnboardingWizard({
     setSubmissionError(null);
 
     try {
+      const isHrRole = form.targetRole === "HR_ADMIN" || form.targetRole === "HR_EXECUTIVE";
       const payload = {
         firstName: form.firstName.trim(),
         middleName: form.middleName.trim() || undefined,
@@ -143,8 +220,8 @@ export function OnboardingWizard({
         joiningDate: form.joiningDate || undefined,
         departmentId: form.departmentId || undefined,
         designationId: form.designationId || undefined,
-        teamId: form.departmentId ? (form.teamId || undefined) : undefined,
-        locationId: form.locationId || undefined,
+        teamId: isHrRole ? undefined : (form.departmentId ? (form.teamId || undefined) : undefined),
+        locationId: isHrRole ? undefined : (form.locationId || undefined),
         shiftId: form.shiftId || undefined,
         employmentTypeId: form.employmentTypeId || undefined,
         reportingManagerId: form.reportingManagerId || undefined,
@@ -347,6 +424,13 @@ export function OnboardingWizard({
                 form={form}
                 onChange={handleFormChange}
                 errors={fieldErrors}
+                departments={departments}
+                designations={designations}
+                locations={locations}
+                shifts={shifts}
+                employmentTypes={employmentTypes}
+                managers={managers}
+                isLoadingMasterData={isLoadingMasterData}
               />
             )}
 
@@ -357,6 +441,12 @@ export function OnboardingWizard({
                 isSubmitting={isSubmitting}
                 submissionError={submissionError}
                 onSubmit={handleSubmitProfile}
+                departments={departments}
+                designations={designations}
+                locations={locations}
+                shifts={shifts}
+                employmentTypes={employmentTypes}
+                managers={managers}
               />
             )}
 

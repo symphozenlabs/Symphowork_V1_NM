@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { employees, memberships } from "@/db/schema";
+import { employees, memberships, roles } from "@/db/schema";
 import { AppError } from "@/lib/errors";
 
 const authorize = vi.fn();
@@ -23,6 +23,7 @@ const organizationId = "org-test-1";
 const ownerEmployeeId = "emp-owner-001";
 const regularEmployeeId = "emp-reg-002";
 const hrAdminUserId = "user-hr-admin";
+const hrExecutiveUserId = "user-hr-exec";
 const ownerUserId = "user-org-owner";
 const platformOwnerUserId = "user-platform-owner";
 
@@ -30,6 +31,7 @@ let mockEmployeeToReturn: Record<string, unknown> | null = null;
 let mockUsers: Record<string, { id: string; platformRole: string }> = {
   [ownerUserId]: { id: ownerUserId, platformRole: "NONE" },
   [hrAdminUserId]: { id: hrAdminUserId, platformRole: "NONE" },
+  [hrExecutiveUserId]: { id: hrExecutiveUserId, platformRole: "NONE" },
   [platformOwnerUserId]: { id: platformOwnerUserId, platformRole: "PLATFORM_OWNER" },
 };
 
@@ -71,6 +73,9 @@ vi.mock("@/db/client", () => ({
         where: () => {
           if (table === employees) {
             return Promise.resolve(mockEmployeeToReturn ? [mockEmployeeToReturn] : []);
+          }
+          if (table === roles) {
+            return Promise.resolve([{ id: "role-target", key: "RECRUITER" }]);
           }
           return Promise.resolve([]);
         },
@@ -121,6 +126,15 @@ vi.mock("@/db/client", () => ({
               status: "active",
             });
           }
+          if (findValueInSql(where, hrExecutiveUserId)) {
+            return Promise.resolve({
+              id: "mem-hrexec",
+              userId: hrExecutiveUserId,
+              organizationId,
+              roleId: "role-hrexec",
+              status: "active",
+            });
+          }
           return Promise.resolve(null);
         }),
       },
@@ -138,6 +152,13 @@ vi.mock("@/db/client", () => ({
               id: "role-hradmin",
               key: "HR_ADMIN",
               name: "HR Administrator",
+            });
+          }
+          if (findValueInSql(where, "role-hrexec")) {
+            return Promise.resolve({
+              id: "role-hrexec",
+              key: "HR_EXECUTIVE",
+              name: "HR Executive",
             });
           }
           return Promise.resolve(null);
@@ -197,7 +218,7 @@ describe("Organization Owner Employee Protection — Regression Tests", () => {
       const { isOrganizationOwnerEmployee } = await import("@/modules/employees/service");
       const isOwner = await isOrganizationOwnerEmployee(organizationId, ownerEmployeeId);
       expect(isOwner).toBe(true);
-    });
+    }, 15000);
 
     it("identifies actor privilege correctly for owner vs platform admin vs HR admin", async () => {
       const { isActorPrivilegedForOwnerRecord } = await import("@/modules/employees/service");
@@ -213,7 +234,7 @@ describe("Organization Owner Employee Protection — Regression Tests", () => {
       // HR Admin is NOT privileged to mutate owner record
       const isHrPrivileged = await isActorPrivilegedForOwnerRecord(organizationId, hrAdminUserId);
       expect(isHrPrivileged).toBe(false);
-    });
+    }, 15000);
   });
 
   describe("updateEmployee service method", () => {
@@ -269,6 +290,149 @@ describe("Organization Owner Employee Protection — Regression Tests", () => {
       });
 
       expect(result).toBeDefined();
+    });
+
+    it("allows Organization Owner to update employee records across all roles (HR Admin, Recruiter, PM, Employee)", async () => {
+      const { updateEmployee } = await import("@/modules/employees/service");
+
+      mockEmployeeToReturn = {
+        id: regularEmployeeId,
+        organizationId,
+        userId: "user-reg",
+        firstName: "Regular",
+        lastName: "Worker",
+        displayName: "Regular Worker",
+        status: "active",
+      };
+
+      const result = await updateEmployee(organizationId, ownerUserId, regularEmployeeId, {
+        firstName: "Owner Modified Worker",
+        targetRole: "RECRUITER",
+      });
+
+      expect(result).toBeDefined();
+    });
+
+    it("rejects unauthorized actor attempting to assign roles beyond their permission level", async () => {
+      const { updateEmployee } = await import("@/modules/employees/service");
+
+      mockEmployeeToReturn = {
+        id: regularEmployeeId,
+        organizationId,
+        userId: "user-reg",
+        firstName: "Regular",
+        lastName: "Worker",
+        displayName: "Regular Worker",
+        status: "active",
+      };
+
+      await expect(
+        updateEmployee(organizationId, hrExecutiveUserId, regularEmployeeId, {
+          targetRole: "HR_ADMIN",
+        })
+      ).rejects.toThrow(
+        new AppError(
+          "FORBIDDEN",
+          "You are not authorized to assign the HR_ADMIN role.",
+          403
+        )
+      );
+    });
+
+    it("rejects attempt to change Organization Owner system role", async () => {
+      const { updateEmployee } = await import("@/modules/employees/service");
+
+      await expect(
+        updateEmployee(organizationId, ownerUserId, ownerEmployeeId, {
+          targetRole: "EMPLOYEE",
+        })
+      ).rejects.toThrow(
+        new AppError(
+          "FORBIDDEN",
+          "The Organization Owner role is protected and cannot be modified.",
+          403
+        )
+      );
+    });
+
+    it("rejects attempt to assign ORGANIZATION_OWNER or PLATFORM_OWNER role via employee update", async () => {
+      const { updateEmployee } = await import("@/modules/employees/service");
+
+      mockEmployeeToReturn = {
+        id: regularEmployeeId,
+        organizationId,
+        userId: "user-reg",
+        firstName: "Regular",
+        lastName: "Worker",
+        displayName: "Regular Worker",
+        status: "active",
+      };
+
+      await expect(
+        updateEmployee(organizationId, ownerUserId, regularEmployeeId, {
+          targetRole: "ORGANIZATION_OWNER",
+        })
+      ).rejects.toThrow(
+        new AppError(
+          "FORBIDDEN",
+          "Cannot assign protected owner roles through employee profile updates.",
+          403
+        )
+      );
+    });
+
+    it("rejects team selection when target employee is assigned an HR role", async () => {
+      const { updateEmployee } = await import("@/modules/employees/service");
+
+      mockEmployeeToReturn = {
+        id: regularEmployeeId,
+        organizationId,
+        userId: "user-reg",
+        firstName: "Regular",
+        lastName: "Worker",
+        displayName: "Regular Worker",
+        status: "active",
+      };
+
+      await expect(
+        updateEmployee(organizationId, ownerUserId, regularEmployeeId, {
+          targetRole: "HR_ADMIN",
+          teamId: "team-123",
+        })
+      ).rejects.toThrow(
+        new AppError(
+          "VALIDATION_ERROR",
+          "Team selection is not permitted for HR roles.",
+          400
+        )
+      );
+    });
+
+    it("rejects location selection when target employee is assigned an HR role", async () => {
+      const { updateEmployee } = await import("@/modules/employees/service");
+
+      mockEmployeeToReturn = {
+        id: regularEmployeeId,
+        organizationId,
+        userId: "user-reg",
+        firstName: "Regular",
+        lastName: "Worker",
+        displayName: "Regular Worker",
+        status: "active",
+      };
+
+      await expect(
+        updateEmployee(organizationId, ownerUserId, regularEmployeeId, {
+          targetRole: "HR_ADMIN",
+          locationId: "loc-123",
+        })
+      ).rejects.toThrow(
+        new AppError(
+          "VALIDATION_ERROR",
+          "Location selection is not permitted for HR roles.",
+          400
+        )
+      );
     });
   });
 

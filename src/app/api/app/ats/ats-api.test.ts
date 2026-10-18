@@ -29,12 +29,17 @@ vi.mock("@/modules/ats/service", () => ({
   listJobs: vi.fn(() => Promise.resolve([])),
   listApplications: vi.fn(() => Promise.resolve([])),
   listInterviews: vi.fn(() => Promise.resolve([])),
+  listRequisitions: vi.fn(() => Promise.resolve([])),
+  getDefaultAtsPipeline: vi.fn(() => Promise.resolve({ stages: [] })),
 }));
 
 import { GET as getCandidates } from "./candidates/route";
 import { GET as getJobs } from "./jobs/route";
 import { GET as getApplications } from "./applications/route";
 import { GET as getInterviews } from "./interviews/list/route";
+import { GET as getRequisitions } from "./requisitions/route";
+import { GET as getPipeline } from "./pipeline/route";
+import { ROLE_PERMISSIONS } from "@/modules/rbac/permissions";
 
 describe("ATS API Authorization & Tenant Isolation", () => {
   beforeEach(() => {
@@ -85,6 +90,48 @@ describe("ATS API Authorization & Tenant Isolation", () => {
 
     expect(appRes.status).toBe(403);
     expect(intRes.status).toBe(403);
+  });
+
+  it("GET /api/app/ats/requisitions and pipeline reject unauthorized roles with 403", async () => {
+    mockAuthorizeShouldThrow = true;
+    const reqRes = await getRequisitions();
+    const pipeRes = await getPipeline();
+
+    expect(reqRes.status).toBe(403);
+    expect(pipeRes.status).toBe(403);
+  });
+
+  it("GET /api/app/ats/requisitions and pipeline succeed for authorized roles", async () => {
+    mockAuthorizeShouldThrow = false;
+    const reqRes = await getRequisitions();
+    const pipeRes = await getPipeline();
+
+    expect(reqRes.status).toBe(200);
+    expect(pipeRes.status).toBe(200);
+  });
+
+  it("enforces strict role boundaries: HR_ADMIN is forbidden from ATS, RECRUITER & OWNER are permitted", () => {
+    const hrAdminPerms = new Set(ROLE_PERMISSIONS.HR_ADMIN ?? []);
+    const recruiterPerms = new Set(ROLE_PERMISSIONS.RECRUITER ?? []);
+
+    const atsPermissionsToCheck = [
+      "ats.view",
+      "ats.job.view",
+      "ats.candidate.view",
+      "ats.application.view",
+      "ats.interview.view",
+      "ats.requisition.view",
+    ];
+
+    // HR_ADMIN must NOT have any of the ATS permissions
+    for (const perm of atsPermissionsToCheck) {
+      expect(hrAdminPerms.has(perm as never)).toBe(false);
+    }
+
+    // RECRUITER must have all ATS permissions
+    for (const perm of atsPermissionsToCheck) {
+      expect(recruiterPerms.has(perm as never)).toBe(true);
+    }
   });
 
   it("rejects requests missing organization context with 403", async () => {

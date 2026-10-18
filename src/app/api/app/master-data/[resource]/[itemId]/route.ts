@@ -34,7 +34,49 @@ export async function PATCH(request: Request, context: { params: Promise<{ resou
     const definition = definitions[resource as keyof typeof definitions];
     if (!definition) throw new AppError("NOT_FOUND", "Master-data resource was not found.", 404);
     await authorize({ organizationId: tenant.organization.id, permission: definition.permission as never });
-    const input = (await request.json()) as Record<string, unknown>;
+    const rawInput = (await request.json()) as Record<string, unknown>;
+
+    const camelToSnakeMap: Record<string, string> = {
+      startTime: "start_time",
+      endTime: "end_time",
+      breakMinutes: "break_minutes",
+      graceMinutes: "grace_minutes",
+      holidayDate: "holiday_date",
+      isWorkingDay: "is_working_day",
+      dayOfWeek: "day_of_week",
+      departmentId: "department_id",
+      addressLine1: "address_line_1",
+      addressLine2: "address_line_2",
+      postalCode: "postal_code",
+    };
+
+    const input: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(rawInput)) {
+      const normalizedKey = camelToSnakeMap[key] || key;
+      input[normalizedKey] = value;
+    }
+
+    if (resource === "shifts") {
+      const startTime = typeof input.start_time === "string" ? input.start_time : undefined;
+      const endTime = typeof input.end_time === "string" ? input.end_time : undefined;
+      const timeRegex = /^\d{2}:\d{2}(:\d{2})?$/;
+      if (startTime && !timeRegex.test(startTime)) {
+        throw new AppError("VALIDATION_ERROR", "Invalid start time format. Use HH:MM.", 400);
+      }
+      if (endTime && !timeRegex.test(endTime)) {
+        throw new AppError("VALIDATION_ERROR", "Invalid end time format. Use HH:MM.", 400);
+      }
+      if (startTime && endTime) {
+        if (startTime === endTime) {
+          throw new AppError("VALIDATION_ERROR", "Start time and end time cannot be identical.", 400);
+        }
+        const isOvernight = Boolean(input.overnight);
+        if (!isOvernight && endTime < startTime) {
+          throw new AppError("VALIDATION_ERROR", "End time must be after start time unless marked as an overnight shift.", 400);
+        }
+      }
+    }
+
     const entries = Object.entries(input).filter(([key, value]) => definition.fields.includes(key as never) && value !== undefined);
     if (!entries.length) throw new AppError("VALIDATION_ERROR", "At least one editable field is required.", 400);
     const assignments = entries.map(([key, value]) => sql`${sql.raw(key)} = ${value}`);

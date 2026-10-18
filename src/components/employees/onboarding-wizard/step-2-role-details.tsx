@@ -5,6 +5,7 @@ import { User, Building2, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { ROLE_METADATA } from "@/modules/rbac/permissions";
+import { isHrDepartment } from "@/modules/departments/validation";
 import type {
   OnboardingWizardFormState,
   MasterDataItem,
@@ -15,31 +16,58 @@ interface Step2RoleDetailsProps {
   form: OnboardingWizardFormState;
   onChange: (patch: Partial<OnboardingWizardFormState>) => void;
   errors: Record<string, string>;
+  departments?: MasterDataItem[];
+  designations?: MasterDataItem[];
+  locations?: MasterDataItem[];
+  shifts?: MasterDataItem[];
+  employmentTypes?: MasterDataItem[];
+  managers?: ManagerSummary[];
+  isLoadingMasterData?: boolean;
 }
 
 export function Step2RoleDetails({
   form,
   onChange,
   errors,
+  departments: propDepartments,
+  designations: propDesignations,
+  locations: propLocations,
+  shifts: propShifts,
+  employmentTypes: propEmploymentTypes,
+  managers: propManagers,
+  isLoadingMasterData: propIsLoading,
 }: Step2RoleDetailsProps) {
   const roleMeta = ROLE_METADATA[form.targetRole] || ROLE_METADATA.EMPLOYEE;
 
-  // Master data states
-  const [departments, setDepartments] = useState<MasterDataItem[]>([]);
-  const [designations, setDesignations] = useState<MasterDataItem[]>([]);
+  // Master data states (internal fallback when not provided by parent)
+  const [internalDepartments, setInternalDepartments] = useState<MasterDataItem[]>([]);
+  const [internalDesignations, setInternalDesignations] = useState<MasterDataItem[]>([]);
+  const [internalLocations, setInternalLocations] = useState<MasterDataItem[]>([]);
+  const [internalShifts, setInternalShifts] = useState<MasterDataItem[]>([]);
+  const [internalEmploymentTypes, setInternalEmploymentTypes] = useState<MasterDataItem[]>([]);
+  const [internalManagers, setInternalManagers] = useState<ManagerSummary[]>([]);
+  const [internalIsLoading, setInternalIsLoading] = useState(false);
+
+  const departments = propDepartments ?? internalDepartments;
+  const designations = propDesignations ?? internalDesignations;
+  const locations = propLocations ?? internalLocations;
+  const allShifts = propShifts ?? internalShifts;
+  const shifts = allShifts.filter((s: MasterDataItem & { status?: string }) => !s.status || s.status === "active");
+  const employmentTypes = propEmploymentTypes ?? internalEmploymentTypes;
+  const managers = propManagers ?? internalManagers;
+  const isLoadingMasterData = propIsLoading ?? internalIsLoading;
+
   const [teams, setTeams] = useState<MasterDataItem[]>([]);
-  const [locations, setLocations] = useState<MasterDataItem[]>([]);
-  const [shifts, setShifts] = useState<MasterDataItem[]>([]);
-  const [employmentTypes, setEmploymentTypes] = useState<MasterDataItem[]>([]);
-  const [managers, setManagers] = useState<ManagerSummary[]>([]);
-  const [isLoadingMasterData, setIsLoadingMasterData] = useState(false);
   const [isLoadingTeams, setIsLoadingTeams] = useState(false);
   const [teamError, setTeamError] = useState<string | null>(null);
 
   useEffect(() => {
+    // If master data is passed via props, skip internal fetch
+    if (propDepartments !== undefined) return;
+
     let isMounted = true;
     async function loadMasterData() {
-      setIsLoadingMasterData(true);
+      setInternalIsLoading(true);
       try {
         const [
           deptRes,
@@ -52,7 +80,7 @@ export function Step2RoleDetails({
           fetch("/api/app/master-data/departments").then((r) => r.json()),
           fetch("/api/app/master-data/designations").then((r) => r.json()),
           fetch("/api/app/master-data/locations").then((r) => r.json()),
-          fetch("/api/app/master-data/shifts").then((r) => r.json()),
+          fetch("/api/app/master-data/shifts?status=active").then((r) => r.json()),
           fetch("/api/app/master-data/employment-types").then((r) => r.json()),
           fetch("/api/app/employees?pageSize=100").then((r) => r.json()),
         ]);
@@ -60,22 +88,22 @@ export function Step2RoleDetails({
         if (!isMounted) return;
 
         if (deptRes.status === "fulfilled" && deptRes.value.items) {
-          setDepartments(deptRes.value.items);
+          setInternalDepartments(deptRes.value.items);
         }
         if (desigRes.status === "fulfilled" && desigRes.value.items) {
-          setDesignations(desigRes.value.items);
+          setInternalDesignations(desigRes.value.items);
         }
         if (locRes.status === "fulfilled" && locRes.value.items) {
-          setLocations(locRes.value.items);
+          setInternalLocations(locRes.value.items);
         }
         if (shiftRes.status === "fulfilled" && shiftRes.value.items) {
-          setShifts(shiftRes.value.items);
+          setInternalShifts(shiftRes.value.items);
         }
         if (typeRes.status === "fulfilled" && typeRes.value.items) {
-          setEmploymentTypes(typeRes.value.items);
+          setInternalEmploymentTypes(typeRes.value.items);
         }
         if (empRes.status === "fulfilled" && empRes.value.rows) {
-          setManagers(
+          setInternalManagers(
             empRes.value.rows.map((e: { id: string; displayName: string; employeeId: string }) => ({
               id: e.id,
               displayName: e.displayName,
@@ -86,7 +114,7 @@ export function Step2RoleDetails({
       } catch {
         // Fall back gracefully if endpoints are restricted or empty
       } finally {
-        if (isMounted) setIsLoadingMasterData(false);
+        if (isMounted) setInternalIsLoading(false);
       }
     }
 
@@ -94,13 +122,55 @@ export function Step2RoleDetails({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [propDepartments]);
 
-  // Fetch active teams synchronized with selected department
+  const isEmployeeRole = form.targetRole === "EMPLOYEE";
+  const isLeadershipRole =
+    form.targetRole === "MANAGER" ||
+    form.targetRole === "TEAM_LEAD" ||
+    form.targetRole === "PROJECT_MANAGER";
+  const isHrRole =
+    form.targetRole === "HR_ADMIN" || form.targetRole === "HR_EXECUTIVE";
+  const isFinanceRole = form.targetRole === "FINANCE_ADMIN";
+  const isRecruiterRole = form.targetRole === "RECRUITER";
+  const isDeptRequired =
+    form.targetRole === "MANAGER" ||
+    form.targetRole === "TEAM_LEAD" ||
+    form.targetRole === "PROJECT_MANAGER" ||
+    form.targetRole === "EMPLOYEE" ||
+    isHrRole;
+  const canAssignShift = form.targetRole !== "ORGANIZATION_OWNER";
+
+  const displayedDepartments = isHrRole
+    ? departments.filter(isHrDepartment)
+    : departments;
+  const hrDepartmentMissing = isHrRole && displayedDepartments.length === 0 && !isLoadingMasterData;
+
+  // Cleanse state if HR role changes (teamId & locationId never allowed for HR)
+  useEffect(() => {
+    if (isHrRole) {
+      if (form.locationId) {
+        onChange({ locationId: "" });
+      }
+      if (form.teamId) {
+        onChange({ teamId: "" });
+      }
+      if (form.departmentId && departments.length > 0) {
+        const currentDept = departments.find((d) => d.id === form.departmentId);
+        if (currentDept && !isHrDepartment(currentDept)) {
+          onChange({ departmentId: "" });
+        }
+      } else if (!form.departmentId && displayedDepartments.length === 1) {
+        onChange({ departmentId: displayedDepartments[0].id });
+      }
+    }
+  }, [isHrRole, form.locationId, form.teamId, form.departmentId, departments, displayedDepartments]);
+
+  // Fetch active teams synchronized with selected department (non-HR roles only)
   useEffect(() => {
     let isMounted = true;
 
-    if (!form.departmentId) {
+    if (isHrRole || !form.departmentId) {
       setTeams([]);
       setIsLoadingTeams(false);
       setTeamError(null);
@@ -122,7 +192,6 @@ export function Step2RoleDetails({
 
         if (res.ok && data.success && Array.isArray(data.items)) {
           setTeams(data.items);
-          // If the currently selected team does not belong to the newly fetched department teams, clear it
           if (form.teamId && !data.items.some((t: MasterDataItem) => t.id === form.teamId)) {
             onChange({ teamId: "" });
           }
@@ -152,23 +221,7 @@ export function Step2RoleDetails({
     return () => {
       isMounted = false;
     };
-  }, [form.departmentId]);
-
-  const isEmployeeRole = form.targetRole === "EMPLOYEE";
-  const isLeadershipRole =
-    form.targetRole === "MANAGER" ||
-    form.targetRole === "TEAM_LEAD" ||
-    form.targetRole === "PROJECT_MANAGER";
-  const isHrRole =
-    form.targetRole === "HR_ADMIN" || form.targetRole === "HR_EXECUTIVE";
-  const isFinanceRole = form.targetRole === "FINANCE_ADMIN";
-  const isRecruiterRole = form.targetRole === "RECRUITER";
-  const isDeptRequired =
-    form.targetRole === "MANAGER" ||
-    form.targetRole === "TEAM_LEAD" ||
-    form.targetRole === "PROJECT_MANAGER" ||
-    form.targetRole === "EMPLOYEE";
-  const canAssignShift = form.targetRole !== "ORGANIZATION_OWNER";
+  }, [isHrRole, form.departmentId]);
 
   return (
     <div className="space-y-6">
@@ -363,17 +416,37 @@ export function Step2RoleDetails({
                 }
                 onChange(patch);
               }}
-              options={departments.map((d) => ({
+              options={displayedDepartments.map((d) => ({
                 value: d.id,
                 label: `${d.name}${d.code ? ` (${d.code})` : ""}`,
               }))}
-              placeholder="Select a department…"
-              searchable={departments.length > 6}
+              placeholder={
+                isLoadingMasterData
+                  ? "Loading departments…"
+                  : isHrRole
+                    ? "Select an HR department…"
+                    : "Select a department…"
+              }
+              searchable={displayedDepartments.length > 6}
               searchPlaceholder="Search departments…"
-              emptyMessage="No departments configured yet."
+              emptyMessage={
+                isHrRole
+                  ? "No HR department found."
+                  : "No departments configured yet."
+              }
               error={errors.departmentId}
             />
-            {departments.length === 0 && !isLoadingMasterData ? (
+            {hrDepartmentMissing ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-800 flex items-start gap-2">
+                <AlertTriangle className="size-4 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold">No active HR department configured</p>
+                  <p className="text-[11px] text-amber-700 mt-0.5">
+                    An Organization Owner or HR Administrator must configure an HR department in Settings &gt; Master Data &gt; Departments before onboarding {roleMeta.title.toLowerCase()} personnel.
+                  </p>
+                </div>
+              </div>
+            ) : displayedDepartments.length === 0 && !isLoadingMasterData ? (
               isDeptRequired ? (
                 <div className="rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-800 flex items-start gap-2">
                   <AlertTriangle className="size-4 text-amber-600 shrink-0 mt-0.5" />
@@ -405,85 +478,92 @@ export function Step2RoleDetails({
                 value: d.id,
                 label: `${d.name}${d.code ? ` (${d.code})` : ""}`,
               }))}
-              placeholder="Select a designation…"
+              placeholder={isLoadingMasterData ? "Loading designations…" : "Select a designation…"}
               searchable={designations.length > 6}
               searchPlaceholder="Search designations…"
               emptyMessage="No designations configured yet."
               error={errors.designationId}
             />
+            {designations.length === 0 && !isLoadingMasterData && (
+              <p className="text-[11px] text-muted">
+                No designations configured yet. You can configure job titles in Settings &gt; Master Data.
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Team & Location */}
-        <div className="grid gap-4 sm:grid-cols-2">
-          {(isEmployeeRole || isLeadershipRole) && (
+        {/* Team & Location (Omitted completely for HR roles) */}
+        {!isHrRole && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {(isEmployeeRole || isLeadershipRole) && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground">
+                  Team / Squad <span className="text-xs text-muted font-normal">(optional)</span>
+                </label>
+                <CustomSelect
+                  value={form.teamId}
+                  onChange={(value) => onChange({ teamId: value })}
+                  options={
+                    !form.departmentId
+                      ? []
+                      : teams.map((t) => ({
+                          value: t.id,
+                          label: `${t.name}${t.code ? ` (${t.code})` : ""}`,
+                        }))
+                  }
+                  placeholder={
+                    !form.departmentId
+                      ? "Select a department first"
+                      : isLoadingTeams
+                        ? "Loading department teams…"
+                        : teamError
+                          ? "Error loading teams"
+                          : teams.length === 0
+                            ? "No teams available in this department"
+                            : "Select a team…"
+                  }
+                  disabled={!form.departmentId || isLoadingTeams}
+                  searchable={teams.length > 6}
+                  searchPlaceholder="Search teams…"
+                  emptyMessage={
+                    !form.departmentId
+                      ? "Please select a department first."
+                      : teamError
+                        ? teamError
+                        : "No active teams configured for this department."
+                  }
+                  error={errors.teamId}
+                />
+                {!form.departmentId ? (
+                  <p className="text-[11px] text-muted">Select a department above to see available teams.</p>
+                ) : teamError ? (
+                  <p className="text-[11px] font-medium text-rose-600">{teamError}</p>
+                ) : !isLoadingTeams && teams.length === 0 ? (
+                  <p className="text-[11px] text-muted">No active teams in this department (optional).</p>
+                ) : null}
+              </div>
+            )}
+
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground">
-                Team / Squad <span className="text-xs text-muted font-normal">(optional)</span>
+                Location / Office <span className="text-xs text-muted font-normal">(optional)</span>
               </label>
               <CustomSelect
-                value={form.teamId}
-                onChange={(value) => onChange({ teamId: value })}
-                options={
-                  !form.departmentId
-                    ? []
-                    : teams.map((t) => ({
-                        value: t.id,
-                        label: `${t.name}${t.code ? ` (${t.code})` : ""}`,
-                      }))
-                }
-                placeholder={
-                  !form.departmentId
-                    ? "Select a department first"
-                    : isLoadingTeams
-                      ? "Loading department teams…"
-                      : teamError
-                        ? "Error loading teams"
-                        : teams.length === 0
-                          ? "No teams available in this department"
-                          : "Select a team…"
-                }
-                disabled={!form.departmentId || isLoadingTeams}
-                searchable={teams.length > 6}
-                searchPlaceholder="Search teams…"
-                emptyMessage={
-                  !form.departmentId
-                    ? "Please select a department first."
-                    : teamError
-                      ? teamError
-                      : "No active teams configured for this department."
-                }
-                error={errors.teamId}
+                value={form.locationId}
+                onChange={(value) => onChange({ locationId: value })}
+                options={locations.map((l) => ({
+                  value: l.id,
+                  label: l.name,
+                }))}
+                placeholder={isLoadingMasterData ? "Loading locations…" : "Select a location…"}
+                searchable={locations.length > 6}
+                searchPlaceholder="Search locations…"
+                emptyMessage="No locations configured yet."
+                error={errors.locationId}
               />
-              {!form.departmentId ? (
-                <p className="text-[11px] text-muted">Select a department above to see available teams.</p>
-              ) : teamError ? (
-                <p className="text-[11px] font-medium text-rose-600">{teamError}</p>
-              ) : !isLoadingTeams && teams.length === 0 ? (
-                <p className="text-[11px] text-muted">No active teams in this department (optional).</p>
-              ) : null}
             </div>
-          )}
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground">
-              Location / Office <span className="text-xs text-muted font-normal">(optional)</span>
-            </label>
-            <CustomSelect
-              value={form.locationId}
-              onChange={(value) => onChange({ locationId: value })}
-              options={locations.map((l) => ({
-                value: l.id,
-                label: l.name,
-              }))}
-              placeholder="Select a location…"
-              searchable={locations.length > 6}
-              searchPlaceholder="Search locations…"
-              emptyMessage="No locations configured yet."
-              error={errors.locationId}
-            />
           </div>
-        </div>
+        )}
 
         {/* Reporting Manager (For Employee or Leadership) */}
         {(isEmployeeRole || isLeadershipRole) && (
@@ -519,14 +599,19 @@ export function Step2RoleDetails({
                 onChange={(value) => onChange({ shiftId: value })}
                 options={shifts.map((s) => ({
                   value: s.id,
-                  label: s.name,
+                  label: `${s.name}${s.startTime && s.endTime ? ` (${s.startTime.slice(0, 5)} – ${s.endTime.slice(0, 5)})` : ""}`,
                 }))}
-                placeholder="Standard organization shift"
+                placeholder={isLoadingMasterData ? "Loading work shifts…" : "Standard organization shift"}
                 searchable={shifts.length > 6}
                 searchPlaceholder="Search work shifts…"
-                emptyMessage="No custom shifts configured."
+                emptyMessage="No custom shifts configured. Configure shifts in Settings > Master Data."
                 error={errors.shiftId}
               />
+              {shifts.length === 0 && !isLoadingMasterData && (
+                <p className="text-[11px] text-muted">
+                  No work shifts configured yet. Shifts must be configured in Settings &gt; Master Data before assigning them to employees.
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -538,14 +623,19 @@ export function Step2RoleDetails({
                 onChange={(value) => onChange({ employmentTypeId: value })}
                 options={employmentTypes.map((t) => ({
                   value: t.id,
-                  label: t.name,
+                  label: `${t.name}${t.code ? ` (${t.code})` : ""}`,
                 }))}
-                placeholder="Full-time regular"
+                placeholder={isLoadingMasterData ? "Loading employment types…" : "Select an employment type…"}
                 searchable={employmentTypes.length > 6}
                 searchPlaceholder="Search employment types…"
                 emptyMessage="No custom types configured."
                 error={errors.employmentTypeId}
               />
+              {employmentTypes.length === 0 && !isLoadingMasterData && (
+                <p className="text-[11px] text-muted">
+                  No custom employment types configured yet. You can manage them in Settings &gt; Master Data.
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -553,3 +643,4 @@ export function Step2RoleDetails({
     </div>
   );
 }
+

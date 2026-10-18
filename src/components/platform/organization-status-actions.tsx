@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export function OrganizationStatusActions({
   organizationId,
@@ -16,6 +17,7 @@ export function OrganizationStatusActions({
   const [isPending, startTransition] = useTransition();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+  const [confirmingStatus, setConfirmingStatus] = useState<string | null>(null);
 
   const busy = isSubmitting || isPending;
 
@@ -23,14 +25,7 @@ export function OrganizationStatusActions({
     setCurrentStatus(initialStatus);
   }, [initialStatus]);
 
-  async function update(nextStatus: string) {
-    if (
-      (nextStatus === "suspended" || nextStatus === "rejected") &&
-      !window.confirm(`Confirm changing this organization to ${nextStatus}?`)
-    ) {
-      return;
-    }
-
+  async function executeUpdate(nextStatus: string) {
     setIsSubmitting(true);
     setMessage("");
 
@@ -69,13 +64,21 @@ export function OrganizationStatusActions({
     }
   }
 
+  function handleActionClick(nextStatus: string) {
+    if (nextStatus === "suspended" || nextStatus === "rejected") {
+      setConfirmingStatus(nextStatus);
+    } else {
+      void executeUpdate(nextStatus);
+    }
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       {currentStatus === "pending" && (
         <Button
           size="sm"
           disabled={busy}
-          onClick={() => void update("active")}
+          onClick={() => handleActionClick("active")}
         >
           {busy ? "Approving…" : "Approve and invite owner"}
         </Button>
@@ -85,7 +88,7 @@ export function OrganizationStatusActions({
           size="sm"
           variant="secondary"
           disabled={busy}
-          onClick={() => void update("suspended")}
+          onClick={() => handleActionClick("suspended")}
         >
           {busy ? "Updating…" : "Suspend"}
         </Button>
@@ -94,7 +97,7 @@ export function OrganizationStatusActions({
         <Button
           size="sm"
           disabled={busy}
-          onClick={() => void update("active")}
+          onClick={() => handleActionClick("active")}
         >
           {busy ? "Updating…" : "Reactivate"}
         </Button>
@@ -104,12 +107,32 @@ export function OrganizationStatusActions({
           size="sm"
           variant="ghost"
           disabled={busy}
-          onClick={() => void update("rejected")}
+          onClick={() => handleActionClick("rejected")}
         >
           Reject
         </Button>
       )}
       {message && <span className="text-xs text-muted">{message}</span>}
+
+      {/* Status Confirmation Modal */}
+      <ConfirmDialog
+        open={Boolean(confirmingStatus)}
+        onOpenChange={(open) => {
+          if (!open) setConfirmingStatus(null);
+        }}
+        title={`Confirm Organization ${confirmingStatus === "suspended" ? "Suspension" : "Rejection"}`}
+        description={`Are you sure you want to change this organization's status to ${confirmingStatus}? Tenant members will lose active platform access.`}
+        confirmText={confirmingStatus === "suspended" ? "Suspend Organization" : "Reject Organization"}
+        cancelText="Cancel"
+        variant="destructive"
+        isLoading={isSubmitting}
+        onConfirm={async () => {
+          if (!confirmingStatus) return;
+          const statusToApply = confirmingStatus;
+          setConfirmingStatus(null);
+          await executeUpdate(statusToApply);
+        }}
+      />
     </div>
   );
 }

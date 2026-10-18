@@ -5,7 +5,11 @@ import { Edit3, User, Building2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROLE_METADATA } from "@/modules/rbac/permissions";
 import { RoleIllustration } from "./role-illustrations";
-import type { OnboardingWizardFormState } from "./types";
+import type {
+  OnboardingWizardFormState,
+  MasterDataItem,
+  ManagerSummary,
+} from "./types";
 
 interface Step3ReviewConfirmProps {
   form: OnboardingWizardFormState;
@@ -13,6 +17,13 @@ interface Step3ReviewConfirmProps {
   isSubmitting: boolean;
   submissionError: string | null;
   onSubmit: () => void;
+  departments?: MasterDataItem[];
+  designations?: MasterDataItem[];
+  shifts?: MasterDataItem[];
+  employmentTypes?: MasterDataItem[];
+  teams?: MasterDataItem[];
+  locations?: MasterDataItem[];
+  managers?: ManagerSummary[];
 }
 
 export function Step3ReviewConfirm({
@@ -21,9 +32,31 @@ export function Step3ReviewConfirm({
   isSubmitting,
   submissionError,
   onSubmit,
+  departments,
+  designations,
+  shifts,
+  employmentTypes,
+  teams,
+  locations,
+  managers,
 }: Step3ReviewConfirmProps) {
   const roleMeta = ROLE_METADATA[form.targetRole] || ROLE_METADATA.EMPLOYEE;
   const fullName = [form.firstName, form.middleName, form.lastName].filter(Boolean).join(" ");
+  const isHrRole = form.targetRole === "HR_ADMIN" || form.targetRole === "HR_EXECUTIVE";
+  const isEmployeeRole = form.targetRole === "EMPLOYEE";
+  const isLeadershipRole =
+    form.targetRole === "MANAGER" ||
+    form.targetRole === "TEAM_LEAD" ||
+    form.targetRole === "PROJECT_MANAGER";
+  const canAssignShift = form.targetRole !== "ORGANIZATION_OWNER";
+
+  const selectedDept = departments?.find((d) => d.id === form.departmentId);
+  const selectedDesig = designations?.find((d) => d.id === form.designationId);
+  const selectedShift = shifts?.find((s) => s.id === form.shiftId);
+  const selectedType = employmentTypes?.find((t) => t.id === form.employmentTypeId);
+  const selectedTeam = teams?.find((t) => t.id === form.teamId);
+  const selectedLocation = locations?.find((l) => l.id === form.locationId);
+  const selectedManager = managers?.find((m) => m.id === form.reportingManagerId);
 
   return (
     <div className="space-y-6">
@@ -149,6 +182,88 @@ export function Step3ReviewConfirm({
             <Edit3 className="size-3.5" />
             <span>Edit</span>
           </Button>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 text-xs">
+          <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 space-y-1">
+            <span className="text-muted block text-[11px] font-medium">Department</span>
+            <span className="font-semibold text-foreground">
+              {selectedDept
+                ? `${selectedDept.name}${selectedDept.code ? ` (${selectedDept.code})` : ""}`
+                : form.departmentId
+                  ? "Assigned"
+                  : "Not assigned"}
+            </span>
+          </div>
+
+          <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 space-y-1">
+            <span className="text-muted block text-[11px] font-medium">Designation / Title</span>
+            <span className="font-semibold text-foreground">
+              {selectedDesig
+                ? `${selectedDesig.name}${selectedDesig.code ? ` (${selectedDesig.code})` : ""}`
+                : form.designationId
+                  ? "Assigned"
+                  : "None / Unassigned"}
+            </span>
+          </div>
+
+          {canAssignShift && (
+            <>
+              <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 space-y-1">
+                <span className="text-muted block text-[11px] font-medium">Work Shift</span>
+                <span className="font-semibold text-foreground">
+                  {selectedShift
+                    ? `${selectedShift.name}${selectedShift.startTime && selectedShift.endTime ? ` (${selectedShift.startTime.slice(0, 5)} – ${selectedShift.endTime.slice(0, 5)})` : ""}`
+                    : form.shiftId
+                      ? "Assigned"
+                      : "Standard organization shift"}
+                </span>
+              </div>
+
+              <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 space-y-1">
+                <span className="text-muted block text-[11px] font-medium">Employment Type</span>
+                <span className="font-semibold text-foreground">
+                  {selectedType
+                    ? `${selectedType.name}${selectedType.code ? ` (${selectedType.code})` : ""}`
+                    : form.employmentTypeId
+                      ? "Assigned"
+                      : "Full-time regular"}
+                </span>
+              </div>
+            </>
+          )}
+
+          {/* Strictly omitted for HR roles */}
+          {!isHrRole && form.teamId && (
+            <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 space-y-1">
+              <span className="text-muted block text-[11px] font-medium">Team / Squad</span>
+              <span className="font-semibold text-foreground">
+                {selectedTeam
+                  ? `${selectedTeam.name}${selectedTeam.code ? ` (${selectedTeam.code})` : ""}`
+                  : form.teamId}
+              </span>
+            </div>
+          )}
+
+          {!isHrRole && form.locationId && (
+            <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 space-y-1">
+              <span className="text-muted block text-[11px] font-medium">Location / Office</span>
+              <span className="font-semibold text-foreground">
+                {selectedLocation ? selectedLocation.name : form.locationId}
+              </span>
+            </div>
+          )}
+
+          {(isEmployeeRole || isLeadershipRole) && form.reportingManagerId && (
+            <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 space-y-1">
+              <span className="text-muted block text-[11px] font-medium">Reporting Manager</span>
+              <span className="font-semibold text-foreground">
+                {selectedManager
+                  ? `${selectedManager.displayName} (${selectedManager.employeeId})`
+                  : form.reportingManagerId}
+              </span>
+            </div>
+          )}
         </div>
 
         <p className="text-xs text-muted leading-relaxed">

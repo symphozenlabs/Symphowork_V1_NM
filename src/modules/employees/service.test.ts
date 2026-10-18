@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { employees, onboarding, organizations, users, memberships, roles } from "@/db/schema";
+import { employees, onboarding, organizations, users, memberships, roles, departments, designations, shifts, employmentTypes } from "@/db/schema";
 
 const { recordAudit, recordAuditInTransaction } = vi.hoisted(() => ({
   recordAudit: vi.fn(),
@@ -11,7 +11,7 @@ vi.mock("@/lib/audit", () => ({
   recordAuditInTransaction,
 }));
 
-import { getOrEnsureEmployeeForUser } from "@/modules/employees/service";
+import { getOrEnsureEmployeeForUser, getEmployeeDetails } from "@/modules/employees/service";
 
 describe("getOrEnsureEmployeeForUser", () => {
   const organizationId = "org-0001";
@@ -247,5 +247,128 @@ describe("getOrEnsureEmployeeForUser", () => {
       status: 403,
       code: "FORBIDDEN",
     });
+  });
+});
+
+describe("getEmployeeDetails", () => {
+  const organizationId = "org-1";
+  const employeeId = "emp-1";
+
+  it("returns enriched employee details with all relational fields and system role", async () => {
+    const mockEmp = {
+      id: employeeId,
+      organizationId,
+      userId: "user-1",
+      employeeId: "EMP0001",
+      displayName: "Jane Doe",
+      firstName: "Jane",
+      lastName: "Doe",
+      status: "active",
+      departmentId: "dept-1",
+      designationId: "desig-1",
+      shiftId: "shift-1",
+      employmentTypeId: "type-1",
+      reportingManagerId: "mgr-1",
+      joiningDate: "2026-01-15",
+      workEmail: "jane@company.com",
+    };
+
+    const mockDept = { id: "dept-1", organizationId, name: "Human Resources", code: "HR", status: "active" };
+    const mockDesig = { id: "desig-1", organizationId, name: "HR Manager", code: "HR-MGR", level: 2, status: "active" };
+    const mockShift = { id: "shift-1", organizationId, name: "Day Shift", code: "DAY", startTime: "09:00:00", endTime: "18:00:00", breakMinutes: 60, graceMinutes: 15, overnight: false, status: "active" };
+    const mockType = { id: "type-1", organizationId, name: "Full-time", code: "FT", status: "active" };
+    const mockMgr = { id: "mgr-1", organizationId, displayName: "Boss Person", employeeId: "EMP0000", workEmail: "boss@company.com" };
+
+    let employeeQueryCount = 0;
+    const executor = {
+      select: vi.fn(() => ({
+        from: vi.fn((table: unknown) => ({
+          where: vi.fn().mockImplementation(() => {
+            if (table === employees) {
+              employeeQueryCount++;
+              if (employeeQueryCount === 1) return Promise.resolve([mockEmp]);
+              return Promise.resolve([mockMgr]);
+            }
+            if (table === departments) return Promise.resolve([mockDept]);
+            if (table === designations) return Promise.resolve([mockDesig]);
+            if (table === shifts) return Promise.resolve([mockShift]);
+            if (table === employmentTypes) return Promise.resolve([mockType]);
+            return Promise.resolve([]);
+          }),
+          innerJoin: vi.fn().mockReturnValue({
+            where: vi.fn().mockResolvedValue([
+              { userId: "user-1", roleKey: "HR_ADMIN", roleName: "HR Admin" },
+            ]),
+          }),
+        })),
+      })),
+    };
+
+    const details = await getEmployeeDetails(organizationId, employeeId, executor as never);
+
+    expect(details).not.toBeNull();
+    expect(details?.department?.name).toBe("Human Resources");
+    expect(details?.department?.code).toBe("HR");
+    expect(details?.designation?.name).toBe("HR Manager");
+    expect(details?.designation?.level).toBe(2);
+    expect(details?.shift?.name).toBe("Day Shift");
+    expect(details?.shift?.startTime).toBe("09:00:00");
+    expect(details?.shift?.endTime).toBe("18:00:00");
+    expect(details?.shift?.breakMinutes).toBe(60);
+    expect(details?.shift?.graceMinutes).toBe(15);
+    expect(details?.shift?.overnight).toBe(false);
+    expect(details?.employmentType?.name).toBe("Full-time");
+    expect(details?.reportingManager?.displayName).toBe("Boss Person");
+    expect(details?.roleKey).toBe("HR_ADMIN");
+    expect(details?.roleTitle).toBe("HR Admin");
+  });
+
+  it("handles unassigned / null relations gracefully", async () => {
+    const mockEmpSparse = {
+      id: "emp-sparse",
+      organizationId,
+      userId: null,
+      employeeId: "EMP0002",
+      displayName: "New Hire",
+      status: "invited",
+      departmentId: null,
+      designationId: null,
+      shiftId: null,
+      employmentTypeId: null,
+      reportingManagerId: null,
+    };
+
+    const executor = {
+      select: vi.fn(() => ({
+        from: vi.fn((table: unknown) => ({
+          where: vi.fn().mockImplementation(() => {
+            if (table === employees) return Promise.resolve([mockEmpSparse]);
+            return Promise.resolve([]);
+          }),
+        })),
+      })),
+    };
+
+    const details = await getEmployeeDetails(organizationId, "emp-sparse", executor as never);
+
+    expect(details).not.toBeNull();
+    expect(details?.department).toBeNull();
+    expect(details?.designation).toBeNull();
+    expect(details?.shift).toBeNull();
+    expect(details?.employmentType).toBeNull();
+    expect(details?.reportingManager).toBeNull();
+  });
+
+  it("returns null when employee does not exist in target organization (tenant isolation)", async () => {
+    const executor = {
+      select: vi.fn(() => ({
+        from: vi.fn(() => ({
+          where: vi.fn().mockResolvedValue([]),
+        })),
+      })),
+    };
+
+    const details = await getEmployeeDetails("other-org", "emp-missing", executor as never);
+    expect(details).toBeNull();
   });
 });

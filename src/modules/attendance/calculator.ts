@@ -2,7 +2,7 @@ import type { PunchType } from "@/modules/attendance/types";
 export type ShiftWindow = { start: Date; end: Date };
 export type Punch = { type: PunchType; at: Date };
 type AttendanceCalculationStatus = "present" | "late" | "early_departure" | "late_and_early" | "missing_punch";
-export function shiftWindow(workDate: string, startTime: string, endTime: string, overnight: boolean): ShiftWindow { const start = new Date(`${workDate}T${startTime}Z`); const end = new Date(`${overnight || endTime <= startTime ? nextDate(workDate) : workDate}T${endTime}Z`); return { start, end }; }
+export function shiftWindow(workDate: string, startTime: string, endTime: string, overnight: boolean): ShiftWindow { const start = new Date(`${workDate}T${startTime}Z`); const end = new Date(`${overnight ? nextDate(workDate) : workDate}T${endTime}Z`); return { start, end }; }
 function nextDate(date: string) { const next = new Date(`${date}T00:00:00Z`); next.setUTCDate(next.getUTCDate() + 1); return next.toISOString().slice(0, 10); }
 export function minutesBetween(start: Date | null, end: Date | null) { return start && end ? Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000)) : 0; }
 export function calculateAttendance(input: { scheduledStart: Date | null; scheduledEnd: Date | null; punches: Punch[]; gracePeriodMinutes: number; earlyDepartureThresholdMinutes: number }) {

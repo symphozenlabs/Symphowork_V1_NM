@@ -28,22 +28,80 @@ type Metric = {
   icon: typeof UsersRound;
 };
 
+export interface DashboardInitialMetrics {
+  workforceCount?: number;
+  pendingApprovalsCount?: number;
+  unreadNotificationsCount?: number;
+}
+
+function buildMetricsFromInitial({
+  canReadEmployees,
+  canViewApprovals,
+  initialMetrics,
+}: {
+  canReadEmployees?: boolean;
+  canViewApprovals?: boolean;
+  initialMetrics?: DashboardInitialMetrics;
+}): Metric[] {
+  if (!initialMetrics) return [];
+  const next: Metric[] = [];
+  if (canReadEmployees !== false && initialMetrics.workforceCount !== undefined) {
+    next.push({
+      label: "Workforce Directory",
+      value: String(initialMetrics.workforceCount),
+      note: "Active team members",
+      href: "/app/employees",
+      icon: UsersRound,
+    });
+  }
+  if (canViewApprovals !== false && initialMetrics.pendingApprovalsCount !== undefined) {
+    next.push({
+      label: "Pending Approvals",
+      value: String(initialMetrics.pendingApprovalsCount),
+      note: initialMetrics.pendingApprovalsCount === 0 ? "All caught up" : "Action required",
+      href: "/app/approvals",
+      icon: Clock3,
+    });
+  }
+  if (initialMetrics.unreadNotificationsCount !== undefined) {
+    next.push({
+      label: "Unread Notifications",
+      value: String(initialMetrics.unreadNotificationsCount),
+      note: initialMetrics.unreadNotificationsCount > 0 ? "Requires review" : "No unread alerts",
+      href: "/app/notifications",
+      icon: Bell,
+    });
+  }
+  return next;
+}
+
 export function Overview({
   fullName,
   canReadEmployees,
   canViewApprovals,
   canViewAts,
+  initialMetrics,
 }: {
   fullName: string;
   canReadEmployees?: boolean;
   canViewApprovals?: boolean;
   canViewAts?: boolean;
+  initialMetrics?: DashboardInitialMetrics;
 }) {
-  const [metrics, setMetrics] = useState<Metric[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [metrics, setMetrics] = useState<Metric[]>(() =>
+    buildMetricsFromInitial({ canReadEmployees, canViewApprovals, initialMetrics })
+  );
+  const [loading, setLoading] = useState(() => !initialMetrics);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    // If initialMetrics were supplied from server rendering, synchronize metrics and skip client waterfall
+    if (initialMetrics) {
+      setMetrics(buildMetricsFromInitial({ canReadEmployees, canViewApprovals, initialMetrics }));
+      setLoading(false);
+      return;
+    }
+
     let active = true;
     const load = async () => {
       try {
@@ -114,7 +172,7 @@ export function Overview({
     return () => {
       active = false;
     };
-  }, [canReadEmployees, canViewApprovals]);
+  }, [initialMetrics, canReadEmployees, canViewApprovals]);
 
   const timeGreeting = () => {
     const hour = new Date().getHours();

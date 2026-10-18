@@ -15,7 +15,33 @@ async function employeeForUser(organizationId: string, userId: string) { return 
 export async function applyLeave(input: { organizationId: string; userId: string; leaveTypeId: string; startDate: string; endDate: string; halfDay: boolean; reason: string }) {
   await authorize({ organizationId: input.organizationId, permission: "leave.apply" }); const employee = await employeeForUser(input.organizationId, input.userId); if (input.endDate < input.startDate) throw new AppError("VALIDATION_ERROR", "Leave end date must be on or after the start date.", 400);
   const [type] = await db.select().from(leaveTypes).where(and(eq(leaveTypes.id, input.leaveTypeId), eq(leaveTypes.organizationId, input.organizationId), eq(leaveTypes.active, true))); if (!type) throw new AppError("NOT_FOUND", "Leave type was not found.", 404); if (!input.reason.trim()) throw new AppError("VALIDATION_ERROR", "A leave reason is required.", 400);
-  const year = Number(input.startDate.slice(0, 4)); const days = dateRange(input.startDate, input.endDate); const workingRows = await db.select().from(workingDays).where(eq(workingDays.organizationId, input.organizationId)); const workingByDay = new Map(workingRows.map((row) => [row.dayOfWeek, row.isWorkingDay])); const holidayRows = await db.select({ holidayDate: holidays.holidayDate }).from(holidays).where(and(eq(holidays.organizationId, input.organizationId), gte(holidays.holidayDate, input.startDate), lte(holidays.holidayDate, input.endDate), eq(holidays.status, "active"))); const holidaySet = new Set(holidayRows.map((row) => row.holidayDate)); const configuredDays = days.map((date) => { const dayOfWeek = new Date(`${date}T00:00:00Z`).getUTCDay(); return { date, isWorkingDay: workingByDay.get(dayOfWeek) ?? (dayOfWeek >= 1 && dayOfWeek <= 5), isHoliday: holidaySet.has(date) }; }); const requestedDays = calculateLeaveDays(configuredDays, input.halfDay);
+  const year = Number(input.startDate.slice(0, 4));
+  const days = dateRange(input.startDate, input.endDate);
+  const [workingRows, holidayRows] = await Promise.all([
+    db.select().from(workingDays).where(eq(workingDays.organizationId, input.organizationId)),
+    db
+      .select({ holidayDate: holidays.holidayDate })
+      .from(holidays)
+      .where(
+        and(
+          eq(holidays.organizationId, input.organizationId),
+          gte(holidays.holidayDate, input.startDate),
+          lte(holidays.holidayDate, input.endDate),
+          eq(holidays.status, "active")
+        )
+      ),
+  ]);
+  const workingByDay = new Map(workingRows.map((row) => [row.dayOfWeek, row.isWorkingDay]));
+  const holidaySet = new Set(holidayRows.map((row) => row.holidayDate));
+  const configuredDays = days.map((date) => {
+    const dayOfWeek = new Date(`${date}T00:00:00Z`).getUTCDay();
+    return {
+      date,
+      isWorkingDay: workingByDay.get(dayOfWeek) ?? (dayOfWeek >= 1 && dayOfWeek <= 5),
+      isHoliday: holidaySet.has(date),
+    };
+  });
+  const requestedDays = calculateLeaveDays(configuredDays, input.halfDay);
   if (requestedDays <= 0) throw new AppError("VALIDATION_ERROR", "The selected dates contain no working days.", 400); if (requestedDays < type.minimumDays || (type.maximumDays !== null && requestedDays > type.maximumDays)) throw new AppError("VALIDATION_ERROR", "The requested leave duration is outside the leave type limits.", 400);
   const existing = await db.select({ startDate: leaveApplications.startDate, endDate: leaveApplications.endDate }).from(leaveApplications).where(and(eq(leaveApplications.organizationId, input.organizationId), eq(leaveApplications.employeeId, employee.id), ne(leaveApplications.status, "cancelled"), ne(leaveApplications.status, "rejected"))); if (overlaps(input.startDate, input.endDate, existing)) throw new AppError("VALIDATION_ERROR", "The selected dates overlap another leave application.", 409);
   const balance = await db.transaction(async (tx) => { await tx.insert(leaveBalances).values({ organizationId: input.organizationId, employeeId: employee.id, leaveTypeId: input.leaveTypeId, leaveYear: year, openingBalance: 0, accrued: 0 }).onConflictDoNothing(); const [row] = await tx.select().from(leaveBalances).where(and(eq(leaveBalances.organizationId, input.organizationId), eq(leaveBalances.employeeId, employee.id), eq(leaveBalances.leaveTypeId, input.leaveTypeId), eq(leaveBalances.leaveYear, year))); if (!row || availableBalance({ opening: row.openingBalance, accrued: row.accrued, adjusted: row.adjusted, consumed: row.consumed, pending: row.pending }) < requestedDays) throw new AppError("VALIDATION_ERROR", "Insufficient leave balance.", 409); const [application] = await tx.insert(leaveApplications).values({ organizationId: input.organizationId, employeeId: employee.id, leaveTypeId: input.leaveTypeId, startDate: input.startDate, endDate: input.endDate, requestedDays, halfDay: input.halfDay, reason: input.reason.trim(), status: "pending" }).returning(); await tx.update(leaveBalances).set({ pending: row.pending + requestedDays, updatedAt: new Date() }).where(eq(leaveBalances.id, row.id)); await tx.insert(leaveTransactions).values({ organizationId: input.organizationId, employeeId: employee.id, leaveTypeId: input.leaveTypeId, leaveBalanceId: row.id, transactionType: "reservation", amount: requestedDays, referenceId: application.id, actorUserId: input.userId }); return { application, balance: row }; });

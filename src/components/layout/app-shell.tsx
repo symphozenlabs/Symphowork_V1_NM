@@ -23,6 +23,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   let isDepartmentManager = false;
   let canViewPeople = false;
   let canViewApprovals = false;
+  let canViewAts = false;
 
   if (user) {
     try {
@@ -36,17 +37,24 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           isOrganizationOwner = true;
           canViewPeople = true;
           canViewApprovals = true;
+          canViewAts = true;
         } else {
           isOrganizationOwner = tenant.role?.key === "ORGANIZATION_OWNER";
-          const permSet = await getRolePermissionSet(tenant.membership.roleId);
+          const permSet = tenant.permissions
+            ? new Set(tenant.permissions)
+            : await getRolePermissionSet(tenant.membership.roleId);
           canManageSettings = permSet.has("organization.settings.read");
           canManageWorkflows = permSet.has("workflow.manage");
           canViewBilling = permSet.has("billing.view");
           canViewReports = permSet.has("report.employee");
           canViewPeople = isOrganizationOwner || permSet.has("employee.read");
           canViewApprovals = isOrganizationOwner || APPROVAL_PERMISSIONS.some((p) => permSet.has(p));
+          canViewAts = isOrganizationOwner || permSet.has("ats.view");
           if (!isOrganizationOwner) {
-            isDepartmentManager = (await isAssignedDepartmentManager(tenant.organization.id, user.id)) || permSet.has("department.create") || permSet.has("department.manage");
+            isDepartmentManager =
+              permSet.has("department.create") ||
+              permSet.has("department.manage") ||
+              (await isAssignedDepartmentManager(tenant.organization.id, user.id));
           }
         }
       }
@@ -66,7 +74,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     { label: "Expenses", href: "/app/expenses", iconKey: "expenses" },
     { label: "Payroll", href: "/app/payroll", iconKey: "payroll" },
     { label: "Payslips", href: "/app/payroll/payslips", iconKey: "payslips" },
-    { label: "Recruitment", href: "/app/recruitment", iconKey: "recruitment" },
+    ...(canViewAts ? [{ label: "Recruitment", href: "/app/recruitment", iconKey: "recruitment" }] : []),
     { label: "Projects & tasks", href: "/app/work", iconKey: "work" },
     { label: "Internal chat", href: "/app/chat", iconKey: "chat" },
   ];

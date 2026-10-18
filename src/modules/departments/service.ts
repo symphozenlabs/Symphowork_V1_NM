@@ -15,6 +15,7 @@ import {
 import { recordAudit } from "@/lib/audit";
 import { AppError } from "@/lib/errors";
 import { authorize, can } from "@/modules/tenancy/authorization";
+import { getCachedTenantContext } from "@/modules/tenancy/context";
 import { enrichEmployeesWithRoles, isActorPrivilegedForOwnerRecord } from "@/modules/employees/service";
 import type {
   DepartmentDateContext,
@@ -42,6 +43,8 @@ export function getTodayInTimezone(timezone?: string): string {
     return new Date().toISOString().slice(0, 10);
   }
 }
+
+export { isHrDepartment } from "./validation";
 
 export async function assertIsOrganizationOwner(
   organizationId: string,
@@ -230,32 +233,65 @@ export async function resolveDateContext(
   const today = getTodayInTimezone(timezone);
   const selectedDate = dateStr && /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? dateStr : today;
 
-  // 1. Holiday check
-  const [holiday] = await client
-    .select({ name: holidays.name })
-    .from(holidays)
-    .where(
-      and(
-        eq(holidays.organizationId, organizationId),
-        eq(holidays.holidayDate, selectedDate),
-        eq(holidays.status, "active")
-      )
-    )
-    .limit(1);
-
-  // 2. Working day check
+  // 1. Holiday check & 2. Working day check
   const dateObj = new Date(`${selectedDate}T12:00:00Z`);
   const dayOfWeek = dateObj.getUTCDay(); // 0 is Sunday, 6 is Saturday
-  const [workingDayRow] = await client
-    .select({ isWorkingDay: workingDays.isWorkingDay })
-    .from(workingDays)
-    .where(
-      and(
-        eq(workingDays.organizationId, organizationId),
-        eq(workingDays.dayOfWeek, dayOfWeek)
+
+  let holiday: { name: string } | undefined;
+  let workingDayRow: { isWorkingDay: boolean } | undefined;
+
+  if (!tx || tx === db) {
+    const [holidayRes, workingDayRes] = await Promise.all([
+      client
+        .select({ name: holidays.name })
+        .from(holidays)
+        .where(
+          and(
+            eq(holidays.organizationId, organizationId),
+            eq(holidays.holidayDate, selectedDate),
+            eq(holidays.status, "active")
+          )
+        )
+        .limit(1),
+      client
+        .select({ isWorkingDay: workingDays.isWorkingDay })
+        .from(workingDays)
+        .where(
+          and(
+            eq(workingDays.organizationId, organizationId),
+            eq(workingDays.dayOfWeek, dayOfWeek)
+          )
+        )
+        .limit(1),
+    ]);
+    holiday = holidayRes[0];
+    workingDayRow = workingDayRes[0];
+  } else {
+    const [h] = await client
+      .select({ name: holidays.name })
+      .from(holidays)
+      .where(
+        and(
+          eq(holidays.organizationId, organizationId),
+          eq(holidays.holidayDate, selectedDate),
+          eq(holidays.status, "active")
+        )
       )
-    )
-    .limit(1);
+      .limit(1);
+    holiday = h;
+
+    const [w] = await client
+      .select({ isWorkingDay: workingDays.isWorkingDay })
+      .from(workingDays)
+      .where(
+        and(
+          eq(workingDays.organizationId, organizationId),
+          eq(workingDays.dayOfWeek, dayOfWeek)
+        )
+      )
+      .limit(1);
+    workingDayRow = w;
+  }
 
   const isWorkingDay = workingDayRow ? workingDayRow.isWorkingDay : dayOfWeek !== 0 && dayOfWeek !== 6;
 
@@ -556,33 +592,55 @@ export async function listDepartmentsWithMetrics(
 ): Promise<{ items: DepartmentListItem[]; dateContext: DepartmentDateContext; totalCount: number }> {
   await authorize({ organizationId, permission: "department.read" });
 
-  const [org] = await db
-    .select({ timezone: organizations.timezone })
-    .from(organizations)
-    .where(eq(organizations.id, organizationId))
-    .limit(1);
+  let timezone: string | undefined;
+  let cachedContext: Awaited<ReturnType<typeof getCachedTenantContext>> = null;
+  try {
+    cachedContext = await getCachedTenantContext(organizationId);
+    timezone = cachedContext?.organization?.timezone || undefined;
+  } catch {
+    // Ignore cache error
+  }
 
-  const timezone = org?.timezone || "UTC";
-  const dateContext = await resolveDateContext(organizationId, timezone, dateParam);
+  if (!timezone) {
+    const [org] = await db
+      .select({ timezone: organizations.timezone })
+      .from(organizations)
+      .where(eq(organizations.id, organizationId))
+      .limit(1);
+    timezone = org?.timezone || "UTC";
+  }
 
   // 1. Fetch departments scoped to user permissions:
   // - Organization Owner and HR Admin (department.manage): see all departments in the organization.
   // - Assigned Department Manager: sees ONLY their assigned active department(s).
   // - Other roles: do not see departments by default.
-  const isPrivileged = await isActorPrivilegedForOwnerRecord(organizationId, actorUserId);
-  const canManageAll =
-    isPrivileged || (await can({ userId: actorUserId, organizationId, permission: "department.manage" }));
-  let deptRows: (typeof departments.$inferSelect)[] = [];
+  const isPrivileged =
+    cachedContext?.user?.platformRole === "PLATFORM_OWNER" ||
+    cachedContext?.role?.key === "ORGANIZATION_OWNER"
+      ? true
+      : await isActorPrivilegedForOwnerRecord(organizationId, actorUserId);
 
-  if (canManageAll) {
-    deptRows = await db
-      .select()
-      .from(departments)
-      .where(eq(departments.organizationId, organizationId))
-      .orderBy(departments.name);
-  } else {
-    deptRows = await getManagedDepartmentsForUser(organizationId, actorUserId);
-  }
+  const canManageAll =
+    isPrivileged ||
+    (cachedContext?.role?.key === "HR_ADMIN" ||
+    (cachedContext?.permissions &&
+      (Array.isArray(cachedContext.permissions)
+        ? cachedContext.permissions.includes("department.manage")
+        : (cachedContext.permissions as Set<string>).has?.("department.manage")))
+      ? true
+      : await can({ userId: actorUserId, organizationId, permission: "department.manage" }));
+
+  // Run date context resolution and department query concurrently
+  const [dateContext, deptRows] = await Promise.all([
+    resolveDateContext(organizationId, timezone, dateParam),
+    canManageAll
+      ? db
+          .select()
+          .from(departments)
+          .where(eq(departments.organizationId, organizationId))
+          .orderBy(departments.name)
+      : getManagedDepartmentsForUser(organizationId, actorUserId),
+  ]);
 
   if (deptRows.length === 0) {
     return { items: [], dateContext, totalCount: 0 };
@@ -590,14 +648,44 @@ export async function listDepartmentsWithMetrics(
 
   const deptIds = deptRows.map((d) => d.id);
 
-  // 2. Fetch managers
+  // 2. Fetch managers, 3. Count sub-teams, and 4. Fetch department employees concurrently
   const headIds = deptRows.map((d) => d.headEmployeeId).filter((id): id is string => Boolean(id));
-  const managerMap = new Map<string, DepartmentManagerSummary>();
-  if (headIds.length > 0) {
-    const managerRows = await db
-      .select()
+  const activeEmployeeStatuses = ["active", "probation", "confirmed", "notice_period"];
+
+  const [managerRows, teamCounts, departmentEmployees] = await Promise.all([
+    headIds.length > 0
+      ? db
+          .select()
+          .from(employees)
+          .where(and(eq(employees.organizationId, organizationId), inArray(employees.id, headIds)))
+      : Promise.resolve([]),
+    db
+      .select({
+        departmentId: teams.departmentId,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(teams)
+      .where(and(eq(teams.organizationId, organizationId), inArray(teams.departmentId, deptIds)))
+      .groupBy(teams.departmentId),
+    db
+      .select({
+        id: employees.id,
+        departmentId: employees.departmentId,
+        status: employees.status,
+        joiningDate: employees.joiningDate,
+      })
       .from(employees)
-      .where(and(eq(employees.organizationId, organizationId), inArray(employees.id, headIds)));
+      .where(
+        and(
+          eq(employees.organizationId, organizationId),
+          inArray(employees.departmentId, deptIds),
+          inArray(employees.status, activeEmployeeStatuses as never)
+        )
+      ),
+  ]);
+
+  const managerMap = new Map<string, DepartmentManagerSummary>();
+  if (managerRows.length > 0) {
     const enrichedManagers = await enrichEmployeesWithRoles(organizationId, managerRows);
     for (const m of enrichedManagers) {
       managerMap.set(m.id, {
@@ -613,38 +701,10 @@ export async function listDepartmentsWithMetrics(
     }
   }
 
-  // 3. Count sub-teams
-  const teamCounts = await db
-    .select({
-      departmentId: teams.departmentId,
-      count: sql<number>`count(*)::int`,
-    })
-    .from(teams)
-    .where(and(eq(teams.organizationId, organizationId), inArray(teams.departmentId, deptIds)))
-    .groupBy(teams.departmentId);
-
   const teamCountMap = new Map<string, number>();
   for (const tc of teamCounts) {
     if (tc.departmentId) teamCountMap.set(tc.departmentId, Number(tc.count));
   }
-
-  // 4. Fetch active/onboarded employees in departments for attendance calculation
-  const activeEmployeeStatuses = ["active", "probation", "confirmed", "notice_period"];
-  const departmentEmployees = await db
-    .select({
-      id: employees.id,
-      departmentId: employees.departmentId,
-      status: employees.status,
-      joiningDate: employees.joiningDate,
-    })
-    .from(employees)
-    .where(
-      and(
-        eq(employees.organizationId, organizationId),
-        inArray(employees.departmentId, deptIds),
-        inArray(employees.status, activeEmployeeStatuses as never)
-      )
-    );
 
   const employeesByDept = new Map<string, typeof departmentEmployees>();
   for (const emp of departmentEmployees) {
@@ -654,40 +714,40 @@ export async function listDepartmentsWithMetrics(
     employeesByDept.set(emp.departmentId, list);
   }
 
-  // 5. Query attendance records for the selected date
+  // 5. Query attendance records and 6. Query approved leaves concurrently
   const employeeIds = departmentEmployees.map((e) => e.id);
   const attendanceMap = new Map<string, typeof attendanceRecords.$inferSelect>();
+  const leaveSet = new Set<string>();
+
   if (employeeIds.length > 0) {
-    const punchRecords = await db
-      .select()
-      .from(attendanceRecords)
-      .where(
-        and(
-          eq(attendanceRecords.organizationId, organizationId),
-          eq(attendanceRecords.attendanceDate, dateContext.date),
-          inArray(attendanceRecords.employeeId, employeeIds)
-        )
-      );
+    const [punchRecords, leaves] = await Promise.all([
+      db
+        .select()
+        .from(attendanceRecords)
+        .where(
+          and(
+            eq(attendanceRecords.organizationId, organizationId),
+            eq(attendanceRecords.attendanceDate, dateContext.date),
+            inArray(attendanceRecords.employeeId, employeeIds)
+          )
+        ),
+      db
+        .select({ employeeId: leaveApplications.employeeId })
+        .from(leaveApplications)
+        .where(
+          and(
+            eq(leaveApplications.organizationId, organizationId),
+            eq(leaveApplications.status, "approved"),
+            lte(leaveApplications.startDate, dateContext.date),
+            sql`${leaveApplications.endDate} >= ${dateContext.date}`,
+            inArray(leaveApplications.employeeId, employeeIds)
+          )
+        ),
+    ]);
+
     for (const r of punchRecords) {
       attendanceMap.set(r.employeeId, r);
     }
-  }
-
-  // 6. Query approved leaves for the selected date
-  const leaveSet = new Set<string>();
-  if (employeeIds.length > 0) {
-    const leaves = await db
-      .select({ employeeId: leaveApplications.employeeId })
-      .from(leaveApplications)
-      .where(
-        and(
-          eq(leaveApplications.organizationId, organizationId),
-          eq(leaveApplications.status, "approved"),
-          lte(leaveApplications.startDate, dateContext.date),
-          sql`${leaveApplications.endDate} >= ${dateContext.date}`,
-          inArray(leaveApplications.employeeId, employeeIds)
-        )
-      );
     for (const l of leaves) {
       leaveSet.add(l.employeeId);
     }
@@ -766,20 +826,32 @@ export async function getDepartmentDetails(
 ): Promise<DepartmentDetails> {
   await authorize({ organizationId, permission: "department.read" });
 
-  const [org] = await db
-    .select({ timezone: organizations.timezone })
-    .from(organizations)
-    .where(eq(organizations.id, organizationId))
-    .limit(1);
+  let timezone: string | undefined;
+  let cachedContext: Awaited<ReturnType<typeof getCachedTenantContext>> = null;
+  try {
+    cachedContext = await getCachedTenantContext(organizationId);
+    timezone = cachedContext?.organization?.timezone || undefined;
+  } catch {
+    // Ignore cache error
+  }
 
-  const timezone = org?.timezone || "UTC";
-  const dateContext = await resolveDateContext(organizationId, timezone, dateParam);
+  if (!timezone) {
+    const [org] = await db
+      .select({ timezone: organizations.timezone })
+      .from(organizations)
+      .where(eq(organizations.id, organizationId))
+      .limit(1);
+    timezone = org?.timezone || "UTC";
+  }
 
-  const [dept] = await db
-    .select()
-    .from(departments)
-    .where(and(eq(departments.id, departmentId), eq(departments.organizationId, organizationId)))
-    .limit(1);
+  const [dateContext, [dept]] = await Promise.all([
+    resolveDateContext(organizationId, timezone, dateParam),
+    db
+      .select()
+      .from(departments)
+      .where(and(eq(departments.id, departmentId), eq(departments.organizationId, organizationId)))
+      .limit(1),
+  ]);
 
   if (!dept) {
     throw new AppError("NOT_FOUND", "Department was not found in this organization.", 404);
@@ -791,45 +863,56 @@ export async function getDepartmentDetails(
   // Other users or managers attempting to access another department are rejected with 403 Forbidden.
   await assertCanAccessDepartment(organizationId, actorUserId, departmentId);
 
-  // Manager details
-  let manager: DepartmentManagerSummary | null = null;
-  if (dept.headEmployeeId) {
-    const [mgrEmp] = await db
+  // Manager details, assigned sub-teams, and department employee roster: run concurrently
+  const [mgrEmpRow, teamRows, rawEmployees] = await Promise.all([
+    dept.headEmployeeId
+      ? db
+          .select()
+          .from(employees)
+          .where(and(eq(employees.id, dept.headEmployeeId), eq(employees.organizationId, organizationId)))
+          .then((r) => r[0] || null)
+      : Promise.resolve(null),
+    db
+      .select()
+      .from(teams)
+      .where(and(eq(teams.departmentId, dept.id), eq(teams.organizationId, organizationId)))
+      .orderBy(teams.name),
+    db
       .select()
       .from(employees)
-      .where(and(eq(employees.id, dept.headEmployeeId), eq(employees.organizationId, organizationId)));
-    if (mgrEmp) {
-      const [enrichedMgr] = await enrichEmployeesWithRoles(organizationId, [mgrEmp]);
-      manager = {
-        id: enrichedMgr.id,
-        displayName: enrichedMgr.displayName,
-        employeeId: enrichedMgr.employeeId,
-        workEmail: enrichedMgr.workEmail,
-        phone: enrichedMgr.phone,
-        roleKey: enrichedMgr.roleKey,
-        roleTitle: enrichedMgr.roleTitle,
-        status: enrichedMgr.status,
-      };
-    }
+      .where(and(eq(employees.departmentId, dept.id), eq(employees.organizationId, organizationId)))
+      .orderBy(employees.displayName),
+  ]);
+
+  let manager: DepartmentManagerSummary | null = null;
+  if (mgrEmpRow) {
+    const [enrichedMgr] = await enrichEmployeesWithRoles(organizationId, [mgrEmpRow]);
+    manager = {
+      id: enrichedMgr.id,
+      displayName: enrichedMgr.displayName,
+      employeeId: enrichedMgr.employeeId,
+      workEmail: enrichedMgr.workEmail,
+      phone: enrichedMgr.phone,
+      roleKey: enrichedMgr.roleKey,
+      roleTitle: enrichedMgr.roleTitle,
+      status: enrichedMgr.status,
+    };
   }
 
-  // Assigned sub-teams
-  const teamRows = await db
-    .select()
-    .from(teams)
-    .where(and(eq(teams.departmentId, dept.id), eq(teams.organizationId, organizationId)))
-    .orderBy(teams.name);
-
   const teamLeadIds = teamRows.map((t) => t.teamLeadEmployeeId).filter((id): id is string => Boolean(id));
+  const [leads, enrichedEmployees] = await Promise.all([
+    teamLeadIds.length > 0
+      ? db
+          .select({ id: employees.id, displayName: employees.displayName })
+          .from(employees)
+          .where(and(eq(employees.organizationId, organizationId), inArray(employees.id, teamLeadIds)))
+      : Promise.resolve([]),
+    enrichEmployeesWithRoles(organizationId, rawEmployees),
+  ]);
+
   const leadNameMap = new Map<string, string>();
-  if (teamLeadIds.length > 0) {
-    const leads = await db
-      .select({ id: employees.id, displayName: employees.displayName })
-      .from(employees)
-      .where(and(eq(employees.organizationId, organizationId), inArray(employees.id, teamLeadIds)));
-    for (const lead of leads) {
-      leadNameMap.set(lead.id, lead.displayName);
-    }
+  for (const lead of leads) {
+    leadNameMap.set(lead.id, lead.displayName);
   }
 
   const teamsList: DepartmentTeamItem[] = teamRows.map((t) => ({
@@ -842,49 +925,41 @@ export async function getDepartmentDetails(
     teamLeadName: t.teamLeadEmployeeId ? leadNameMap.get(t.teamLeadEmployeeId) || null : null,
   }));
 
-  // Department employee roster
-  const rawEmployees = await db
-    .select()
-    .from(employees)
-    .where(and(eq(employees.departmentId, dept.id), eq(employees.organizationId, organizationId)))
-    .orderBy(employees.displayName);
-
-  const enrichedEmployees = await enrichEmployeesWithRoles(organizationId, rawEmployees);
   const employeeIds = enrichedEmployees.map((e) => e.id);
 
-  // Attendance punches for date
+  // Attendance punches & Leave applications: run concurrently
   const punchMap = new Map<string, typeof attendanceRecords.$inferSelect>();
+  const leaveSet = new Set<string>();
+
   if (employeeIds.length > 0) {
-    const records = await db
-      .select()
-      .from(attendanceRecords)
-      .where(
-        and(
-          eq(attendanceRecords.organizationId, organizationId),
-          eq(attendanceRecords.attendanceDate, dateContext.date),
-          inArray(attendanceRecords.employeeId, employeeIds)
-        )
-      );
+    const [records, leaves] = await Promise.all([
+      db
+        .select()
+        .from(attendanceRecords)
+        .where(
+          and(
+            eq(attendanceRecords.organizationId, organizationId),
+            eq(attendanceRecords.attendanceDate, dateContext.date),
+            inArray(attendanceRecords.employeeId, employeeIds)
+          )
+        ),
+      db
+        .select({ employeeId: leaveApplications.employeeId })
+        .from(leaveApplications)
+        .where(
+          and(
+            eq(leaveApplications.organizationId, organizationId),
+            eq(leaveApplications.status, "approved"),
+            lte(leaveApplications.startDate, dateContext.date),
+            sql`${leaveApplications.endDate} >= ${dateContext.date}`,
+            inArray(leaveApplications.employeeId, employeeIds)
+          )
+        ),
+    ]);
+
     for (const r of records) {
       punchMap.set(r.employeeId, r);
     }
-  }
-
-  // Leave applications for date
-  const leaveSet = new Set<string>();
-  if (employeeIds.length > 0) {
-    const leaves = await db
-      .select({ employeeId: leaveApplications.employeeId })
-      .from(leaveApplications)
-      .where(
-        and(
-          eq(leaveApplications.organizationId, organizationId),
-          eq(leaveApplications.status, "approved"),
-          lte(leaveApplications.startDate, dateContext.date),
-          sql`${leaveApplications.endDate} >= ${dateContext.date}`,
-          inArray(leaveApplications.employeeId, employeeIds)
-        )
-      );
     for (const l of leaves) {
       leaveSet.add(l.employeeId);
     }

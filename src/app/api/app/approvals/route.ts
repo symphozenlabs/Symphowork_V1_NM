@@ -11,7 +11,11 @@ export async function GET() {
   try {
     const tenant = await resolveTenantContext();
     if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
-    await authorizeAny({ organizationId: tenant.organization.id, permissions: APPROVAL_PERMISSIONS });
+    await authorizeAny({
+      organizationId: tenant.organization.id,
+      permissions: APPROVAL_PERMISSIONS,
+      context: tenant,
+    });
     const tasks = await db
       .select({
         id: approvalTasks.id,

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { PromptDialog } from "@/components/ui/prompt-dialog";
 
 type Task = { id: string; status: string; entityType: string; stepName: string; dueAt?: string | null };
 
@@ -12,6 +13,7 @@ export function ApprovalInbox() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [rejectingTask, setRejectingTask] = useState<Task | null>(null);
   const { showToast } = useToast();
 
   const load = async () => {
@@ -45,8 +47,8 @@ export function ApprovalInbox() {
     }
   };
 
-  const act = async (task: Task, action: "approve" | "reject") => {
-    const comment = action === "reject" ? window.prompt("Reason for rejection (required)") : undefined;
+  const act = async (task: Task, action: "approve" | "reject", providedComment?: string) => {
+    const comment = action === "reject" ? providedComment : undefined;
     if (action === "reject" && !comment?.trim()) return;
     setBusy(task.id);
     setError("");
@@ -101,7 +103,7 @@ export function ApprovalInbox() {
                   <Button size="sm" disabled={busy !== null} onClick={() => act(task, "approve")}>
                     {busy === task.id ? "Approving…" : "Approve"}
                   </Button>
-                  <Button size="sm" variant="secondary" disabled={busy !== null} onClick={() => act(task, "reject")}>
+                  <Button size="sm" variant="secondary" disabled={busy !== null} onClick={() => setRejectingTask(task)}>
                     {busy === task.id ? "Rejecting…" : "Reject"}
                   </Button>
                 </div>
@@ -116,6 +118,28 @@ export function ApprovalInbox() {
         ))
       )}
       {message && <p role="status" className="text-sm text-success">{message}</p>}
+
+      {/* Rejection Prompt Dialog */}
+      <PromptDialog
+        open={Boolean(rejectingTask)}
+        onOpenChange={(open) => {
+          if (!open) setRejectingTask(null);
+        }}
+        title="Reject Approval Request"
+        description={`Provide a reason for rejecting this ${rejectingTask?.entityType.replaceAll("_", " ") ?? "task"}. This comment will be logged in the audit trail.`}
+        label="Reason for rejection"
+        placeholder="Enter required rejection justification..."
+        required
+        variant="destructive"
+        confirmText="Confirm Rejection"
+        isLoading={busy === rejectingTask?.id}
+        onConfirm={async (reason) => {
+          if (!rejectingTask) return;
+          const task = rejectingTask;
+          setRejectingTask(null);
+          await act(task, "reject", reason);
+        }}
+      />
     </div>
   );
 }

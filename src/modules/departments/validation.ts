@@ -23,6 +23,13 @@ export const departmentInputSchema = z.object({
 
 export const departmentUpdateSchema = departmentInputSchema.partial();
 
+export function isHrDepartment(dept?: { code?: string | null; name?: string | null } | null): boolean {
+  if (!dept) return false;
+  const code = (dept.code || "").trim().toUpperCase();
+  const name = (dept.name || "").trim().toLowerCase();
+  return code === "HR" || name === "human resources" || name === "hr" || name.startsWith("human resource");
+}
+
 export const departmentQuerySchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format.").optional(),
 });

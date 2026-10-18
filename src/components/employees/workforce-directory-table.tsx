@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useTransition, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Search, X, Users, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,7 +68,6 @@ export function WorkforceDirectoryTable({
   currentUserRole,
   isPlatformOwner,
 }: WorkforceDirectoryTableProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -83,7 +82,6 @@ export function WorkforceDirectoryTable({
   const [employees, setEmployees] = useState<DirectoryEmployee[]>(initialEmployees);
   const [totalCount, setTotalCount] = useState<number>(initialTotal);
   const [isLoading, setIsLoading] = useState(false);
-  const [, startTransition] = useTransition();
 
   // Sync state if initial props change
   useEffect(() => {
@@ -115,11 +113,12 @@ export function WorkforceDirectoryTable({
         params.set("page", String(page));
         params.set("pageSize", String(size));
 
-        // Update browser URL query string shallowly
-        startTransition(() => {
-          const newUrl = `${pathname}?${params.toString()}`;
-          router.replace(newUrl, { scroll: false });
-        });
+        // Update browser URL query string shallowly without triggering redundant Server Component flights
+        const queryStr = params.toString();
+        const newUrl = queryStr ? `${pathname}?${queryStr}` : pathname;
+        if (typeof window !== "undefined") {
+          window.history.replaceState(window.history.state, "", newUrl);
+        }
 
         const res = await fetch(`/api/app/employees?${params.toString()}`);
         if (!res.ok) throw new Error("Failed to fetch employees");
@@ -135,7 +134,7 @@ export function WorkforceDirectoryTable({
         setIsLoading(false);
       }
     },
-    [pathname, router]
+    [pathname]
   );
 
   // Trigger fetch when search, page, or pageSize change (after initial mount)

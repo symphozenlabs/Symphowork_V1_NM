@@ -1,12 +1,40 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/modules/identity/auth";
+import { resolveTenantContext } from "@/modules/tenancy/context";
+import { can } from "@/modules/tenancy/authorization";
 import { AtsDashboard } from "@/components/ats/ats-dashboard";
 import { AtsInterviewPanel } from "@/components/ats/ats-interview-panel";
 import { Sparkles } from "lucide-react";
 
 export default async function RecruitmentPage() {
-  if (!(await getSessionUser())) redirect("/login");
+  const user = await getSessionUser();
+  if (!user) redirect("/login");
+
+  let tenant;
+  try {
+    tenant = await resolveTenantContext();
+  } catch {
+    redirect("/app");
+  }
+
+  if (!tenant?.organization) {
+    redirect("/platform");
+  }
+
+  const canView = await can({
+    userId: user.id,
+    organizationId: tenant.organization.id,
+    permission: "ats.view",
+    user,
+    membership: tenant.membership,
+    role: tenant.role,
+    permissions: tenant.permissions,
+  });
+
+  if (!canView) {
+    redirect("/app");
+  }
 
   return (
     <div className="space-y-8">

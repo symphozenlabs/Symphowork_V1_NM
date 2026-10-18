@@ -1,12 +1,27 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/modules/identity/auth";
+import { resolveTenantContext } from "@/modules/tenancy/context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AttendanceActions } from "@/components/attendance/attendance-actions";
 import { RegularizationPanel } from "@/components/attendance/regularization-panel";
 import { Clock } from "lucide-react";
 
-export default async function AttendancePage() {
+export default async function AttendancePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ employeeId?: string; date?: string }>;
+}) {
   if (!(await getSessionUser())) redirect("/login");
+  const tenant = await resolveTenantContext();
+  const canViewOthers =
+    tenant.role?.key === "ORGANIZATION_OWNER" ||
+    tenant.role?.key === "HR_ADMIN" ||
+    tenant.role?.key === "HR_EXECUTIVE";
+
+  const resolvedParams = searchParams ? await searchParams : undefined;
+  const initialEmployeeId = canViewOthers ? (resolvedParams?.employeeId ?? "") : "";
+  const initialDate = resolvedParams?.date ?? "";
 
   return (
     <div className="space-y-6">
@@ -20,6 +35,11 @@ export default async function AttendancePage() {
             <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-600 font-medium">
               Live Workforce Tracking
             </span>
+            {canViewOthers && (
+              <span className="rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-xs text-indigo-700 font-semibold">
+                HR Access
+              </span>
+            )}
           </div>
           <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             Attendance & Time Clock
@@ -48,7 +68,13 @@ export default async function AttendancePage() {
           </div>
         </CardHeader>
         <CardContent className="pt-6">
-          <AttendanceActions />
+          <Suspense fallback={<p className="text-xs text-muted py-4">Loading attendance…</p>}>
+            <AttendanceActions
+              canViewOthers={canViewOthers}
+              initialEmployeeId={initialEmployeeId}
+              initialDate={initialDate}
+            />
+          </Suspense>
         </CardContent>
       </Card>
 

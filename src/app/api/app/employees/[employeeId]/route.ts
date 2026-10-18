@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
-import { db } from "@/db/client";
-import { employees } from "@/db/schema";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { authorize } from "@/modules/tenancy/authorization";
-import { updateEmployee } from "@/modules/employees/service";
+import { getEmployeeDetails, updateEmployee } from "@/modules/employees/service";
 import { employeeInputSchema } from "@/modules/employees/validation";
 
 export async function GET(_request: Request, context: { params: Promise<{ employeeId: string }> }) {
@@ -14,10 +11,7 @@ export async function GET(_request: Request, context: { params: Promise<{ employ
     if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     await authorize({ organizationId: tenant.organization.id, permission: "employee.read" });
     const { employeeId } = await context.params;
-    const [employee] = await db
-      .select()
-      .from(employees)
-      .where(and(eq(employees.id, employeeId), eq(employees.organizationId, tenant.organization.id)));
+    const employee = await getEmployeeDetails(tenant.organization.id, employeeId);
     if (!employee) throw new AppError("NOT_FOUND", "Employee was not found.", 404);
     return NextResponse.json({ success: true, employee });
   } catch (error) {

@@ -83,7 +83,7 @@ export default async function EmployeesPage({ searchParams }: EmployeesPageProps
             <Button asChild size="sm" className="gap-1.5">
               <Link href="/app/employees/new">
                 <UserPlus className="h-4 w-4" />
-                <span>Create Employee</span>
+                <span>Onboard Employee</span>
               </Link>
             </Button>
           </div>

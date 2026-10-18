@@ -27,6 +27,7 @@ vi.mock("@/modules/tenancy/authorization", () => ({
       "workflow.manage",
       "billing.view",
       "report.employee",
+      "ats.view",
     ])
   ),
 }));
@@ -198,8 +199,9 @@ describe("Sidebar vertical scrolling and layout structure", () => {
     const coreHrefs = coreGroup!.items.map((i) => i.href);
     expect(coreHrefs).not.toContain("/app/employees");
     expect(coreHrefs).not.toContain("/app/approvals");
+    expect(coreHrefs).not.toContain("/app/recruitment");
     expect(coreHrefs).toContain("/app/directory");
-    expect(coreGroup!.items).toHaveLength(10);
+    expect(coreGroup!.items).toHaveLength(9);
   });
 
   it("retains People and Approvals for ORGANIZATION_OWNER", async () => {

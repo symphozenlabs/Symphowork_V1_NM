@@ -77,6 +77,8 @@ export interface MasterDataItem {
   id: string;
   name: string;
   code?: string;
+  startTime?: string;
+  endTime?: string;
 }
 
 export interface ManagerSummary {

@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, isNull, lte, or } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { approvalTasks, attendanceRecords, employeePayrollProfiles, employeeSalaryAssignments, employees, holidays, leaveApplications, leaveTypes, payrollAdjustments, payrollCalculationSnapshots, payrollLineItems, payrollPayslips, payrollPeriods, payrollRunEmployees, payrollRuns, payrollStatutoryConfigurations, payrollTaxConfigurations, salaryComponents, salaryStructureComponents, salaryStructures, workingDays } from "@/db/schema";
 import { recordAudit } from "@/lib/audit";
@@ -43,8 +43,10 @@ export async function listPayrollRuns(input: { organizationId: string; userId: s
 
 export async function assignSalaryStructure(input: { organizationId: string; userId: string; employeeId: string; structureId: string; effectiveFrom: string; effectiveTo?: string; revisionReason?: string; notes?: string }) {
   await authorize({ organizationId: input.organizationId, permission: "payroll.configure" });
-  const [employee] = await db.select().from(employees).where(and(eq(employees.id, input.employeeId), eq(employees.organizationId, input.organizationId)));
-  const [structure] = await db.select().from(salaryStructures).where(and(eq(salaryStructures.id, input.structureId), eq(salaryStructures.organizationId, input.organizationId)));
+  const [[employee], [structure]] = await Promise.all([
+    db.select().from(employees).where(and(eq(employees.id, input.employeeId), eq(employees.organizationId, input.organizationId))),
+    db.select().from(salaryStructures).where(and(eq(salaryStructures.id, input.structureId), eq(salaryStructures.organizationId, input.organizationId))),
+  ]);
   if (!employee || !structure) throw new AppError("NOT_FOUND", "Employee or salary structure was not found.", 404);
   if (input.effectiveTo && input.effectiveTo < input.effectiveFrom) throw new AppError("VALIDATION_ERROR", "The salary assignment end date must be on or after the start date.", 400);
   const existing = await db.select().from(employeeSalaryAssignments).where(and(eq(employeeSalaryAssignments.organizationId, input.organizationId), eq(employeeSalaryAssignments.employeeId, input.employeeId)));
@@ -114,7 +116,22 @@ export async function calculatePayrollRun(input: { organizationId: string; userI
     const workflow = await createWorkflowInstance({ organizationId: input.organizationId, workflowType: "payroll", entityType: "payroll_run", entityId: run.id, subjectEmployeeId: firstRunEmployee.employeeId, submittedByUserId: input.userId });
     const tasks = await db.select().from(approvalTasks).where(eq(approvalTasks.workflowInstanceId, workflow.id));
     await notifyUsers({ organizationId: input.organizationId, recipientUserIds: tasks.map((task) => task.approverUserId), category: "approvals", type: "payroll.submitted", title: "Payroll approval required", message: `${run.runNumber} is ready for payroll review.`, entityType: "payroll_run", entityId: run.id, actionUrl: "/app/approvals", idempotencyKey: `payroll.submitted:${run.id}` });
-    const [updated] = await db.update(payrollRuns).set({ workflowInstanceId: workflow.id, status: "under_review", calculatedAt: new Date(), employeeCount: await db.select().from(payrollRunEmployees).where(eq(payrollRunEmployees.runId, run.id)).then((rows) => rows.length), grossTotal, deductionTotal, netTotal, employerContributionTotal: employerTotal, warningCount, updatedAt: new Date() }).where(eq(payrollRuns.id, run.id)).returning();
+    const [updated] = await db.update(payrollRuns).set({
+      workflowInstanceId: workflow.id,
+      status: "under_review",
+      calculatedAt: new Date(),
+      employeeCount: await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(payrollRunEmployees)
+        .where(eq(payrollRunEmployees.runId, run.id))
+        .then(([r]) => Number(r?.count ?? 0)),
+      grossTotal,
+      deductionTotal,
+      netTotal,
+      employerContributionTotal: employerTotal,
+      warningCount,
+      updatedAt: new Date(),
+    }).where(eq(payrollRuns.id, run.id)).returning();
     await db.update(payrollPeriods).set({ status: "under_review", updatedAt: new Date() }).where(eq(payrollPeriods.id, period.id));
     await recordAudit({ actorUserId: input.userId, organizationId: input.organizationId, action: "payroll_run_calculated", resource: "payroll_run", resourceId: run.id, metadata: { warningCount } });
     return updated;
@@ -128,12 +145,45 @@ export async function finalizePayrollRun(input: { organizationId: string; userId
   const [period] = await db.select().from(payrollPeriods).where(eq(payrollPeriods.id, run.periodId));
   if (!period) throw new AppError("NOT_FOUND", "Payroll period was not found.", 404);
   const runEmployees = await db.select().from(payrollRunEmployees).where(eq(payrollRunEmployees.runId, run.id));
-  for (const runEmployee of runEmployees) {
-    const [snapshot] = await db.select().from(payrollCalculationSnapshots).where(eq(payrollCalculationSnapshots.runEmployeeId, runEmployee.id));
-    const [employee] = await db.select().from(employees).where(eq(employees.id, runEmployee.employeeId));
-    if (!snapshot || !employee) continue;
-    await db.update(payrollCalculationSnapshots).set({ frozenAt: new Date() }).where(eq(payrollCalculationSnapshots.id, snapshot.id));
-    await db.insert(payrollPayslips).values({ organizationId: input.organizationId, runEmployeeId: runEmployee.id, employeeId: employee.id, payslipNumber: `PSL-${period.year}-${String(period.month).padStart(2, "0")}-${employee.employeeId}`, snapshotId: snapshot.id }).onConflictDoNothing();
+  if (runEmployees.length > 0) {
+    const runEmployeeIds = runEmployees.map((r) => r.id);
+    const employeeIds = runEmployees.map((r) => r.employeeId);
+    const [snapshots, employeeRows] = await Promise.all([
+      db.select().from(payrollCalculationSnapshots).where(inArray(payrollCalculationSnapshots.runEmployeeId, runEmployeeIds)),
+      db.select().from(employees).where(inArray(employees.id, employeeIds)),
+    ]);
+    const snapshotByRunEmployeeId = new Map(snapshots.map((s) => [s.runEmployeeId, s]));
+    const employeeById = new Map(employeeRows.map((e) => [e.id, e]));
+
+    const snapshotIdsToFreeze: string[] = [];
+    const payslipValues: Array<{
+      organizationId: string;
+      runEmployeeId: string;
+      employeeId: string;
+      payslipNumber: string;
+      snapshotId: string;
+    }> = [];
+
+    for (const runEmployee of runEmployees) {
+      const snapshot = snapshotByRunEmployeeId.get(runEmployee.id);
+      const employee = employeeById.get(runEmployee.employeeId);
+      if (!snapshot || !employee) continue;
+      snapshotIdsToFreeze.push(snapshot.id);
+      payslipValues.push({
+        organizationId: input.organizationId,
+        runEmployeeId: runEmployee.id,
+        employeeId: employee.id,
+        payslipNumber: `PSL-${period.year}-${String(period.month).padStart(2, "0")}-${employee.employeeId}`,
+        snapshotId: snapshot.id,
+      });
+    }
+
+    if (snapshotIdsToFreeze.length > 0) {
+      await db.update(payrollCalculationSnapshots).set({ frozenAt: new Date() }).where(inArray(payrollCalculationSnapshots.id, snapshotIdsToFreeze));
+    }
+    if (payslipValues.length > 0) {
+      await db.insert(payrollPayslips).values(payslipValues).onConflictDoNothing();
+    }
   }
   const [finalized] = await db.update(payrollRuns).set({ status: "finalized", finalizedAt: new Date(), updatedAt: new Date() }).where(eq(payrollRuns.id, run.id)).returning();
   await db.update(payrollPeriods).set({ status: "finalized", updatedAt: new Date() }).where(eq(payrollPeriods.id, period.id));
