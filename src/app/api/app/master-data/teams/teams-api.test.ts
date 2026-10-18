@@ -1,14 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { departments, teams } from "@/db/schema";
 import { GET, POST } from "./route";
 
-const { resolveTenantContext, authorize } = vi.hoisted(() => ({
+const { resolveTenantContext, authorize, mockSelect, mockInsert } = vi.hoisted(() => ({
   resolveTenantContext: vi.fn(),
   authorize: vi.fn(),
+  mockSelect: vi.fn(),
+  mockInsert: vi.fn(),
 }));
 
 vi.mock("@/modules/tenancy/context", () => ({ resolveTenantContext }));
 vi.mock("@/modules/tenancy/authorization", () => ({ authorize }));
+vi.mock("@/db/client", () => ({
+  db: {
+    select: mockSelect,
+    insert: mockInsert,
+  },
+}));
 
 type MockTeam = {
   id: string;
@@ -19,49 +26,10 @@ type MockTeam = {
   status: "active" | "inactive" | "archived";
 };
 
-type MockDepartment = {
-  id: string;
-  organizationId: string;
-  name: string;
-};
-
 const orgA = "11111111-1111-4111-8111-111111111111";
-const orgB = "22222222-2222-4222-8222-222222222222";
 
 const salesDeptOrgA = "33333333-3333-4333-8333-333333333333";
-const engDeptOrgA = "44444444-4444-4444-8444-444444444444";
 const salesDeptOrgB = "55555555-5555-4555-8555-555555555555";
-
-let mockTeams: MockTeam[] = [];
-let mockDepartments: MockDepartment[] = [];
-
-vi.mock("@/db/client", () => ({
-  db: {
-    select: vi.fn(() => ({
-      from: vi.fn((table: unknown) => ({
-        where: vi.fn().mockImplementation((condition: any) => ({
-          limit: vi.fn().mockImplementation((limitCount: number) => {
-            if (table === departments) {
-              return Promise.resolve(mockDepartments.slice(0, limitCount));
-            }
-            return Promise.resolve(mockTeams.slice(0, limitCount));
-          }),
-          orderBy: vi.fn().mockImplementation(() => {
-            if (table === teams) {
-              return Promise.resolve(mockTeams);
-            }
-            return Promise.resolve([]);
-          }),
-        })),
-      })),
-    })),
-    insert: vi.fn(() => ({
-      values: vi.fn((values: any) => ({
-        returning: vi.fn().mockResolvedValue([{ id: "new-team-id", ...values }]),
-      })),
-    })),
-  },
-}));
 
 describe("Master Data Teams API Route — Filter & Isolation Regression Tests", () => {
   beforeEach(() => {
@@ -72,60 +40,18 @@ describe("Master Data Teams API Route — Filter & Isolation Regression Tests", 
       user: { id: "user-1" },
     });
     authorize.mockResolvedValue({ id: "user-1" });
-
-    mockDepartments = [
-      { id: salesDeptOrgA, organizationId: orgA, name: "Sales" },
-      { id: engDeptOrgA, organizationId: orgA, name: "Engineering" },
-      { id: salesDeptOrgB, organizationId: orgB, name: "Sales (Org B)" },
-    ];
-
-    mockTeams = [
-      {
-        id: "team-sales-ops",
-        organizationId: orgA,
-        departmentId: salesDeptOrgA,
-        name: "Sales Operations Team",
-        code: "SALES-OPS",
-        status: "active",
-      },
-      {
-        id: "team-sales-legacy",
-        organizationId: orgA,
-        departmentId: salesDeptOrgA,
-        name: "Sales Legacy (Inactive)",
-        code: "SALES-LEGACY",
-        status: "inactive",
-      },
-      {
-        id: "team-fe-core",
-        organizationId: orgA,
-        departmentId: engDeptOrgA,
-        name: "Frontend Core",
-        code: "FE-CORE",
-        status: "active",
-      },
-      {
-        id: "team-cross-tenant",
-        organizationId: orgB,
-        departmentId: salesDeptOrgB,
-        name: "Org B Sales Team",
-        code: "ORG-B-SALES",
-        status: "active",
-      },
-    ];
   });
 
   it("filters teams by selected department and excludes teams from other departments", async () => {
     // We simulate db response for Sales department in Org A
-    const { db } = await import("@/db/client");
-    (db.select as any).mockImplementationOnce(() => ({
+    mockSelect.mockImplementationOnce(() => ({
       from: vi.fn(() => ({
         where: vi.fn(() => ({
           limit: vi.fn().mockResolvedValue([{ id: salesDeptOrgA }]),
         })),
       })),
     }));
-    (db.select as any).mockImplementationOnce(() => ({
+    mockSelect.mockImplementationOnce(() => ({
       from: vi.fn(() => ({
         where: vi.fn(() => ({
           orderBy: vi.fn().mockResolvedValue([
@@ -154,19 +80,18 @@ describe("Master Data Teams API Route — Filter & Isolation Regression Tests", 
     expect(body.items[0].code).toBe("SALES-OPS");
     expect(body.items[0].departmentId).toBe(salesDeptOrgA);
     // FE-CORE from Engineering must NOT be included
-    expect(body.items.some((t: any) => t.code === "FE-CORE")).toBe(false);
+    expect(body.items.some((t: MockTeam) => t.code === "FE-CORE")).toBe(false);
   });
 
   it("excludes inactive teams by default when departmentId is queried", async () => {
-    const { db } = await import("@/db/client");
-    (db.select as any).mockImplementationOnce(() => ({
+    mockSelect.mockImplementationOnce(() => ({
       from: vi.fn(() => ({
         where: vi.fn(() => ({
           limit: vi.fn().mockResolvedValue([{ id: salesDeptOrgA }]),
         })),
       })),
     }));
-    (db.select as any).mockImplementationOnce(() => ({
+    mockSelect.mockImplementationOnce(() => ({
       from: vi.fn(() => ({
         where: vi.fn(() => ({
           orderBy: vi.fn().mockResolvedValue([
@@ -192,14 +117,13 @@ describe("Master Data Teams API Route — Filter & Isolation Regression Tests", 
 
     expect(res.status).toBe(200);
     expect(body.success).toBe(true);
-    expect(body.items.every((t: any) => t.status === "active")).toBe(true);
-    expect(body.items.some((t: any) => t.code === "SALES-LEGACY")).toBe(false);
+    expect(body.items.every((t: MockTeam) => t.status === "active")).toBe(true);
+    expect(body.items.some((t: MockTeam) => t.code === "SALES-LEGACY")).toBe(false);
   });
 
   it("enforces cross-tenant isolation: returns empty items when department belongs to another organization", async () => {
-    const { db } = await import("@/db/client");
     // Department query in db returns empty because salesDeptOrgB does not belong to Org A
-    (db.select as any).mockImplementationOnce(() => ({
+    mockSelect.mockImplementationOnce(() => ({
       from: vi.fn(() => ({
         where: vi.fn(() => ({
           limit: vi.fn().mockResolvedValue([]),
@@ -245,8 +169,7 @@ describe("Master Data Teams API Route — Filter & Isolation Regression Tests", 
   });
 
   it("POST rejects team creation if assigned department does not belong to organization", async () => {
-    const { db } = await import("@/db/client");
-    (db.select as any).mockImplementationOnce(() => ({
+    mockSelect.mockImplementationOnce(() => ({
       from: vi.fn(() => ({
         where: vi.fn(() => ({
           limit: vi.fn().mockResolvedValue([]), // Department not found in org

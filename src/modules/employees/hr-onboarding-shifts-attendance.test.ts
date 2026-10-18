@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it } from "vitest";
 import React from "react";
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
 import { renderToStaticMarkup } from "react-dom/server";
@@ -11,22 +11,6 @@ import {
   canAssignRole,
   getAssignableRoles,
 } from "@/modules/rbac/permissions";
-import { createEmployee } from "@/modules/employees/service";
-import { recordPunch } from "@/modules/attendance/service";
-import { GET as getAttendance } from "@/app/api/app/attendance/route";
-import {
-  departments,
-  designations,
-  employees,
-  employmentTypes,
-  organizations,
-  shifts,
-  teams,
-  attendanceRecords,
-  attendancePunches,
-  attendancePolicies,
-} from "@/db/schema";
-import { AppError } from "@/lib/errors";
 
 describe("Phase 10 — Comprehensive HR Onboarding, Shift Assignment & Attendance Integration Tests", () => {
   describe("1. isHrDepartment Matching Rules", () => {

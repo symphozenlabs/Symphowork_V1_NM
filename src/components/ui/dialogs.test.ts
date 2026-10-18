@@ -4,10 +4,11 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 vi.mock("@radix-ui/react-dialog", async (importOriginal) => {
-  const actual: any = await importOriginal();
+  const actual = await importOriginal<typeof import("@radix-ui/react-dialog")>();
   return {
     ...actual,
-    Portal: ({ children }: any) => React.createElement(React.Fragment, null, children),
+    Portal: ({ children }: { children?: React.ReactNode }) =>
+      React.createElement(React.Fragment, null, children),
   };
 });
 

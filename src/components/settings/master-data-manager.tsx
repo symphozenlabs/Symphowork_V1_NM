@@ -7,7 +7,7 @@ import { useToast } from "@/components/ui/toast";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ShiftFormDialog, type ShiftData } from "@/components/settings/shift-form-dialog";
 import { MasterDataEditDialog, type MasterDataItem } from "@/components/settings/master-data-edit-dialog";
-import { AlertCircle, Clock, Moon, Plus, Sun } from "lucide-react";
+import { AlertCircle, Clock, Moon, Plus } from "lucide-react";
 
 const configs = [
   ["Departments", "departments", "departments", "Name", "Code"],

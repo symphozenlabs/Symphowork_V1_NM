@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { departments, employees, organizations, shifts, designations, employmentTypes, teams, attendanceRecords, attendancePunches, attendancePolicies } from "@/db/schema";
-import { AppError } from "@/lib/errors";
+import { departments, employees, organizations, shifts, designations, employmentTypes, teams } from "@/db/schema";
 
 const authorize = vi.fn();
 const recordAudit = vi.fn();
@@ -10,8 +9,8 @@ let mockShifts: Array<{ id: string; organizationId: string; name?: string; start
 let mockDesignations: Array<{ id: string; organizationId: string; name?: string; code?: string }> = [];
 let mockEmploymentTypes: Array<{ id: string; organizationId: string; name?: string; code?: string }> = [];
 let mockTeams: Array<{ id: string; organizationId: string; departmentId: string; status: string }> = [];
-let mockEmployees: Array<any> = [];
-let insertedEmployees: Array<any> = [];
+let mockEmployees: Array<Record<string, unknown>> = [];
+let insertedEmployees: Array<Record<string, unknown>> = [];
 
 const tx = {
   select: vi.fn(() => ({
@@ -40,7 +39,7 @@ const tx = {
     })),
   })),
   insert: vi.fn((table: unknown) => ({
-    values: vi.fn((values: any) => ({
+    values: vi.fn((values: Record<string, unknown> | Array<Record<string, unknown>>) => ({
       returning: vi.fn().mockImplementation(() => {
         if (table === employees) {
           const emp = { id: "emp-new-uuid", ...values };

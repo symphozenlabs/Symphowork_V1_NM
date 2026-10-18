@@ -28,24 +28,25 @@ type MockShift = {
 const orgA = "11111111-1111-4111-8111-111111111111";
 
 let mockShifts: MockShift[] = [];
-let lastInsertedShift: any = null;
-let lastUpdatedShift: any = null;
+let lastInsertedShift: (MockShift & Record<string, unknown>) | null = null;
+let lastUpdatedShift: Record<string, unknown> | null = null;
 
 vi.mock("@/db/client", () => ({
   db: {
     select: vi.fn(() => ({
       from: vi.fn((table: unknown) => ({
-        where: vi.fn().mockImplementation((condition: any) => {
+        where: vi.fn().mockImplementation(() => {
           const res = Promise.resolve(table === shifts ? mockShifts : []);
-          (res as any).orderBy = vi.fn().mockReturnValue(Promise.resolve(table === shifts ? mockShifts : []));
-          return res;
+          return Object.assign(res, {
+            orderBy: vi.fn().mockReturnValue(Promise.resolve(table === shifts ? mockShifts : [])),
+          });
         }),
       })),
     })),
     insert: vi.fn(() => ({
-      values: vi.fn((values: any) => ({
+      values: vi.fn((values: Record<string, unknown>) => ({
         returning: vi.fn().mockImplementation(async () => {
-          lastInsertedShift = { id: "new-shift-id", ...values };
+          lastInsertedShift = { id: "new-shift-id", ...values } as MockShift & Record<string, unknown>;
           mockShifts.push(lastInsertedShift);
           return [lastInsertedShift];
         }),
@@ -118,11 +119,11 @@ describe("Shifts API — Creation, Editing, Validation & Retrieval", () => {
     const body = await res.json();
     expect(body.item).toBeDefined();
     expect(body.item.name).toBe("Morning Shift");
-    expect(lastInsertedShift.startTime).toBe("08:00");
-    expect(lastInsertedShift.endTime).toBe("16:30");
-    expect(lastInsertedShift.breakMinutes).toBe(45);
-    expect(lastInsertedShift.graceMinutes).toBe(10);
-    expect(lastInsertedShift.overnight).toBe(false);
+    expect(lastInsertedShift?.startTime).toBe("08:00");
+    expect(lastInsertedShift?.endTime).toBe("16:30");
+    expect(lastInsertedShift?.breakMinutes).toBe(45);
+    expect(lastInsertedShift?.graceMinutes).toBe(10);
+    expect(lastInsertedShift?.overnight).toBe(false);
   });
 
   it("POST allows creating an overnight shift when overnight is true", async () => {
@@ -142,7 +143,7 @@ describe("Shifts API — Creation, Editing, Validation & Retrieval", () => {
 
     const res = await POST(req);
     expect(res.status).toBe(201);
-    expect(lastInsertedShift.overnight).toBe(true);
+    expect(lastInsertedShift?.overnight).toBe(true);
   });
 
   it("POST rejects end time earlier than start time if overnight is false", async () => {

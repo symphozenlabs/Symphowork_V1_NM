@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createEmployee, updateEmployee } from "@/modules/employees/service";
 import { departments, employees, organizations, teams } from "@/db/schema";
-import { AppError } from "@/lib/errors";
 
 const { authorize, recordAudit } = vi.hoisted(() => ({
   authorize: vi.fn(),
@@ -9,7 +8,6 @@ const { authorize, recordAudit } = vi.hoisted(() => ({
 }));
 
 const organizationId = "11111111-1111-4111-8111-111111111111";
-const otherOrgId = "22222222-2222-4222-8222-222222222222";
 const actorUserId = "user-actor-1";
 
 const salesDeptId = "33333333-3333-4333-8333-333333333333";
@@ -33,7 +31,7 @@ type MockDept = {
 
 let mockDepartments: MockDept[] = [];
 let mockTeams: MockTeam[] = [];
-let mockEmployees: any[] = [];
+let mockEmployees: Array<Record<string, unknown>> = [];
 
 const tx = {
   select: vi.fn(() => ({
@@ -106,8 +104,8 @@ vi.mock("@/db/client", () => ({
         }),
       })),
     })),
-    update: vi.fn((table: unknown) => ({
-      set: vi.fn((changes: any) => ({
+    update: vi.fn(() => ({
+      set: vi.fn((changes: Record<string, unknown>) => ({
         where: vi.fn().mockImplementation(() => ({
           returning: vi.fn().mockResolvedValue([
             {
@@ -120,7 +118,7 @@ vi.mock("@/db/client", () => ({
       })),
     })),
     insert: vi.fn(() => ({
-      values: vi.fn((values: any) => Promise.resolve([values])),
+      values: vi.fn((values: Record<string, unknown> | Array<Record<string, unknown>>) => Promise.resolve([values])),
     })),
     query: {
       memberships: {

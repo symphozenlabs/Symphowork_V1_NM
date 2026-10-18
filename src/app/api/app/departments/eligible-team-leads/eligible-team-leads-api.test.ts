@@ -9,7 +9,7 @@ vi.mock("@/modules/tenancy/context", () => ({
 }));
 
 vi.mock("@/modules/departments/service", () => ({
-  listEligibleTeamLeads: (...args: any[]) => mockListEligibleTeamLeads(...args),
+  listEligibleTeamLeads: (...args: unknown[]) => mockListEligibleTeamLeads(...args),
 }));
 
 describe("Eligible Team Leads API Route (/api/app/departments/eligible-team-leads)", () => {

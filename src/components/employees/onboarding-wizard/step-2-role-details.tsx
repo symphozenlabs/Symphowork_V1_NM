@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { User, Building2, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/ui/custom-select";
@@ -146,22 +146,28 @@ export function Step2RoleDetails({
     : departments;
   const hrDepartmentMissing = isHrRole && displayedDepartments.length === 0 && !isLoadingMasterData;
 
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  const teamIdRef = useRef(form.teamId);
+  teamIdRef.current = form.teamId;
+
   // Cleanse state if HR role changes (teamId & locationId never allowed for HR)
   useEffect(() => {
     if (isHrRole) {
       if (form.locationId) {
-        onChange({ locationId: "" });
+        onChangeRef.current({ locationId: "" });
       }
       if (form.teamId) {
-        onChange({ teamId: "" });
+        onChangeRef.current({ teamId: "" });
       }
       if (form.departmentId && departments.length > 0) {
         const currentDept = departments.find((d) => d.id === form.departmentId);
         if (currentDept && !isHrDepartment(currentDept)) {
-          onChange({ departmentId: "" });
+          onChangeRef.current({ departmentId: "" });
         }
       } else if (!form.departmentId && displayedDepartments.length === 1) {
-        onChange({ departmentId: displayedDepartments[0].id });
+        onChangeRef.current({ departmentId: displayedDepartments[0].id });
       }
     }
   }, [isHrRole, form.locationId, form.teamId, form.departmentId, departments, displayedDepartments]);
@@ -174,8 +180,8 @@ export function Step2RoleDetails({
       setTeams([]);
       setIsLoadingTeams(false);
       setTeamError(null);
-      if (form.teamId) {
-        onChange({ teamId: "" });
+      if (teamIdRef.current) {
+        onChangeRef.current({ teamId: "" });
       }
       return;
     }
@@ -192,22 +198,22 @@ export function Step2RoleDetails({
 
         if (res.ok && data.success && Array.isArray(data.items)) {
           setTeams(data.items);
-          if (form.teamId && !data.items.some((t: MasterDataItem) => t.id === form.teamId)) {
-            onChange({ teamId: "" });
+          if (teamIdRef.current && !data.items.some((t: MasterDataItem) => t.id === teamIdRef.current)) {
+            onChangeRef.current({ teamId: "" });
           }
         } else {
           setTeams([]);
           setTeamError(data.error?.message || "Failed to load teams for this department.");
-          if (form.teamId) {
-            onChange({ teamId: "" });
+          if (teamIdRef.current) {
+            onChangeRef.current({ teamId: "" });
           }
         }
       } catch {
         if (!isMounted) return;
         setTeams([]);
         setTeamError("Network error loading teams. Please try again.");
-        if (form.teamId) {
-          onChange({ teamId: "" });
+        if (teamIdRef.current) {
+          onChangeRef.current({ teamId: "" });
         }
       } finally {
         if (isMounted) {
