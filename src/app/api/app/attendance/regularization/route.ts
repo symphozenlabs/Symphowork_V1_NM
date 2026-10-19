@@ -7,5 +7,52 @@ import { resolveTenantContext } from "@/modules/tenancy/context";
 import { createRegularizationRequest } from "@/modules/attendance/regularization";
 import { getOrEnsureEmployeeForUser } from "@/modules/employees/service";
 
-export async function GET() { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); const employee = await getOrEnsureEmployeeForUser(tenant.organization.id, tenant.user.id); return NextResponse.json({ success: true, requests: await db.select().from(attendanceRegularizationRequests).where(and(eq(attendanceRegularizationRequests.organizationId, tenant.organization.id), eq(attendanceRegularizationRequests.employeeId, employee.id))).orderBy(desc(attendanceRegularizationRequests.submittedAt)) }); } catch (error) { return errorResponse(error); } }
-export async function POST(request: Request) { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403); const body = await request.json() as { attendanceId?: string; requestedIn?: string; requestedOut?: string; reason?: string }; if (!body.attendanceId || !body.reason) throw new AppError("VALIDATION_ERROR", "Attendance record and reason are required.", 400); return NextResponse.json({ success: true, request: await createRegularizationRequest({ organizationId: tenant.organization.id, userId: tenant.user.id, attendanceId: body.attendanceId, requestedIn: body.requestedIn, requestedOut: body.requestedOut, reason: body.reason }) }, { status: 201 }); } catch (error) { return errorResponse(error); } }
+export async function GET() {
+  try {
+    const tenant = await resolveTenantContext();
+    if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
+    const employee = await getOrEnsureEmployeeForUser(tenant.organization.id, tenant.user.id);
+    const requests = await db
+      .select()
+      .from(attendanceRegularizationRequests)
+      .where(
+        and(
+          eq(attendanceRegularizationRequests.organizationId, tenant.organization.id),
+          eq(attendanceRegularizationRequests.employeeId, employee.id)
+        )
+      )
+      .orderBy(desc(attendanceRegularizationRequests.submittedAt));
+    return NextResponse.json({ success: true, requests });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const tenant = await resolveTenantContext();
+    if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
+    const body = (await request.json()) as {
+      attendanceId?: string;
+      attendanceDate?: string;
+      requestedIn?: string;
+      requestedOut?: string;
+      reason?: string;
+    };
+    if ((!body.attendanceId && !body.attendanceDate) || !body.reason?.trim()) {
+      throw new AppError("VALIDATION_ERROR", "Attendance record or date, and a valid reason are required.", 400);
+    }
+    const req = await createRegularizationRequest({
+      organizationId: tenant.organization.id,
+      userId: tenant.user.id,
+      attendanceId: body.attendanceId,
+      attendanceDate: body.attendanceDate,
+      requestedIn: body.requestedIn,
+      requestedOut: body.requestedOut,
+      reason: body.reason,
+    });
+    return NextResponse.json({ success: true, request: req }, { status: 201 });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}

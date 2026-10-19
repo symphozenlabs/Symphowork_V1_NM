@@ -2,10 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/modules/identity/auth";
 import { resolveTenantContext } from "@/modules/tenancy/context";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AttendanceActions } from "@/components/attendance/attendance-actions";
-import { RegularizationPanel } from "@/components/attendance/regularization-panel";
-import { Clock } from "lucide-react";
+import { AttendanceViewContainer } from "@/components/attendance/attendance-view-container";
 
 export default async function AttendancePage({
   searchParams,
@@ -50,36 +47,14 @@ export default async function AttendancePage({
         </div>
       </div>
 
-      {/* Main Punch Clock Card */}
-      <Card className="border-border/80 bg-surface shadow-xs">
-        <CardHeader className="border-b border-border/50 pb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Clock className="h-4.5 w-4.5" />
-            </div>
-            <div>
-              <CardTitle className="text-base font-semibold text-foreground">
-                Today’s Shift Status & Punch Terminal
-              </CardTitle>
-              <p className="text-xs text-muted">
-                Punches are timestamped using organization timezone and assigned shift parameters
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <Suspense fallback={<p className="text-xs text-muted py-4">Loading attendance…</p>}>
-            <AttendanceActions
-              canViewOthers={canViewOthers}
-              initialEmployeeId={initialEmployeeId}
-              initialDate={initialDate}
-            />
-          </Suspense>
-        </CardContent>
-      </Card>
-
-      {/* Regularization & Shift Exceptions */}
-      <RegularizationPanel />
+      <Suspense fallback={<p className="text-xs text-muted py-4">Loading workforce attendance…</p>}>
+        <AttendanceViewContainer
+          canViewOthers={canViewOthers}
+          userRoleKey={tenant.role?.key}
+          initialEmployeeId={initialEmployeeId}
+          initialDate={initialDate}
+        />
+      </Suspense>
     </div>
   );
 }

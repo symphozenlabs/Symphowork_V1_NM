@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { attendancePolicies, attendancePunches, attendanceRecords, employees, organizations, shifts } from "@/db/schema";
 
 const authorize = vi.fn();
@@ -99,6 +99,8 @@ describe("Attendance & Shift Lifecycle Integration", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-18T10:00:00+05:30"));
     insertedPunches = [];
     insertedRecords = [];
     updatedRecords = [];
@@ -118,6 +120,10 @@ describe("Attendance & Shift Lifecycle Integration", () => {
         earlyDepartureThresholdMinutes: 15,
       },
     ];
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe("Shift Assignment Gatekeeping on Clock In", () => {

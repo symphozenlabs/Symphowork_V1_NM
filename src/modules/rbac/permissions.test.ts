@@ -36,6 +36,9 @@ describe("permission registry", () => {
     expect(hrExecutivePerms).toContain(PERMISSIONS.employeeRead);
     expect(hrExecutivePerms).toContain(PERMISSIONS.employeeUpdate);
     expect(hrExecutivePerms).toContain(PERMISSIONS.attendanceRead);
+    expect(hrExecutivePerms).toContain(PERMISSIONS.attendanceClockIn);
+    expect(hrExecutivePerms).toContain(PERMISSIONS.attendanceClockOut);
+    expect(hrExecutivePerms).toContain(PERMISSIONS.attendanceBreak);
     expect(hrExecutivePerms).toContain(PERMISSIONS.attendanceRegularizationCreate);
     expect(hrExecutivePerms).toContain(PERMISSIONS.attendanceRegularizationRead);
     expect(hrExecutivePerms).toContain(PERMISSIONS.leaveRead);
@@ -44,9 +47,10 @@ describe("permission registry", () => {
     expect(hrExecutivePerms).toContain(PERMISSIONS.documentUpload);
     expect(hrExecutivePerms).toContain(PERMISSIONS.chatRead);
     expect(hrExecutivePerms).toContain(PERMISSIONS.chatSend);
+    expect(hrExecutivePerms).toContain(PERMISSIONS.chatCreate);
     expect(hrExecutivePerms).toContain(PERMISSIONS.organizationRead);
     expect(hrExecutivePerms).toContain(PERMISSIONS.departmentRead);
-    expect(hrExecutivePerms).toHaveLength(15);
+    expect(hrExecutivePerms).toHaveLength(19);
   });
 
   it("configures departmentRead for authorized viewing roles and restricts department management to ORGANIZATION_OWNER and HR_ADMIN", () => {
@@ -128,11 +132,17 @@ describe("permission registry", () => {
   });
 
 
-  it("configures PROJECT_MANAGER with intended project and task permissions", () => {
+  it("configures PROJECT_MANAGER with intended project, task, and self-service attendance permissions", () => {
     const pmPerms = ROLE_PERMISSIONS.PROJECT_MANAGER;
     expect(pmPerms).toBeDefined();
     expect(pmPerms).toContain(PERMISSIONS.organizationRead);
     expect(pmPerms).toContain(PERMISSIONS.employeeRead);
+    expect(pmPerms).toContain(PERMISSIONS.attendanceRead);
+    expect(pmPerms).toContain(PERMISSIONS.attendanceClockIn);
+    expect(pmPerms).toContain(PERMISSIONS.attendanceClockOut);
+    expect(pmPerms).toContain(PERMISSIONS.attendanceBreak);
+    expect(pmPerms).toContain(PERMISSIONS.attendanceRegularizationCreate);
+    expect(pmPerms).toContain(PERMISSIONS.attendanceRegularizationRead);
     expect(pmPerms).toContain(PERMISSIONS.projectView);
     expect(pmPerms).toContain(PERMISSIONS.projectCreate);
     expect(pmPerms).toContain(PERMISSIONS.projectEdit);
@@ -150,7 +160,29 @@ describe("permission registry", () => {
     expect(pmPerms).toContain(PERMISSIONS.taskManageDependencies);
     expect(pmPerms).toContain(PERMISSIONS.chatRead);
     expect(pmPerms).toContain(PERMISSIONS.chatSend);
-    expect(pmPerms).toHaveLength(19);
+    expect(pmPerms).toContain(PERMISSIONS.chatCreate);
+    expect(pmPerms).toHaveLength(26);
+  });
+
+  it("configures all tenant staff roles with chat read, send, and create permissions", () => {
+    const staffRoles = [
+      "ORGANIZATION_OWNER",
+      "HR_ADMIN",
+      "HR_EXECUTIVE",
+      "PROJECT_MANAGER",
+      "RECRUITER",
+      "MANAGER",
+      "TEAM_LEAD",
+      "FINANCE_ADMIN",
+      "EMPLOYEE",
+    ] as const;
+
+    for (const roleKey of staffRoles) {
+      const perms = ROLE_PERMISSIONS[roleKey];
+      expect(perms).toContain(PERMISSIONS.chatRead);
+      expect(perms).toContain(PERMISSIONS.chatSend);
+      expect(perms).toContain(PERMISSIONS.chatCreate);
+    }
   });
 
   it("restricts EMPLOYEE from viewing company-wide payroll while allowing self-service payslips", () => {

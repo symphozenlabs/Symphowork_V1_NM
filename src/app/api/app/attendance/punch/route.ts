@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { db } from "@/db/client";
 import { employees } from "@/db/schema";
 import { errorResponse, AppError } from "@/lib/errors";
@@ -33,13 +33,18 @@ export async function POST(request: Request) {
     const callerEmployee = await getOrEnsureEmployeeForUser(tenant.organization.id, tenant.user.id);
 
     // If an employeeId is explicitly provided in the request body, validate tenant isolation and self-service punch constraint
-    if (body.employeeId && body.employeeId !== callerEmployee.id) {
+    if (body.employeeId && body.employeeId !== callerEmployee.id && body.employeeId !== callerEmployee.employeeId) {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.employeeId);
+      const matchCondition = isUuid
+        ? or(eq(employees.id, body.employeeId), eq(employees.employeeId, body.employeeId))
+        : eq(employees.employeeId, body.employeeId);
+
       const [targetEmp] = await db
         .select()
         .from(employees)
         .where(
           and(
-            eq(employees.id, body.employeeId),
+            matchCondition,
             eq(employees.organizationId, tenant.organization.id)
           )
         );

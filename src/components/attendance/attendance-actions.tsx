@@ -4,7 +4,36 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
-import { Clock, Moon, ShieldCheck, User, Users } from "lucide-react";
+import { CheckCircle2, Clock, Coffee, Moon, ShieldCheck, Timer, User, Users } from "lucide-react";
+import { calculateBreakSummary } from "@/modules/attendance/calculator";
+
+function formatElapsed(seconds: number): string {
+  if (seconds < 0) return "00:00";
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) {
+    return `${h}h ${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`;
+  }
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+function formatTimestampInTz(date: Date | string | null | undefined, timezone: string): string {
+  if (!date) return "";
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return "";
+  try {
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone || "UTC",
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    }).format(d);
+  } catch {
+    return d.toLocaleTimeString();
+  }
+}
 
 type RecordRow = {
   id: string;
@@ -15,6 +44,8 @@ type RecordRow = {
   earlyDepartureMinutes: number;
   actualFirstIn?: string | null;
   actualLastOut?: string | null;
+  scheduledDurationMinutes?: number;
+  potentialOvertimeMinutes?: number;
 };
 
 type Punch = {
@@ -61,6 +92,8 @@ export function AttendanceActions({
   const [hasShift, setHasShift] = useState<boolean | null>(null);
   const [assignedShift, setAssignedShift] = useState<Shift | null>(null);
   const [viewedEmployee, setViewedEmployee] = useState<{ id: string; displayName: string; employeeId: string; isSelf?: boolean } | null>(null);
+  const [timezone, setTimezone] = useState<string>("UTC");
+  const [now, setNow] = useState<Date>(() => new Date());
 
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>(queryEmpId);
@@ -167,6 +200,9 @@ export function AttendanceActions({
       if (body.employee) {
         setViewedEmployee(body.employee);
       }
+      if (body.timezone) {
+        setTimezone(body.timezone);
+      }
       setError("");
     }
     setLoading(false);
@@ -201,18 +237,61 @@ export function AttendanceActions({
 
   const current = records[0];
   const isViewingOther = Boolean(selectedEmployeeId && viewedEmployee && !viewedEmployee.isSelf);
+  const [processingAbsences, setProcessingAbsences] = useState(false);
 
-  // Authoritative punch and break state derivation
+  const handleProcessAbsences = async () => {
+    setProcessingAbsences(true);
+    try {
+      const res = await fetch("/api/app/attendance/process-absent", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ date: date || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error?.message ?? "Failed to process absences.");
+      }
+      showToast({
+        type: "success",
+        title: "Absence processing complete",
+        message:
+          data.status === "skipped_weekend" || data.status === "skipped_holiday"
+            ? data.message
+            : `Absence processing complete: ${data.absentCount} marked absent, ${data.missingPunchCount ?? 0} missing punch.`,
+      });
+      await load();
+    } catch (err) {
+      showToast({
+        type: "error",
+        title: "Absence processing failed",
+        message: err instanceof Error ? err.message : "Error processing absences",
+      });
+    } finally {
+      setProcessingAbsences(false);
+    }
+  };
+
+  // Authoritative break summary calculation from persisted punches
+  const breakSummary = calculateBreakSummary({
+    punches,
+    allowedBreakMinutes: assignedShift?.breakMinutes ?? 0,
+    now,
+  });
+
+  const hasActiveBreak = breakSummary.status === "on_break";
+
+  // Live timer tick when break is actively running
+  useEffect(() => {
+    if (!hasActiveBreak) return;
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [hasActiveBreak]);
+
+  // Authoritative punch state derivation
   const isClockedIn = Boolean(current?.actualFirstIn);
   const isClockedOut = Boolean(current?.actualLastOut);
-
-  let hasActiveBreak = false;
-  if (current && Array.isArray(punches)) {
-    for (const p of punches) {
-      if (p.punchType === "break_start") hasActiveBreak = true;
-      else if (p.punchType === "break_end") hasActiveBreak = false;
-    }
-  }
 
   const canClockIn = !busy && hasShift !== false && !isClockedIn;
   const canClockOut = !busy && isClockedIn && !isClockedOut && !hasActiveBreak;
@@ -232,7 +311,17 @@ export function AttendanceActions({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleProcessAbsences}
+              disabled={processingAbsences || busy}
+              className="h-9 gap-1.5 text-xs font-semibold border-indigo-200 bg-white hover:bg-indigo-50 text-indigo-900"
+            >
+              <ShieldCheck className="size-3.5 text-indigo-600" />
+              <span>{processingAbsences ? "Processing…" : "Process Shift Absences"}</span>
+            </Button>
             <select
               aria-label="Filter employee attendance"
               value={selectedEmployeeId}
@@ -320,10 +409,131 @@ export function AttendanceActions({
           {loading ? "Loading…" : current?.status ? current.status.replaceAll("_", " ") : "No attendance today"}
         </p>
         <p className="mt-1 text-xs text-muted">
-          {current?.actualFirstIn ? `First In: ${new Date(current.actualFirstIn).toLocaleTimeString()}` : "Not clocked in"}
-          {current?.actualLastOut ? ` · Last Out: ${new Date(current.actualLastOut).toLocaleTimeString()}` : ""}
+          {current?.actualFirstIn ? `First In: ${formatTimestampInTz(current.actualFirstIn, timezone)}` : "Not clocked in"}
+          {current?.actualLastOut ? ` · Last Out: ${formatTimestampInTz(current.actualLastOut, timezone)}` : ""}
           {hasActiveBreak ? " · Currently on break" : ""}
+          {Boolean(current?.potentialOvertimeMinutes && current.potentialOvertimeMinutes > 0) && (
+            <span className="font-semibold text-amber-700">
+              {` · Potential Overtime / Pending Approval: ${current!.potentialOvertimeMinutes}m`}
+            </span>
+          )}
         </p>
+      </div>
+
+      {/* Break Summary Section */}
+      <div className="rounded-xl border border-slate-200 p-4 bg-surface shadow-xs space-y-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2">
+            <Coffee className="size-4 text-primary" />
+            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Break Summary</h3>
+          </div>
+          <div>
+            {breakSummary.status === "on_break" ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-900 border border-amber-300">
+                <span className="size-1.5 rounded-full bg-amber-600 animate-pulse" />
+                On Break
+              </span>
+            ) : breakSummary.status === "completed" ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-200">
+                <CheckCircle2 className="size-3 text-emerald-600" />
+                Completed
+              </span>
+            ) : (
+              <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 border border-slate-200">
+                Not Started
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Live Break in Progress Banner */}
+        {breakSummary.status === "on_break" && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-950">
+            <div className="flex items-center gap-2">
+              <Timer className="size-4 text-amber-700 shrink-0" />
+              <div>
+                <span className="font-semibold text-amber-950">Active Break in Progress</span>
+                <p className="text-[11px] text-amber-800">
+                  Started at {formatTimestampInTz(breakSummary.activeBreakStart, timezone)} ({timezone})
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 font-mono">
+              <span className="text-[11px] font-sans text-amber-800">Elapsed:</span>
+              <span className="bg-white px-2.5 py-0.5 rounded border border-amber-300 font-bold text-amber-900 text-sm shadow-2xs">
+                {formatElapsed(breakSummary.activeElapsedSeconds)}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Metric Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Allowed Break */}
+          <div className="rounded-lg bg-slate-50/80 p-3 border border-slate-100">
+            <p className="text-[11px] font-semibold text-muted uppercase tracking-wide">Allowed Break</p>
+            <p className="mt-1 text-xl font-bold text-foreground">
+              {breakSummary.allowedMinutes} <span className="text-xs font-normal text-muted">min</span>
+            </p>
+            <p className="text-[10px] text-muted mt-0.5">
+              {assignedShift ? `${assignedShift.name} shift allowance` : "Shift allowance"}
+            </p>
+          </div>
+
+          {/* Break Used */}
+          <div className="rounded-lg bg-slate-50/80 p-3 border border-slate-100">
+            <p className="text-[11px] font-semibold text-muted uppercase tracking-wide">Break Used</p>
+            <p className="mt-1 text-xl font-bold text-primary">
+              {breakSummary.totalUsedMinutes} <span className="text-xs font-normal text-muted">min</span>
+            </p>
+            <p className="text-[10px] text-muted mt-0.5">
+              {breakSummary.status === "on_break"
+                ? `${breakSummary.completedMinutes}m completed + ${breakSummary.activeMinutes}m active`
+                : `${breakSummary.intervals.length} break${breakSummary.intervals.length === 1 ? "" : "s"} taken`}
+            </p>
+          </div>
+
+          {/* Remaining Break */}
+          <div className={`rounded-lg p-3 border ${breakSummary.isExceeded ? "bg-red-50/70 border-red-200" : "bg-slate-50/80 border-slate-100"}`}>
+            <p className={`text-[11px] font-semibold uppercase tracking-wide ${breakSummary.isExceeded ? "text-red-700" : "text-muted"}`}>
+              Remaining Break
+            </p>
+            <p className={`mt-1 text-xl font-bold ${breakSummary.isExceeded ? "text-red-700" : "text-foreground"}`}>
+              {breakSummary.remainingMinutes} <span className="text-xs font-normal text-muted">min</span>
+            </p>
+            <p className={`text-[10px] mt-0.5 ${breakSummary.isExceeded ? "text-red-600 font-medium" : "text-muted"}`}>
+              {breakSummary.isExceeded
+                ? `Allowance exceeded by ${breakSummary.exceededMinutes} min`
+                : `${breakSummary.remainingMinutes} min available`}
+            </p>
+          </div>
+        </div>
+
+        {/* Break intervals list */}
+        {breakSummary.intervals.length > 0 && (
+          <div className="pt-2 border-t border-slate-100 space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] text-muted font-medium">
+              <span>Today&apos;s Break Intervals ({breakSummary.intervals.length})</span>
+              <span className="text-[10px]">Timezone: {timezone}</span>
+            </div>
+            <div className="space-y-1">
+              {breakSummary.intervals.map((iv, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between text-[11px] rounded bg-white px-2.5 py-1.5 border border-slate-100"
+                >
+                  <span className="font-medium text-slate-700">
+                    Break #{idx + 1}: {formatTimestampInTz(iv.start, timezone)}
+                    {iv.end ? ` – ${formatTimestampInTz(iv.end, timezone)}` : " – In progress"}
+                  </span>
+                  <span className={`font-mono font-semibold ${iv.end ? "text-slate-600" : "text-amber-700"}`}>
+                    {iv.end ? `${iv.durationMinutes} min` : `${formatElapsed(breakSummary.activeElapsedSeconds)} elapsed`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Punch Action Buttons (Disabled in Audit Mode) */}
@@ -400,13 +610,18 @@ export function AttendanceActions({
               </div>
               <p className="text-muted">
                 {record.netWorkMinutes} net work minutes · {record.lateMinutes}m late · {record.earlyDepartureMinutes}m early departure
+                {Boolean(record.potentialOvertimeMinutes && record.potentialOvertimeMinutes > 0) && (
+                  <span className="font-semibold text-amber-700">
+                    {` · Potential Overtime / Pending Approval: ${record.potentialOvertimeMinutes}m`}
+                  </span>
+                )}
               </p>
               {record.id === current?.id && punches.length > 0 && (
                 <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-2 text-[11px]">
                   <span className="font-semibold text-slate-700">Punches:</span>
                   {punches.map((p) => (
                     <span key={p.id} className="rounded bg-slate-50 border border-slate-200 px-1.5 py-0.5 text-slate-700">
-                      {p.punchType.replaceAll("_", " ")} {new Date(p.punchedAt).toLocaleTimeString()}
+                      {p.punchType.replaceAll("_", " ")} {formatTimestampInTz(p.punchedAt, timezone)}
                     </span>
                   ))}
                 </div>

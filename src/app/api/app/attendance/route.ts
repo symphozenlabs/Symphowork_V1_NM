@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, or } from "drizzle-orm";
 import { db } from "@/db/client";
 import { attendancePunches, attendanceRecords, employees, shifts } from "@/db/schema";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { authorize } from "@/modules/tenancy/authorization";
 import { getOrEnsureEmployeeForUser } from "@/modules/employees/service";
+import { calculateBreakSummary } from "@/modules/attendance/calculator";
 
 export async function GET(request: Request) {
   try {
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
     const date = url.searchParams.get("date");
 
     let effectiveEmployee = callerEmployee;
-    if (targetEmployeeId && targetEmployeeId !== callerEmployee.id) {
+    if (targetEmployeeId && targetEmployeeId !== callerEmployee.id && targetEmployeeId !== callerEmployee.employeeId) {
       const isPrivileged =
         tenant.role?.key === "ORGANIZATION_OWNER" ||
         tenant.role?.key === "HR_ADMIN" ||
@@ -28,12 +29,17 @@ export async function GET(request: Request) {
         throw new AppError("FORBIDDEN", "You are not authorized to view attendance records for other employees.", 403);
       }
 
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetEmployeeId);
+      const matchCondition = isUuid
+        ? or(eq(employees.id, targetEmployeeId), eq(employees.employeeId, targetEmployeeId))
+        : eq(employees.employeeId, targetEmployeeId);
+
       const [targetEmp] = await db
         .select()
         .from(employees)
         .where(
           and(
-            eq(employees.id, targetEmployeeId),
+            matchCondition,
             eq(employees.organizationId, tenant.organization.id)
           )
         );
@@ -57,11 +63,32 @@ export async function GET(request: Request) {
       .orderBy(desc(attendanceRecords.attendanceDate))
       .limit(50);
 
-    const punches = records[0]
+    const now = new Date();
+    const updatedRecords = await Promise.all(
+      records.map(async (rec) => {
+        if (
+          rec.actualFirstIn &&
+          !rec.actualLastOut &&
+          rec.scheduledEnd &&
+          now.getTime() <= rec.scheduledEnd.getTime() &&
+          rec.status === "missing_punch"
+        ) {
+          const activeStatus = rec.lateMinutes > 0 ? "late" : "present";
+          await db
+            .update(attendanceRecords)
+            .set({ status: activeStatus, updatedAt: new Date() })
+            .where(eq(attendanceRecords.id, rec.id));
+          return { ...rec, status: activeStatus };
+        }
+        return rec;
+      })
+    );
+
+    const punches = updatedRecords[0]
       ? await db
           .select()
           .from(attendancePunches)
-          .where(eq(attendancePunches.attendanceId, records[0].id))
+          .where(eq(attendancePunches.attendanceId, updatedRecords[0].id))
           .orderBy(attendancePunches.punchedAt)
       : [];
 
@@ -77,10 +104,35 @@ export async function GET(request: Request) {
           )
       : [];
 
+    const breakSummary = calculateBreakSummary({
+      punches,
+      allowedBreakMinutes: assignedShift?.breakMinutes ?? 0,
+      now,
+    });
+
+    const recordsWithMetrics = updatedRecords.map((rec) => {
+      const scheduledDurationMinutes =
+        rec.scheduledStart && rec.scheduledEnd
+          ? Math.max(0, Math.round((new Date(rec.scheduledEnd).getTime() - new Date(rec.scheduledStart).getTime()) / 60000))
+          : 0;
+      const potentialOvertimeMinutes =
+        rec.scheduledEnd && rec.actualLastOut && new Date(rec.actualLastOut).getTime() > new Date(rec.scheduledEnd).getTime()
+          ? Math.max(0, Math.round((new Date(rec.actualLastOut).getTime() - new Date(rec.scheduledEnd).getTime()) / 60000))
+          : 0;
+
+      return {
+        ...rec,
+        scheduledDurationMinutes,
+        potentialOvertimeMinutes,
+      };
+    });
+
     return NextResponse.json({
       success: true,
-      records,
+      records: recordsWithMetrics,
       punches,
+      breakSummary,
+      timezone: tenant.organization.timezone || "UTC",
       hasShift: Boolean(assignedShift),
       shift: assignedShift
         ? {
