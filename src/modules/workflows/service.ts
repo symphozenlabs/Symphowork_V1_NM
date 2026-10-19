@@ -11,19 +11,45 @@ export async function ensureDefaultWorkflow(organizationId: string, workflowType
   const [existing] = await db.select().from(workflowDefinitions).where(and(eq(workflowDefinitions.organizationId, organizationId), eq(workflowDefinitions.workflowType, workflowType), eq(workflowDefinitions.active, true)));
   if (existing) return existing;
   return db.transaction(async (tx) => {
+    const isPayroll = workflowType === "payroll";
     const name = workflowType === "leave" ? "Leave approval" : workflowType === "expense" ? "Expense approval" : workflowType === "payroll" ? "Payroll approval" : workflowType === "requisition" ? "Requisition approval" : "Attendance regularization approval";
     const [definition] = await tx.insert(workflowDefinitions).values({ organizationId, name, code: `${workflowType.toUpperCase()}_STANDARD`, workflowType, description: "Default sequential approval workflow", active: true, createdByUserId }).returning();
     const [version] = await tx.insert(workflowVersions).values({ organizationId, definitionId: definition.id, version: 1, active: true }).returning();
-    await tx.insert(workflowSteps).values({ organizationId, versionId: version.id, stepOrder: 1, name: "Reporting manager", actorType: "reporting_manager", mode: "sequential" });
+    await tx.insert(workflowSteps).values({
+      organizationId,
+      versionId: version.id,
+      stepOrder: 1,
+      name: isPayroll ? "Finance or Owner approval" : "Reporting manager",
+      actorType: isPayroll ? "organization_role" : "reporting_manager",
+      actorRoleKey: isPayroll ? "FINANCE_ADMIN" : null,
+      mode: "sequential"
+    });
     return definition;
   });
 }
 
-async function resolveApprover(organizationId: string, employeeId: string, step: typeof workflowSteps.$inferSelect) {
+async function resolveApprover(organizationId: string, employeeId: string, step: typeof workflowSteps.$inferSelect, requesterUserId?: string) {
   if (step.actorType === "specific_user" && step.actorUserId) return step.actorUserId;
   if (step.actorType === "reporting_manager") { const [employee] = await db.select({ managerId: employees.reportingManagerId }).from(employees).where(and(eq(employees.id, employeeId), eq(employees.organizationId, organizationId))); if (!employee?.managerId) throw new AppError("PROVISIONING_FAILED", "Workflow requires a reporting manager, but none is configured.", 422); const [manager] = await db.select({ userId: employees.userId }).from(employees).where(and(eq(employees.id, employee.managerId), eq(employees.organizationId, organizationId))); if (!manager?.userId) throw new AppError("PROVISIONING_FAILED", "The reporting manager does not have an account.", 422); return manager.userId; }
-  const roleKeys = step.actorType === "hr_admin" ? ["HR_ADMIN", "ORGANIZATION_OWNER"] : step.actorRoleKey ? [step.actorRoleKey] : [];
-  if (roleKeys.length) { const [actor] = await withTenantTransaction(organizationId, (tx) => tx.select({ userId: memberships.userId }).from(memberships).innerJoin(roles, eq(memberships.roleId, roles.id)).where(and(eq(memberships.organizationId, organizationId), eq(memberships.status, "active"), inArray(roles.key, roleKeys)))); if (actor) return actor.userId; }
+  const roleKeys = step.actorType === "hr_admin"
+    ? ["HR_ADMIN", "ORGANIZATION_OWNER"]
+    : step.actorRoleKey === "FINANCE_ADMIN" || step.actorRoleKey === "FINANCE_MANAGER"
+    ? ["FINANCE_ADMIN", "FINANCE_MANAGER", "ORGANIZATION_OWNER"]
+    : step.actorRoleKey
+    ? [step.actorRoleKey]
+    : [];
+  if (roleKeys.length) {
+    const actors = await withTenantTransaction(organizationId, (tx) =>
+      tx.select({ userId: memberships.userId, roleKey: roles.key })
+        .from(memberships)
+        .innerJoin(roles, eq(memberships.roleId, roles.id))
+        .where(and(eq(memberships.organizationId, organizationId), eq(memberships.status, "active"), inArray(roles.key, roleKeys)))
+    );
+    if (actors.length) {
+      const nonRequester = requesterUserId ? actors.find((a) => a.userId !== requesterUserId) : undefined;
+      return (nonRequester ?? actors[0]).userId;
+    }
+  }
   throw new AppError("PROVISIONING_FAILED", "No approver is configured for this workflow step.", 422);
 }
 
@@ -34,7 +60,7 @@ export async function createWorkflowInstance(input: { organizationId: string; wo
   if (!version) throw new AppError("PROVISIONING_FAILED", "Workflow has no active version.", 422);
   const [step] = await db.select().from(workflowSteps).where(eq(workflowSteps.versionId, version.id)).orderBy(asc(workflowSteps.stepOrder));
   if (!step) throw new AppError("PROVISIONING_FAILED", "Workflow has no approval steps.", 422);
-  const approverUserId = await resolveApprover(input.organizationId, input.subjectEmployeeId, step);
+  const approverUserId = await resolveApprover(input.organizationId, input.subjectEmployeeId, step, input.submittedByUserId);
   if (approverUserId === input.submittedByUserId) throw new AppError("FORBIDDEN", "A requester cannot approve their own request.", 403);
   const result = await db.transaction(async (tx) => { const [instance] = await tx.insert(workflowInstances).values({ organizationId: input.organizationId, workflowVersionId: version.id, entityType: input.entityType, entityId: input.entityId, subjectEmployeeId: input.subjectEmployeeId, status: "in_progress", currentStepOrder: step.stepOrder, submittedByUserId: input.submittedByUserId }).returning(); await tx.insert(approvalTasks).values({ organizationId: input.organizationId, workflowInstanceId: instance.id, workflowStepId: step.id, approverUserId }); return instance; });
   await recordAudit({ actorUserId: input.submittedByUserId, organizationId: input.organizationId, action: "approval_assigned", resource: "workflow_instance", resourceId: result.id, metadata: { workflowType: input.workflowType } }); return result;

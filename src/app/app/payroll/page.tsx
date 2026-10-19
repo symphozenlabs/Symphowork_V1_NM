@@ -1,12 +1,27 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/modules/identity/auth";
+import { resolveTenantContext } from "@/modules/tenancy/context";
 import { Button } from "@/components/ui/button";
 import { PayrollDashboard } from "@/components/payroll/payroll-dashboard";
 import { FileText } from "lucide-react";
 
 export default async function PayrollPage() {
   if (!(await getSessionUser())) redirect("/login");
+  const tenant = await resolveTenantContext();
+  const roleKey = tenant.role?.key;
+  const isOwner = roleKey === "ORGANIZATION_OWNER" || tenant.user.platformRole === "PLATFORM_OWNER";
+  const hasPayrollPermission =
+    isOwner ||
+    roleKey === "FINANCE_ADMIN" ||
+    roleKey === "FINANCE_MANAGER" ||
+    roleKey === "HR_ADMIN" ||
+    tenant.permissions?.includes("payroll.view") ||
+    tenant.permissions?.includes("payroll.manage");
+
+  if (!hasPayrollPermission) {
+    redirect("/app/payroll/payslips");
+  }
 
   return (
     <div className="space-y-6">

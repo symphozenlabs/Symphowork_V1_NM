@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { SidebarNav, type NavGroupDef } from "@/components/layout/sidebar-nav";
@@ -12,6 +12,8 @@ import LogoutButton from "@/components/layout/logout-button";
 import { NavigationProgress } from "@/components/layout/navigation-progress";
 import { isAssignedDepartmentManager } from "@/modules/departments/service";
 import { APPROVAL_PERMISSIONS } from "@/modules/rbac/permissions";
+import { HeaderNotifications } from "@/components/layout/header-notifications";
+import { AttendanceReminderModal } from "@/components/attendance/attendance-reminder-modal";
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser();
@@ -24,6 +26,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   let canViewPeople = false;
   let canViewApprovals = false;
   let canViewAts = false;
+  let canManagePayroll = false;
 
   if (user) {
     try {
@@ -38,6 +41,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           canViewPeople = true;
           canViewApprovals = true;
           canViewAts = true;
+          canManagePayroll = true;
         } else {
           isOrganizationOwner = tenant.role?.key === "ORGANIZATION_OWNER";
           const permSet = tenant.permissions
@@ -50,6 +54,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           canViewPeople = isOrganizationOwner || permSet.has("employee.read");
           canViewApprovals = isOrganizationOwner || APPROVAL_PERMISSIONS.some((p) => permSet.has(p));
           canViewAts = isOrganizationOwner || permSet.has("ats.view");
+          canManagePayroll = isOrganizationOwner || permSet.has("payroll.view") || permSet.has("payroll.manage");
           if (!isOrganizationOwner) {
             isDepartmentManager =
               permSet.has("department.create") ||
@@ -72,7 +77,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     { label: "Leave", href: "/app/leave", iconKey: "leave" },
     ...(canViewApprovals ? [{ label: "Approvals", href: "/app/approvals", iconKey: "approvals" }] : []),
     { label: "Expenses", href: "/app/expenses", iconKey: "expenses" },
-    { label: "Payroll", href: "/app/payroll", iconKey: "payroll" },
+    ...(canManagePayroll ? [{ label: "Payroll", href: "/app/payroll", iconKey: "payroll" }] : []),
     { label: "Payslips", href: "/app/payroll/payslips", iconKey: "payslips" },
     ...(canViewAts ? [{ label: "Recruitment", href: "/app/recruitment", iconKey: "recruitment" }] : []),
     { label: "Projects & tasks", href: "/app/work", iconKey: "work" },
@@ -193,14 +198,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-2 md:gap-3">
-            <Link
-              href="/app/notifications"
-              aria-label="Notifications"
-              className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-medium text-muted transition-colors hover:bg-slate-100/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <Bell className="size-4" />
-              <span className="hidden sm:inline">Notifications</span>
-            </Link>
+            <HeaderNotifications />
             <span className="hidden text-xs text-muted sm:inline">{user?.fullName ?? "Workspace"}</span>
             <LogoutButton />
             <Link
@@ -214,6 +212,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         <main className="mx-auto max-w-[1440px] flex-1 p-5 md:p-8">{children}</main>
+        <AttendanceReminderModal />
       </div>
     </div>
   );

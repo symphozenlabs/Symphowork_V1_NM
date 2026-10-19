@@ -224,4 +224,107 @@ describe("Daily Attendance Reminder Service", () => {
     expect(result.reason).toBe("approved_leave");
     expect(mockCreateNotification).not.toHaveBeenCalled();
   });
+
+  it("correctly attributes Shift 2 overnight shift to previous calendar day when checking after midnight during active overnight shift", async () => {
+    // Overnight Shift 2: 18:00 to 03:00 IST
+    const mockOvernightShift = {
+      id: "shift-overnight",
+      organizationId: "org-1",
+      name: "Shift 2 – Evening",
+      code: "SHIFT_2_EVENING",
+      startTime: "18:00:00",
+      endTime: "03:00:00",
+      overnight: true,
+      status: "active",
+    };
+
+    // Override shift returned by DB
+    const dbMock = (await import("@/db/client")).db;
+    const originalSelect = dbMock.select;
+    dbMock.select = vi.fn(() => ({
+      from: vi.fn((table: any) => {
+        const chain = {
+          innerJoin: vi.fn(() => chain),
+          where: vi.fn(() => chain),
+          limit: vi.fn(() => chain),
+          then: (resolve: any) => {
+            if (table === organizations) return resolve([mockOrg]);
+            if (table === memberships) return resolve([{ roleKey: mockMembershipRole }]);
+            if (table === shifts) return resolve([mockOvernightShift]);
+            if (table === holidays) return resolve([]);
+            if (table === workingDays) return resolve([{ isWorkingDay: true }]);
+            if (table === leaveApplications) return resolve([]);
+            if (table === attendanceRecords) return resolve([]);
+            return resolve([]);
+          },
+        };
+        return chain;
+      }),
+    })) as any;
+
+    // Check at 01:30 AM IST on Oct 19 (which is Oct 18 20:00 UTC)
+    const afterMidnightTime = new Date("2026-10-18T20:00:00.000Z"); // 01:30 AM IST on Oct 19
+
+    const result = await checkAndEnsureAttendanceReminder({
+      organizationId: "org-1",
+      userId: "user-kavita",
+      checkTime: afterMidnightTime,
+    });
+
+    expect(result.eligible).toBe(true);
+    expect(result.required).toBe(true);
+    expect(result.completed).toBe(false);
+    // Workdate must be attributed to the start of the shift: 2026-10-18
+    expect(result.workDate).toBe("2026-10-18");
+    expect(result.shift?.overnight).toBe(true);
+    expect(mockCreateNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        idempotencyKey: "attendance:daily_reminder:emp-kavita:2026-10-18",
+      })
+    );
+
+    dbMock.select = originalSelect;
+  });
+
+  it("ensures idempotency when reminder is checked repeatedly within the same workday", async () => {
+    // First check
+    const res1 = await checkAndEnsureAttendanceReminder({
+      organizationId: "org-1",
+      userId: "user-kavita",
+      checkTime: fixedDayTime,
+    });
+    expect(res1.workDate).toBe("2026-10-18");
+    expect(mockCreateNotification).toHaveBeenCalledTimes(1);
+
+    // Second check on the same day must use identical idempotencyKey
+    const res2 = await checkAndEnsureAttendanceReminder({
+      organizationId: "org-1",
+      userId: "user-kavita",
+      checkTime: new Date("2026-10-18T08:00:00.000Z"), // 1:30 PM IST same day
+    });
+    expect(res2.workDate).toBe("2026-10-18");
+    expect(mockCreateNotification).toHaveBeenCalledTimes(2);
+    expect(mockCreateNotification).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        idempotencyKey: "attendance:daily_reminder:emp-kavita:2026-10-18",
+      })
+    );
+  });
+
+  it("generates a distinct reminder for the subsequent workday when workDate advances", async () => {
+    const nextDayTime = new Date("2026-10-19T05:30:00.000Z"); // 11:00 AM IST on Oct 19
+
+    const result = await checkAndEnsureAttendanceReminder({
+      organizationId: "org-1",
+      userId: "user-kavita",
+      checkTime: nextDayTime,
+    });
+
+    expect(result.workDate).toBe("2026-10-19");
+    expect(mockCreateNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        idempotencyKey: "attendance:daily_reminder:emp-kavita:2026-10-19",
+      })
+    );
+  });
 });

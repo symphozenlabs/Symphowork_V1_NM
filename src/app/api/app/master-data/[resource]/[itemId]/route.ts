@@ -75,6 +75,20 @@ export async function PATCH(request: Request, context: { params: Promise<{ resou
           throw new AppError("VALIDATION_ERROR", "End time must be after start time unless marked as an overnight shift.", 400);
         }
       }
+      if (input.grace_minutes !== undefined) {
+        const grace = Number(input.grace_minutes);
+        if (isNaN(grace) || !Number.isInteger(grace) || grace < 0) {
+          throw new AppError("VALIDATION_ERROR", "Grace period must be a non-negative integer.", 400);
+        }
+        input.grace_minutes = grace;
+      }
+      if (input.break_minutes !== undefined) {
+        const breakM = Number(input.break_minutes);
+        if (isNaN(breakM) || !Number.isInteger(breakM) || breakM < 0) {
+          throw new AppError("VALIDATION_ERROR", "Break duration must be a non-negative integer.", 400);
+        }
+        input.break_minutes = breakM;
+      }
     }
 
     const entries = Object.entries(input).filter(([key, value]) => definition.fields.includes(key as never) && value !== undefined);

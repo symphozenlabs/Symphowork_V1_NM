@@ -273,11 +273,13 @@ export async function recordPunch(input: {
         )
       );
 
+    const effectiveGraceMinutes = employeeShift?.graceMinutes ?? policy?.gracePeriodMinutes ?? 15;
+
     const calculated = calculateAttendance({
       scheduledStart: record.scheduledStart,
       scheduledEnd: record.scheduledEnd,
       punches: allPunches,
-      gracePeriodMinutes: policy?.gracePeriodMinutes ?? 0,
+      gracePeriodMinutes: effectiveGraceMinutes,
       earlyDepartureThresholdMinutes: policy?.earlyDepartureThresholdMinutes ?? 0,
       now,
     });

@@ -12,8 +12,18 @@ const schema = z.object({
   code: z.string().trim().toUpperCase().min(2, "Shift code must be at least 2 characters.").max(40),
   startTime: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, "Invalid start time format (use HH:MM).").default("09:00"),
   endTime: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, "Invalid end time format (use HH:MM).").default("18:00"),
-  breakMinutes: z.number().int().min(0).default(60),
-  graceMinutes: z.number().int().min(0).default(15),
+  breakMinutes: z.preprocess(
+    (val) => (val === "" || val === undefined || val === null ? 60 : Number(val)),
+    z.number()
+      .int("Break duration must be an integer.")
+      .min(0, "Break duration cannot be negative.")
+  ).default(60),
+  graceMinutes: z.preprocess(
+    (val) => (val === "" || val === undefined || val === null ? 15 : Number(val)),
+    z.number()
+      .int("Grace period must be an integer.")
+      .min(0, "Grace period cannot be negative.")
+  ).default(15),
   overnight: z.boolean().default(false)
 }).refine((data) => {
   const start = data.startTime.slice(0, 5);

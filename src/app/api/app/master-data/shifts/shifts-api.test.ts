@@ -253,4 +253,134 @@ describe("Shifts API — Creation, Editing, Validation & Retrieval", () => {
     const body = await res.json();
     expect(body.error.message).toContain("End time must be after start time unless marked as an overnight shift");
   });
+
+  it("POST defaults graceMinutes to 15 when omitted from creation payload", async () => {
+    const req = new Request("http://localhost/api/app/master-data/shifts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "Default Grace Shift",
+        code: "DEF-GRACE",
+        startTime: "09:00",
+        endTime: "18:00",
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(201);
+    expect(lastInsertedShift?.graceMinutes).toBe(15);
+    expect(lastInsertedShift?.breakMinutes).toBe(60);
+  });
+
+  it("POST defaults graceMinutes to 15 when empty string or null is provided", async () => {
+    const req = new Request("http://localhost/api/app/master-data/shifts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "Empty Grace Shift",
+        code: "EMP-GRACE",
+        startTime: "10:00",
+        endTime: "19:00",
+        graceMinutes: "",
+        breakMinutes: "",
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(201);
+    expect(lastInsertedShift?.graceMinutes).toBe(15);
+    expect(lastInsertedShift?.breakMinutes).toBe(60);
+  });
+
+  it("POST rejects negative graceMinutes", async () => {
+    const req = new Request("http://localhost/api/app/master-data/shifts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "Negative Grace Shift",
+        code: "NEG-GRACE",
+        startTime: "09:00",
+        endTime: "18:00",
+        graceMinutes: -5,
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error.message).toContain("Grace period cannot be negative");
+  });
+
+  it("POST rejects non-integer graceMinutes", async () => {
+    const req = new Request("http://localhost/api/app/master-data/shifts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "Fractional Grace Shift",
+        code: "FRAC-GRACE",
+        startTime: "09:00",
+        endTime: "18:00",
+        graceMinutes: 12.5,
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error.message).toContain("Grace period must be an integer");
+  });
+
+  it("PATCH preserves explicit custom grace-period values including 0", async () => {
+    const req = new Request("http://localhost/api/app/master-data/shifts/shift-1", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        graceMinutes: 0,
+      }),
+    });
+
+    const res = await PATCH(req, {
+      params: Promise.resolve({ resource: "shifts", itemId: "shift-1" }),
+    });
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.success).toBe(true);
+  });
+
+  it("PATCH rejects negative graceMinutes", async () => {
+    const req = new Request("http://localhost/api/app/master-data/shifts/shift-1", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        graceMinutes: -10,
+      }),
+    });
+
+    const res = await PATCH(req, {
+      params: Promise.resolve({ resource: "shifts", itemId: "shift-1" }),
+    });
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error.message).toContain("Grace period must be a non-negative integer");
+  });
+
+  it("PATCH rejects non-integer graceMinutes", async () => {
+    const req = new Request("http://localhost/api/app/master-data/shifts/shift-1", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        graceMinutes: 7.5,
+      }),
+    });
+
+    const res = await PATCH(req, {
+      params: Promise.resolve({ resource: "shifts", itemId: "shift-1" }),
+    });
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error.message).toContain("Grace period must be a non-negative integer");
+  });
 });

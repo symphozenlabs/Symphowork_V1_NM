@@ -3,7 +3,7 @@ import { db } from "@/db/client";
 import { approvalTasks, attendanceRecords, employeePayrollProfiles, employeeSalaryAssignments, employees, holidays, leaveApplications, leaveTypes, payrollAdjustments, payrollCalculationSnapshots, payrollLineItems, payrollPayslips, payrollPeriods, payrollRunEmployees, payrollRuns, payrollStatutoryConfigurations, payrollTaxConfigurations, salaryComponents, salaryStructureComponents, salaryStructures, workingDays } from "@/db/schema";
 import { recordAudit } from "@/lib/audit";
 import { AppError } from "@/lib/errors";
-import { authorize } from "@/modules/tenancy/authorization";
+import { authorize, authorizeAny } from "@/modules/tenancy/authorization";
 import { calculatePayroll, PAYROLL_CALCULATION_VERSION, type PayrollAdjustment, type PayrollComponent, type StatutoryInputs } from "./calculator";
 import { createWorkflowInstance, ensureDefaultWorkflow } from "@/modules/workflows/service";
 import { notifyUsers } from "@/modules/notifications/service";
@@ -20,6 +20,21 @@ function daysBetween(start: string, end: string) {
   const dates: string[] = [];
   for (const cursor = new Date(`${start}T00:00:00Z`); cursor <= new Date(`${end}T00:00:00Z`); cursor.setUTCDate(cursor.getUTCDate() + 1)) dates.push(cursor.toISOString().slice(0, 10));
   return dates;
+}
+
+export function calculateLeaveDaysInPeriod(
+  startDate: string,
+  endDate: string,
+  periodStart: string,
+  periodEnd: string,
+  workingDateSet: Set<string>
+): number {
+  const overlapStart = startDate > periodStart ? startDate : periodStart;
+  const overlapEnd = endDate < periodEnd ? endDate : periodEnd;
+  if (overlapStart > overlapEnd) return 0;
+  const dates = daysBetween(overlapStart, overlapEnd);
+  if (workingDateSet.size === 0) return dates.length;
+  return dates.filter((d) => workingDateSet.has(d)).length;
 }
 
 function parseConfig(value: string | null | undefined): Record<string, unknown> {
@@ -98,8 +113,9 @@ export async function calculatePayrollRun(input: { organizationId: string; userI
       const attendance = await db.select().from(attendanceRecords).where(and(eq(attendanceRecords.organizationId, input.organizationId), eq(attendanceRecords.employeeId, employee.id), gte(attendanceRecords.attendanceDate, period.periodStart), lte(attendanceRecords.attendanceDate, period.periodEnd)));
       const absentDays = attendance.filter((row) => ["absent", "missing_punch"].includes(row.status)).length;
       const approvedLeaves = await db.select({ application: leaveApplications, leaveType: leaveTypes }).from(leaveApplications).innerJoin(leaveTypes, eq(leaveApplications.leaveTypeId, leaveTypes.id)).where(and(eq(leaveApplications.organizationId, input.organizationId), eq(leaveApplications.employeeId, employee.id), eq(leaveApplications.status, "approved"), lte(leaveApplications.startDate, period.periodEnd), gte(leaveApplications.endDate, period.periodStart)));
-      const paidLeaveDays = approvedLeaves.filter((row) => row.leaveType.paid).reduce((sum, row) => sum + row.application.requestedDays, 0);
-      const unpaidLeaveDays = approvedLeaves.filter((row) => !row.leaveType.paid).reduce((sum, row) => sum + row.application.requestedDays, 0);
+      const workingDateSet = new Set(workingDates);
+      const paidLeaveDays = approvedLeaves.filter((row) => row.leaveType.paid).reduce((sum, row) => sum + calculateLeaveDaysInPeriod(row.application.startDate, row.application.endDate, period.periodStart, period.periodEnd, workingDateSet), 0);
+      const unpaidLeaveDays = approvedLeaves.filter((row) => !row.leaveType.paid).reduce((sum, row) => sum + calculateLeaveDaysInPeriod(row.application.startDate, row.application.endDate, period.periodStart, period.periodEnd, workingDateSet), 0);
       const lopDays = Math.min(workingDates.length, absentDays + unpaidLeaveDays);
       const adjustments = await db.select().from(payrollAdjustments).where(and(eq(payrollAdjustments.organizationId, input.organizationId), eq(payrollAdjustments.periodId, period.id), eq(payrollAdjustments.employeeId, employee.id), eq(payrollAdjustments.status, "approved"))).then((rows) => rows.map((row): PayrollAdjustment => ({ type: ["recovery", "advance_recovery", "manual_deduction"].includes(row.type) ? "deduction" : "earning", code: `ADJ_${row.type.toUpperCase()}`, name: row.reason, amount: row.amount })));
       const statutory = await statutoryInputs(input.organizationId, period.periodStart, profile);
@@ -194,5 +210,213 @@ export async function finalizePayrollRun(input: { organizationId: string; userId
 export async function listEmployeePayslips(input: { organizationId: string; userId: string }) {
   await authorize({ organizationId: input.organizationId, permission: "payslip.view" });
   const employee = await getOrEnsureEmployeeForUser(input.organizationId, input.userId);
-  return db.select({ payslip: payrollPayslips, run: payrollRuns, period: payrollPeriods, snapshot: payrollCalculationSnapshots }).from(payrollPayslips).innerJoin(payrollRunEmployees, eq(payrollPayslips.runEmployeeId, payrollRunEmployees.id)).innerJoin(payrollRuns, eq(payrollRunEmployees.runId, payrollRuns.id)).innerJoin(payrollPeriods, eq(payrollRuns.periodId, payrollPeriods.id)).innerJoin(payrollCalculationSnapshots, eq(payrollPayslips.snapshotId, payrollCalculationSnapshots.id)).where(and(eq(payrollPayslips.organizationId, input.organizationId), eq(payrollPayslips.employeeId, employee.id), eq(payrollRuns.status, "finalized"))).orderBy(desc(payrollPayslips.generatedAt));
+  const rows = await db
+    .select({
+      payslip: payrollPayslips,
+      run: payrollRuns,
+      period: payrollPeriods,
+      snapshot: payrollCalculationSnapshots,
+    })
+    .from(payrollPayslips)
+    .innerJoin(payrollRunEmployees, eq(payrollPayslips.runEmployeeId, payrollRunEmployees.id))
+    .innerJoin(payrollRuns, eq(payrollRunEmployees.runId, payrollRuns.id))
+    .innerJoin(payrollPeriods, eq(payrollRuns.periodId, payrollPeriods.id))
+    .innerJoin(payrollCalculationSnapshots, eq(payrollPayslips.snapshotId, payrollCalculationSnapshots.id))
+    .where(
+      and(
+        eq(payrollPayslips.organizationId, input.organizationId),
+        eq(payrollPayslips.employeeId, employee.id),
+        inArray(payrollRuns.status, ["finalized", "locked"])
+      )
+    )
+    .orderBy(desc(payrollPayslips.generatedAt));
+
+  const snapshotIds = rows.map((r) => r.snapshot.id);
+  const lineItems =
+    snapshotIds.length > 0
+      ? await db
+          .select()
+          .from(payrollLineItems)
+          .where(inArray(payrollLineItems.snapshotId, snapshotIds))
+      : [];
+
+  const lineItemsBySnapshot = new Map<string, typeof lineItems>();
+  for (const item of lineItems) {
+    const list = lineItemsBySnapshot.get(item.snapshotId) ?? [];
+    list.push(item);
+    lineItemsBySnapshot.set(item.snapshotId, list);
+  }
+
+  return rows.map((row) => ({
+    ...row,
+    employee: {
+      displayName: employee.displayName,
+      employeeId: employee.employeeId,
+    },
+    lineItems: lineItemsBySnapshot.get(row.snapshot.id) ?? [],
+  }));
+}
+
+export async function markPayrollRunPaid(input: {
+  organizationId: string;
+  userId: string;
+  runId: string;
+  paymentReference: string;
+  paymentDate: string;
+  notes?: string;
+}) {
+  await authorize({ organizationId: input.organizationId, permission: "payroll.finalize" });
+  if (!input.paymentReference?.trim() || !input.paymentDate?.trim()) {
+    throw new AppError("VALIDATION_ERROR", "Payment reference and payment date are required.", 400);
+  }
+  const [run] = await db
+    .select()
+    .from(payrollRuns)
+    .where(and(eq(payrollRuns.id, input.runId), eq(payrollRuns.organizationId, input.organizationId)));
+  if (!run) throw new AppError("NOT_FOUND", "Payroll run was not found.", 404);
+  if (run.status !== "finalized") {
+    throw new AppError("VALIDATION_ERROR", "Only a finalized payroll run can be marked as paid/locked.", 409);
+  }
+  const [updated] = await db
+    .update(payrollRuns)
+    .set({
+      status: "locked",
+      updatedAt: new Date(),
+    })
+    .where(eq(payrollRuns.id, run.id))
+    .returning();
+  await db
+    .update(payrollPeriods)
+    .set({ status: "locked", updatedAt: new Date() })
+    .where(eq(payrollPeriods.id, run.periodId));
+  await recordAudit({
+    actorUserId: input.userId,
+    organizationId: input.organizationId,
+    action: "payroll_payment_recorded",
+    resource: "payroll_run",
+    resourceId: run.id,
+    metadata: {
+      paymentReference: input.paymentReference.trim(),
+      paymentDate: input.paymentDate.trim(),
+      notes: input.notes?.trim(),
+      amount: run.netTotal,
+    },
+  });
+  return updated;
+}
+
+export async function listEmployeePayrollProfiles(input: { organizationId: string; userId: string }) {
+  await authorizeAny({ organizationId: input.organizationId, permissions: ["payroll.configure", "payroll.view"] });
+  return db
+    .select({
+      profile: employeePayrollProfiles,
+      employee: {
+        id: employees.id,
+        displayName: employees.displayName,
+        employeeId: employees.employeeId,
+        status: employees.status,
+      },
+    })
+    .from(employeePayrollProfiles)
+    .innerJoin(employees, eq(employeePayrollProfiles.employeeId, employees.id))
+    .where(eq(employeePayrollProfiles.organizationId, input.organizationId));
+}
+
+export async function upsertEmployeePayrollProfile(input: {
+  organizationId: string;
+  userId: string;
+  employeeId: string;
+  status?: "eligible" | "ineligible" | "on_hold";
+  effectiveDate: string;
+  panEncrypted?: string;
+  bankMetadataEncrypted?: string;
+  uan?: string;
+  pfApplicable?: boolean;
+  esiApplicable?: boolean;
+  esiNumber?: string;
+  professionalTaxApplicable?: boolean;
+  tdsApplicable?: boolean;
+  taxRegime?: "old" | "new";
+}) {
+  await authorize({ organizationId: input.organizationId, permission: "payroll.configure" });
+  const [employee] = await db
+    .select()
+    .from(employees)
+    .where(and(eq(employees.id, input.employeeId), eq(employees.organizationId, input.organizationId)));
+  if (!employee) throw new AppError("NOT_FOUND", "Employee was not found in this organization.", 404);
+  if (!input.effectiveDate) throw new AppError("VALIDATION_ERROR", "Effective date is required.", 400);
+
+  const [existing] = await db
+    .select()
+    .from(employeePayrollProfiles)
+    .where(
+      and(
+        eq(employeePayrollProfiles.organizationId, input.organizationId),
+        eq(employeePayrollProfiles.employeeId, input.employeeId)
+      )
+    );
+
+  if (existing) {
+    const [updated] = await db
+      .update(employeePayrollProfiles)
+      .set({
+        status: input.status ?? existing.status,
+        effectiveDate: input.effectiveDate,
+        panEncrypted: input.panEncrypted !== undefined ? input.panEncrypted : existing.panEncrypted,
+        bankMetadataEncrypted:
+          input.bankMetadataEncrypted !== undefined
+            ? input.bankMetadataEncrypted
+            : existing.bankMetadataEncrypted,
+        uan: input.uan !== undefined ? input.uan : existing.uan,
+        pfApplicable: input.pfApplicable !== undefined ? input.pfApplicable : existing.pfApplicable,
+        esiApplicable: input.esiApplicable !== undefined ? input.esiApplicable : existing.esiApplicable,
+        esiNumber: input.esiNumber !== undefined ? input.esiNumber : existing.esiNumber,
+        professionalTaxApplicable:
+          input.professionalTaxApplicable !== undefined
+            ? input.professionalTaxApplicable
+            : existing.professionalTaxApplicable,
+        tdsApplicable: input.tdsApplicable !== undefined ? input.tdsApplicable : existing.tdsApplicable,
+        taxRegime: input.taxRegime ?? existing.taxRegime,
+        updatedAt: new Date(),
+      })
+      .where(eq(employeePayrollProfiles.id, existing.id))
+      .returning();
+    await recordAudit({
+      actorUserId: input.userId,
+      organizationId: input.organizationId,
+      action: "payroll_profile_updated",
+      resource: "employee_payroll_profile",
+      resourceId: updated.id,
+      metadata: { employeeId: input.employeeId, status: updated.status },
+    });
+    return updated;
+  }
+
+  const [created] = await db
+    .insert(employeePayrollProfiles)
+    .values({
+      organizationId: input.organizationId,
+      employeeId: input.employeeId,
+      status: input.status ?? "eligible",
+      effectiveDate: input.effectiveDate,
+      panEncrypted: input.panEncrypted,
+      bankMetadataEncrypted: input.bankMetadataEncrypted,
+      uan: input.uan,
+      pfApplicable: input.pfApplicable ?? false,
+      esiApplicable: input.esiApplicable ?? false,
+      esiNumber: input.esiNumber,
+      professionalTaxApplicable: input.professionalTaxApplicable ?? false,
+      tdsApplicable: input.tdsApplicable ?? true,
+      taxRegime: input.taxRegime ?? "new",
+    })
+    .returning();
+  await recordAudit({
+    actorUserId: input.userId,
+    organizationId: input.organizationId,
+    action: "payroll_profile_created",
+    resource: "employee_payroll_profile",
+    resourceId: created.id,
+    metadata: { employeeId: input.employeeId, status: created.status },
+  });
+  return created;
 }

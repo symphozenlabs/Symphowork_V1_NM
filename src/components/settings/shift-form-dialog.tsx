@@ -48,8 +48,8 @@ export function ShiftFormDialog({
   const [code, setCode] = useState(shift?.code ?? "");
   const [startTime, setStartTime] = useState(normalizeTime(shift?.startTime || shift?.start_time) || "09:00");
   const [endTime, setEndTime] = useState(normalizeTime(shift?.endTime || shift?.end_time) || "18:00");
-  const [breakMinutes, setBreakMinutes] = useState(shift?.breakMinutes ?? shift?.break_minutes ?? 60);
-  const [graceMinutes, setGraceMinutes] = useState(shift?.graceMinutes ?? shift?.grace_minutes ?? 15);
+  const [breakMinutes, setBreakMinutes] = useState<number | string>(shift?.breakMinutes ?? shift?.break_minutes ?? 60);
+  const [graceMinutes, setGraceMinutes] = useState<number | string>(shift?.graceMinutes ?? shift?.grace_minutes ?? 15);
   const [overnight, setOvernight] = useState(Boolean(shift?.overnight));
 
   const [error, setError] = useState<string | null>(null);
@@ -114,6 +114,33 @@ export function ShiftFormDialog({
       return;
     }
 
+    // Resolve grace period: default to 15 on create if omitted/empty; preserve explicit value on edit
+    let resolvedGrace: number;
+    const rawGrace = typeof graceMinutes === "string" ? graceMinutes.trim() : graceMinutes;
+    if (rawGrace === "" || rawGrace === undefined || rawGrace === null) {
+      resolvedGrace = isEditing ? (shift?.graceMinutes ?? shift?.grace_minutes ?? 15) : 15;
+    } else {
+      resolvedGrace = Number(rawGrace);
+    }
+
+    if (isNaN(resolvedGrace) || !Number.isInteger(resolvedGrace) || resolvedGrace < 0) {
+      setError("Grace period must be a non-negative integer.");
+      return;
+    }
+
+    let resolvedBreak: number;
+    const rawBreak = typeof breakMinutes === "string" ? breakMinutes.trim() : breakMinutes;
+    if (rawBreak === "" || rawBreak === undefined || rawBreak === null) {
+      resolvedBreak = isEditing ? (shift?.breakMinutes ?? shift?.break_minutes ?? 60) : 60;
+    } else {
+      resolvedBreak = Number(rawBreak);
+    }
+
+    if (isNaN(resolvedBreak) || !Number.isInteger(resolvedBreak) || resolvedBreak < 0) {
+      setError("Break duration must be a non-negative integer.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -124,10 +151,10 @@ export function ShiftFormDialog({
         endTime,
         start_time: startTime,
         end_time: endTime,
-        breakMinutes: Number(breakMinutes) || 0,
-        break_minutes: Number(breakMinutes) || 0,
-        graceMinutes: Number(graceMinutes) || 0,
-        grace_minutes: Number(graceMinutes) || 0,
+        breakMinutes: resolvedBreak,
+        break_minutes: resolvedBreak,
+        graceMinutes: resolvedGrace,
+        grace_minutes: resolvedGrace,
         overnight,
       };
 
@@ -318,7 +345,7 @@ export function ShiftFormDialog({
                   max="480"
                   step="5"
                   value={breakMinutes}
-                  onChange={(e) => setBreakMinutes(Number(e.target.value) || 0)}
+                  onChange={(e) => setBreakMinutes(e.target.value)}
                   disabled={isLoading}
                 />
                 <p className="text-[10px] text-slate-500">Scheduled unpaid/paid break deduction.</p>
@@ -335,7 +362,7 @@ export function ShiftFormDialog({
                   max="120"
                   step="1"
                   value={graceMinutes}
-                  onChange={(e) => setGraceMinutes(Number(e.target.value) || 0)}
+                  onChange={(e) => setGraceMinutes(e.target.value)}
                   disabled={isLoading}
                 />
                 <p className="text-[10px] text-slate-500">Allowed late arrival window before penalty.</p>

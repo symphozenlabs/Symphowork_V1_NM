@@ -1119,7 +1119,12 @@ export function OrganizationAttendanceDashboard({
 
                     {/* Column 10: Net Work Time */}
                     <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900">
-                      {formatDuration(row.netWorkMinutes)}
+                      <div>{formatDuration(row.netWorkMinutes)}</div>
+                      {row.potentialOvertimeMinutes > 0 && (
+                        <div className="text-[10px] font-semibold text-amber-700">
+                          +{row.potentialOvertimeMinutes}m OT
+                        </div>
+                      )}
                     </td>
 
                     {/* Column 11: Punctuality */}
@@ -1344,6 +1349,21 @@ export function OrganizationAttendanceDashboard({
                 </p>
               </div>
             </div>
+
+            {/* Potential Overtime (Pending Approval) Notice */}
+            {selectedRow.potentialOvertimeMinutes > 0 && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-3.5 text-xs text-amber-950 flex items-center justify-between">
+                <div>
+                  <span className="font-bold">Potential Overtime (Pending Approval)</span>
+                  <p className="text-amber-800 text-[11px] mt-0.5">
+                    Employee worked beyond scheduled shift end time ({selectedRow.shift?.endTime.slice(0, 5) || "end"}). Unapproved overtime is informational and not converted to payroll earnings until approved.
+                  </p>
+                </div>
+                <span className="font-mono text-sm font-extrabold text-amber-900 bg-amber-100/80 px-2.5 py-1 rounded-lg border border-amber-300 shrink-0 ml-3">
+                  +{selectedRow.potentialOvertimeMinutes}m
+                </span>
+              </div>
+            )}
 
             {/* Persisted Punches Timeline */}
             <div className="space-y-2">

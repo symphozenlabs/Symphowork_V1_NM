@@ -1,0 +1,268 @@
+[
+  {
+    "name": "Dashboard Page",
+    "path": "/app",
+    "type": "RSC/Page",
+    "status": 200,
+    "size": 148711,
+    "min": 5339,
+    "max": 10862,
+    "mean": 7860,
+    "median": 8596,
+    "range": 5523,
+    "samples": [
+      10862,
+      8851,
+      5339,
+      5652,
+      8596
+    ]
+  },
+  {
+    "name": "Employees Page",
+    "path": "/app/employees",
+    "type": "RSC/Page",
+    "status": 200,
+    "size": 218166,
+    "min": 7637,
+    "max": 12432,
+    "mean": 9178,
+    "median": 8580,
+    "range": 4795,
+    "samples": [
+      12432,
+      8705,
+      8534,
+      8580,
+      7637
+    ]
+  },
+  {
+    "name": "Employees API (limit=1)",
+    "path": "/api/app/employees?limit=1",
+    "type": "API",
+    "status": 200,
+    "size": 1011,
+    "min": 9946,
+    "max": 12434,
+    "mean": 11394,
+    "median": 11252,
+    "range": 2488,
+    "samples": [
+      11252,
+      9946,
+      12281,
+      11058,
+      12434
+    ]
+  },
+  {
+    "name": "Employees API (limit=25)",
+    "path": "/api/app/employees?limit=25",
+    "type": "API",
+    "status": 200,
+    "size": 9746,
+    "min": 9181,
+    "max": 13106,
+    "mean": 10182,
+    "median": 9482,
+    "range": 3925,
+    "samples": [
+      9697,
+      13106,
+      9482,
+      9181,
+      9444
+    ]
+  },
+  {
+    "name": "Departments Page",
+    "path": "/app/departments",
+    "type": "RSC/Page",
+    "status": 200,
+    "size": 195035,
+    "min": 5800,
+    "max": 14780,
+    "mean": 10608,
+    "median": 10796,
+    "range": 8980,
+    "samples": [
+      14780,
+      5800,
+      10796,
+      7198,
+      14467
+    ]
+  },
+  {
+    "name": "Departments API",
+    "path": "/api/app/departments",
+    "type": "API",
+    "status": 200,
+    "size": 2258,
+    "min": 7988,
+    "max": 11883,
+    "mean": 9281,
+    "median": 8295,
+    "range": 3895,
+    "samples": [
+      11883,
+      7988,
+      10094,
+      8295,
+      8147
+    ]
+  },
+  {
+    "name": "Attendance Page",
+    "path": "/app/attendance",
+    "type": "RSC/Page",
+    "status": 200,
+    "size": 162989,
+    "min": 5357,
+    "max": 12765,
+    "mean": 6972,
+    "median": 5454,
+    "range": 7408,
+    "samples": [
+      12765,
+      5357,
+      5438,
+      5848,
+      5454
+    ]
+  },
+  {
+    "name": "Attendance API",
+    "path": "/api/app/attendance",
+    "type": "API",
+    "status": 200,
+    "size": 59,
+    "min": 6121,
+    "max": 14409,
+    "mean": 9203,
+    "median": 7992,
+    "range": 8288,
+    "samples": [
+      11334,
+      6121,
+      7992,
+      14409,
+      6161
+    ]
+  },
+  {
+    "name": "Leave Page",
+    "path": "/app/leave",
+    "type": "RSC/Page",
+    "status": 200,
+    "size": 192082,
+    "min": 5419,
+    "max": 11323,
+    "mean": 6766,
+    "median": 5738,
+    "range": 5904,
+    "samples": [
+      11323,
+      5419,
+      5782,
+      5738,
+      5568
+    ]
+  },
+  {
+    "name": "Approvals Page",
+    "path": "/app/approvals",
+    "type": "RSC/Page",
+    "status": 200,
+    "size": 180928,
+    "min": 5593,
+    "max": 9912,
+    "mean": 6717,
+    "median": 5958,
+    "range": 4319,
+    "samples": [
+      9912,
+      5874,
+      5593,
+      5958,
+      6247
+    ]
+  },
+  {
+    "name": "Approvals API",
+    "path": "/api/app/approvals",
+    "type": "API",
+    "status": 200,
+    "size": 27,
+    "min": 5584,
+    "max": 11924,
+    "mean": 6974,
+    "median": 5684,
+    "range": 6340,
+    "samples": [
+      11924,
+      5584,
+      6073,
+      5606,
+      5684
+    ]
+  },
+  {
+    "name": "Notifications Page",
+    "path": "/app/notifications",
+    "type": "RSC/Page",
+    "status": 200,
+    "size": 186143,
+    "min": 5128,
+    "max": 11873,
+    "mean": 6666,
+    "median": 5471,
+    "range": 6745,
+    "samples": [
+      11873,
+      5558,
+      5128,
+      5471,
+      5299
+    ]
+  },
+  {
+    "name": "Notifications API",
+    "path": "/api/app/notifications?unread=true",
+    "type": "API",
+    "status": 200,
+    "size": 51,
+    "min": 5528,
+    "max": 11141,
+    "mean": 6728,
+    "median": 5617,
+    "range": 5613,
+    "samples": [
+      11141,
+      5594,
+      5762,
+      5528,
+      5617
+    ]
+  },
+  {
+    "name": "Payroll Page",
+    "path": "/app/payroll",
+    "type": "RSC/Page",
+    "status": 200,
+    "size": 211017,
+    "min": 5188,
+    "max": 11470,
+    "mean": 6958,
+    "median": 6106,
+    "range": 6282,
+    "samples": [
+      11470,
+      5188,
+      6398,
+      6106,
+      5626
+    ]
+  }
+]
