@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/modules/identity/auth";
-import { CollaborationWorkspace } from "@/components/collaboration/workspace";
+import { ChatWorkspace } from "@/components/chat/chat-workspace";
 import { Briefcase } from "lucide-react";
 
 export default async function ChatPage() {
@@ -39,8 +39,8 @@ export default async function ChatPage() {
         </div>
       </div>
 
-      {/* Collaboration Workspace Chat View */}
-      <CollaborationWorkspace initialView="chat" />
+      {/* Dedicated WhatsApp/Messenger-Style Chat Workspace */}
+      <ChatWorkspace />
     </div>
   );
 }

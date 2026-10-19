@@ -14,8 +14,15 @@ export class AppError extends Error {
 
 export function errorResponse(error: unknown) {
   if (error instanceof AppError) {
-    return Response.json({ success: false, error: { code: error.code, message: error.message } }, { status: error.status });
+    const headers: Record<string, string> = {};
+    if (error.code === "RATE_LIMITED" && typeof error.metadata?.retryAfterSeconds === "number") {
+      headers["Retry-After"] = String(error.metadata.retryAfterSeconds);
+    }
+    return Response.json(
+      { success: false, error: { code: error.code, message: error.message } },
+      { status: error.status, headers: Object.keys(headers).length > 0 ? headers : undefined }
+    );
   }
-  console.error(JSON.stringify({ event: "unhandled_application_error", timestamp: new Date().toISOString() }));
+  console.error("unhandled_application_error", error);
   return Response.json({ success: false, error: { code: "INTERNAL_ERROR", message: "Something went wrong." } }, { status: 500 });
 }

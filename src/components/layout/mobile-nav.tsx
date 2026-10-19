@@ -9,15 +9,21 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isRouteActive } from "./nav-utils";
 import LogoutButton from "./logout-button";
+import { ChatUnreadBadge } from "./chat-unread-badge";
 
 export type MobileNavItem = { label: string; href: string };
 
 interface MobileNavProps {
   items: MobileNavItem[];
   label?: string;
+  chatUnreadCount?: number;
 }
 
-export function MobileNav({ items, label = "Open navigation" }: MobileNavProps) {
+export function MobileNav({
+  items,
+  label = "Open navigation",
+  chatUnreadCount,
+}: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
@@ -113,9 +119,12 @@ export function MobileNav({ items, label = "Open navigation" }: MobileNavProps) 
                 aria-current={active ? "page" : undefined}
               >
                 <span>{item.label}</span>
-                {active && (
-                  <span className="h-3.5 w-1 rounded-full bg-primary" aria-hidden="true" />
-                )}
+                <span className="flex items-center gap-2">
+                  {item.href === "/app/chat" && <ChatUnreadBadge count={chatUnreadCount} />}
+                  {active && (
+                    <span className="h-3.5 w-1 rounded-full bg-primary" aria-hidden="true" />
+                  )}
+                </span>
               </Link>
             );
           })}

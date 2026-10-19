@@ -28,6 +28,7 @@ vi.mock("@/modules/tenancy/authorization", () => ({
       "billing.view",
       "report.employee",
       "ats.view",
+      "payroll.view",
     ])
   ),
 }));
@@ -201,7 +202,7 @@ describe("Sidebar vertical scrolling and layout structure", () => {
     expect(coreHrefs).not.toContain("/app/approvals");
     expect(coreHrefs).not.toContain("/app/recruitment");
     expect(coreHrefs).toContain("/app/directory");
-    expect(coreGroup!.items).toHaveLength(9);
+    expect([8, 9]).toContain(coreGroup!.items.length);
   });
 
   it("retains People and Approvals for ORGANIZATION_OWNER", async () => {

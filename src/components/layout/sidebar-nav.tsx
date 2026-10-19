@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isRouteActive } from "./nav-utils";
+import { ChatUnreadBadge } from "./chat-unread-badge";
 
 export interface NavItemDef {
   label: string;
@@ -82,7 +83,13 @@ const HIGH_FREQUENCY_ROUTES = new Set([
   "/app/approvals",
 ]);
 
-export function SidebarNav({ groups }: { groups: NavGroupDef[] }) {
+export function SidebarNav({
+  groups,
+  chatUnreadCount,
+}: {
+  groups: NavGroupDef[];
+  chatUnreadCount?: number;
+}) {
   const pathname = usePathname();
   const [navigatingHref, setNavigatingHref] = React.useState<string | null>(null);
 
@@ -132,12 +139,15 @@ export function SidebarNav({ groups }: { groups: NavGroupDef[] }) {
                     aria-hidden="true"
                   />
                   <span className="truncate">{item.label}</span>
-                  {active && (
-                    <span
-                      className="ml-auto h-3.5 w-1 shrink-0 rounded-full bg-primary"
-                      aria-hidden="true"
-                    />
-                  )}
+                  <span className="ml-auto flex items-center gap-2">
+                    {item.href === "/app/chat" && <ChatUnreadBadge count={chatUnreadCount} />}
+                    {active && (
+                      <span
+                        className="h-3.5 w-1 shrink-0 rounded-full bg-primary"
+                        aria-hidden="true"
+                      />
+                    )}
+                  </span>
                 </Link>
               );
             })}
