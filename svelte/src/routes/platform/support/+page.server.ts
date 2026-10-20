@@ -1,0 +1,3 @@
+import{legacyJSON}from'$lib/server/legacy';
+type Organization={id:string;name:string;slug:string;status:string};
+export const load:import('./$types').PageServerLoad=async({request,url,parent})=>{await parent();const query=url.searchParams.get('q')??url.searchParams.get('query')??'';const page=Math.max(1,Number(url.searchParams.get('page'))||1);const params=new URLSearchParams({query,page:String(page),pageSize:'10'});const result=await legacyJSON<{organizations:Organization[];total:number;page:number;pageSize:number;pageCount:number}>(request,'/api/platform/support?'+params);return{result,query,serializedRows:result.organizations};};

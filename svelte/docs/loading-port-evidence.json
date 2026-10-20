@@ -1,0 +1,117 @@
+[
+  {
+    "source": "src/components/ui/skeleton.tsx",
+    "target": "src/lib/components/ui/Skeleton.svelte",
+    "export": "Skeleton",
+    "source_sha256": "89e20b86aaf2144d394fa8b74b49c9484579013d488847f6b867332481459499"
+  },
+  {
+    "source": "src/components/ui/skeleton.tsx",
+    "target": "src/lib/components/ui/PageHeaderSkeleton.svelte",
+    "export": "PageHeaderSkeleton",
+    "source_sha256": "89e20b86aaf2144d394fa8b74b49c9484579013d488847f6b867332481459499"
+  },
+  {
+    "source": "src/components/ui/skeleton.tsx",
+    "target": "src/lib/components/ui/KpiGridSkeleton.svelte",
+    "export": "KpiGridSkeleton",
+    "source_sha256": "89e20b86aaf2144d394fa8b74b49c9484579013d488847f6b867332481459499"
+  },
+  {
+    "source": "src/components/ui/skeleton.tsx",
+    "target": "src/lib/components/ui/TableCardSkeleton.svelte",
+    "export": "TableCardSkeleton",
+    "source_sha256": "89e20b86aaf2144d394fa8b74b49c9484579013d488847f6b867332481459499"
+  },
+  {
+    "source": "src/components/ui/skeleton.tsx",
+    "target": "src/lib/components/ui/CardGridSkeleton.svelte",
+    "export": "CardGridSkeleton",
+    "source_sha256": "89e20b86aaf2144d394fa8b74b49c9484579013d488847f6b867332481459499"
+  },
+  {
+    "source": "src/components/ui/branded-loader.tsx",
+    "target": "src/lib/components/ui/BrandedLoader.svelte",
+    "export": "BrandedLoader"
+  },
+  {
+    "source": "src/app/app/approvals/loading.tsx",
+    "target": "src/lib/components/loading/AppApprovalsLoading.svelte",
+    "source_sha256": "e298b2d66b78681ae1d095ada5cf677c2c76c1cf1d2cbbfc3971fc7c1a6582a5"
+  },
+  {
+    "source": "src/app/app/attendance/loading.tsx",
+    "target": "src/lib/components/loading/AppAttendanceLoading.svelte",
+    "source_sha256": "4c16b825d04ebd59387c32b0095b14618c6ca3d605391d608f0df1f681853e5d"
+  },
+  {
+    "source": "src/app/app/departments/[departmentId]/loading.tsx",
+    "target": "src/lib/components/loading/AppDepartmentsDepartmentidLoading.svelte",
+    "source_sha256": "86a24f2fd20980b3e592d0e7ed1a3568355ad9708e3042467f279aac3763f623"
+  },
+  {
+    "source": "src/app/app/departments/loading.tsx",
+    "target": "src/lib/components/loading/AppDepartmentsLoading.svelte",
+    "source_sha256": "0ee7f134225474416e65063e81bef5d91e4d2d08562a40644270a72a186aa719"
+  },
+  {
+    "source": "src/app/app/employees/loading.tsx",
+    "target": "src/lib/components/loading/AppEmployeesLoading.svelte",
+    "source_sha256": "9f2a1aef702930f22c6839a6dafbfef69816bad5aea925abc1e73f5e5f8c7fed"
+  },
+  {
+    "source": "src/app/app/leave/loading.tsx",
+    "target": "src/lib/components/loading/AppLeaveLoading.svelte",
+    "source_sha256": "988477716c86b97b9aec361d19b3725caa44c266e4c0eb874e2a8ed8c3bc77ff"
+  },
+  {
+    "source": "src/app/app/loading.tsx",
+    "target": "src/lib/components/loading/AppLoading.svelte",
+    "source_sha256": "48a502901758cff56534b1d6f39d11de6c0ec0080cec8d61e9b25e7417c15713"
+  },
+  {
+    "source": "src/app/app/notifications/loading.tsx",
+    "target": "src/lib/components/loading/AppNotificationsLoading.svelte",
+    "source_sha256": "dbcb6fb304f2c62c6239c05db1f8cd051001dbcb440fbb922daafc4f877b0e2b"
+  },
+  {
+    "source": "src/app/app/payroll/loading.tsx",
+    "target": "src/lib/components/loading/AppPayrollLoading.svelte",
+    "source_sha256": "3c923d22a4ca68b965b937eb6ec8c46ba3ec75f5b3806e61a750767eb8599587"
+  },
+  {
+    "source": "src/app/app/recruitment/loading.tsx",
+    "target": "src/lib/components/loading/AppRecruitmentLoading.svelte",
+    "source_sha256": "8b3d8ec3ef35921299570693a33c6b24a5f7516ab72e4aa62cbc157833d6b2d3"
+  },
+  {
+    "source": "src/app/platform/audit/loading.tsx",
+    "target": "src/lib/components/loading/PlatformAuditLoading.svelte",
+    "source_sha256": "f2142b71b3a046b38b5ef269f512a3ebe577fa8565d0698198f1bb5acc9959d0"
+  },
+  {
+    "source": "src/app/platform/loading.tsx",
+    "target": "src/lib/components/loading/PlatformLoading.svelte",
+    "source_sha256": "4f989a921dca70aa42eebe2767e763a0832011e0b4ba7dbefab0461c0365466f"
+  },
+  {
+    "source": "src/app/platform/organizations/loading.tsx",
+    "target": "src/lib/components/loading/PlatformOrganizationsLoading.svelte",
+    "source_sha256": "baa8292587b505afd2b8fb42ef36746c281f1a0fc9cea8823338cae705eace9f"
+  },
+  {
+    "source": "src/app/platform/plans/loading.tsx",
+    "target": "src/lib/components/loading/PlatformPlansLoading.svelte",
+    "source_sha256": "9c6ca893b2dd6736e24e6b81d4025fb52f2614b63513d3c6cdcac62603436a2c"
+  },
+  {
+    "source": "src/app/platform/provisioning/loading.tsx",
+    "target": "src/lib/components/loading/PlatformProvisioningLoading.svelte",
+    "source_sha256": "76611683405565ee46388b6b35d4e54220ab35fd99b0cae1c5e8aa2000933baf"
+  },
+  {
+    "source": "src/app/platform/subscriptions/loading.tsx",
+    "target": "src/lib/components/loading/PlatformSubscriptionsLoading.svelte",
+    "source_sha256": "118f9f5f0a2ec5b8d086ae56f36deac367b8b0ddae701640cad4fee47e997206"
+  }
+]

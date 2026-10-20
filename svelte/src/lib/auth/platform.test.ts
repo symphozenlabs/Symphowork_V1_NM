@@ -1,0 +1,6 @@
+import{it,expect}from'vitest';import{hasPlatformPermission,PLATFORM_PERMISSIONS as p}from'./platform';
+it('keeps organization roles outside the platform control plane',()=>{for(const role of ['EMPLOYEE','HR_ADMIN','ORGANIZATION_OWNER','UNKNOWN'])for(const permission of Object.values(p))expect(hasPlatformPermission(role,permission)).toBe(false);});
+it('preserves the platform admin billing boundary',()=>{expect(hasPlatformPermission('PLATFORM_ADMIN',p.organizationSuspend)).toBe(true);expect(hasPlatformPermission('PLATFORM_ADMIN',p.billingManage)).toBe(false);});
+it('preserves support and billing-role separation',()=>{expect(hasPlatformPermission('PLATFORM_SUPPORT',p.systemHealthView)).toBe(true);expect(hasPlatformPermission('PLATFORM_SUPPORT',p.organizationCreate)).toBe(false);expect(hasPlatformPermission('PLATFORM_SUPPORT',p.configurationManage)).toBe(false);expect(hasPlatformPermission('PLATFORM_BILLING',p.planManage)).toBe(true);expect(hasPlatformPermission('PLATFORM_BILLING',p.provisioningManage)).toBe(false);});
+it('preserves product-owner and platform-owner capabilities',()=>{for(const role of ['PLATFORM_OWNER','PRODUCT_OWNER'])for(const permission of Object.values(p))expect(hasPlatformPermission(role,permission)).toBe(true);});
+

@@ -1,0 +1,92 @@
+[
+  {
+    "source": "src/db/schema.ts",
+    "target": "src/lib/server/schema.ts",
+    "sha256": "e32d99815c146b243d0b038d1a5a2918318b00785b3d1a7356ddf94986d29526",
+    "kind": "copied source/assets; not runtime parity"
+  },
+  {
+    "source": "src/modules/rbac/permissions.ts",
+    "target": "src/lib/domain/rbac/permissions.ts",
+    "sha256": "52ed57b516dd1e2a3ede470a84b5e82af1904426c2c49325d52878a383472923",
+    "kind": "copied source/assets; not runtime parity"
+  },
+  {
+    "source": "src/app/globals.css",
+    "target": "src/app.css",
+    "sha256": "baea7043163b1c09678057414a3ca267373688c920bd4f8ae44936ee2b2a2248",
+    "kind": "copied source/assets; not runtime parity"
+  },
+  {
+    "source": "public/enterprise-journey-landscape.jpg",
+    "target": "static/enterprise-journey-landscape.jpg",
+    "sha256": "66a478291a050c53841d16f6e12e01f966e5d25a050491f5349be67397d2c5a4",
+    "kind": "copied source/assets; not runtime parity"
+  },
+  {
+    "source": "public/favicon.svg",
+    "target": "static/favicon.svg",
+    "sha256": "4c7df4c5edf2a562bef0411d62ac8465d40022651371a0eb3a8cd4ef745ea90e",
+    "kind": "copied source/assets; not runtime parity"
+  },
+  {
+    "source": "public/journey-world-landscape.jpg",
+    "target": "static/journey-world-landscape.jpg",
+    "sha256": "a0e6b218a554866c4468d3e67c7c9b0d7a473a34f9c48c89651f6e3b6a14fcd0",
+    "kind": "copied source/assets; not runtime parity"
+  },
+  {
+    "source": "public/symphowork-logo-white.png",
+    "target": "static/symphowork-logo-white.png",
+    "sha256": "2e0c1904e45acb92557f72ef6f521a099b2d49bfc4c590d7d5933f0b175d5a97",
+    "kind": "copied source/assets; not runtime parity"
+  },
+  {
+    "source": "public/symphowork-logo.png",
+    "target": "static/symphowork-logo.png",
+    "sha256": "99ed577b6eeaf03761b12d4011e4caf04e13beb153b949e5e2b5fabf0a858fc6",
+    "kind": "copied source/assets; not runtime parity"
+  },
+  {
+    "source": "public/symphowork-symbol.png",
+    "target": "static/symphowork-symbol.png",
+    "sha256": "bae51114fd8f6e9d2214e3e0d41c2d23da7e5150ca54dfab09311b9d7dedd2e4",
+    "kind": "copied source/assets; not runtime parity"
+  },
+  {
+    "source": ".next/static/media/438aa629764e75f3-s.woff2",
+    "target": "static/fonts/438aa629764e75f3-s.woff2",
+    "sha256": "e8c0b39992f06b3dc9a9834494088014859f363bf6ca8792b6bb07e17c7965f3",
+    "kind": "copied source/assets; not runtime parity"
+  },
+  {
+    "source": ".next/static/media/875ae681bfde4580-s.woff2",
+    "target": "static/fonts/875ae681bfde4580-s.woff2",
+    "sha256": "95a493061fe0a8d0d027c2892747134ba747141112d3be4d5022e70ab7d3a1a6",
+    "kind": "copied source/assets; not runtime parity"
+  },
+  {
+    "source": ".next/static/media/51251f8b9793cdb3-s.woff2",
+    "target": "static/fonts/51251f8b9793cdb3-s.woff2",
+    "sha256": "40af11327fe5308166c6cb5787808b042db6da889abf602f0a4876c49675d87e",
+    "kind": "copied source/assets; not runtime parity"
+  },
+  {
+    "source": ".next/static/media/e857b654a2caa584-s.woff2",
+    "target": "static/fonts/e857b654a2caa584-s.woff2",
+    "sha256": "bab757f8a0a1bc04055ee98cb5777f3254aab11f6d222366e1f40a36f390506a",
+    "kind": "copied source/assets; not runtime parity"
+  },
+  {
+    "source": ".next/static/media/cc978ac5ee68c2b6-s.woff2",
+    "target": "static/fonts/cc978ac5ee68c2b6-s.woff2",
+    "sha256": "ce093b341d9c10658ee1eaa85c5f8042ff3307bc6ccfc5f405616eb437f0009e",
+    "kind": "copied source/assets; not runtime parity"
+  },
+  {
+    "source": ".next/static/media/4c9affa5bc8f420e-s.p.woff2",
+    "target": "static/fonts/4c9affa5bc8f420e-s.p.woff2",
+    "sha256": "e310b55a7fd9677f5e3555e6c6c4d064fa1f1d24393f0ddbe217cea12a8c432f",
+    "kind": "copied source/assets; not runtime parity"
+  }
+]

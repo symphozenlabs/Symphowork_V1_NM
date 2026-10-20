@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/workflows',testMatch:'*.spec.ts',workers:1,outputDir:'test-results/workflows',reporter:[['list'],['json',{outputFile:'test-results/workflow-report.json'}]],use:{baseURL:'http://127.0.0.1:4188',channel:'msedge',headless:true},webServer:{command:'npm exec -- vite --config tests/workflows/vite.config.ts',url:'http://127.0.0.1:4188',reuseExistingServer:false}});

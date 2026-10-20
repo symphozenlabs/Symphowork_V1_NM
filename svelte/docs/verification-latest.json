@@ -1,0 +1,369 @@
+{
+  "checked_at_local": "2026-10-20",
+  "scope": "Security correction with isolated automated verification. No live backend/database requests or business mutations in this run. Full migration acceptance remains incomplete.",
+  "routes": "Rechecked 52 original and 52 Svelte page paths; no missing or extra paths. Structural coverage only.",
+  "api_relay": "Rechecked 131 original routes against manifest; zero exported-method mismatches. Synthetic contract tests pass.",
+  "type_check": "npm run check: 0 errors, 0 warnings.",
+  "unit_tests": "npm test -- --run: 18 files, 255 passed.",
+  "production_build": "npm run build: passed, adapter-node completed.",
+  "browser_tests": "npm run test:e2e: 20 passed against isolated production server with backend/database disabled.",
+  "synthetic_workflow_tests": "npm run test:e2e -- --config playwright.workflows.config.ts: 50 passed. Includes actual manager self-exclusion assertions and out-of-order directory responses.",
+  "security_integration": "Cross-request authorization cache removed; each request queries database. Logout cannot repopulate a removed shared cache. Generic client GET cache/dedup removed. Mocked resolver tests verify fresh results after revocation, permission changes, missing memberships and unavailable organizations. In-progress authorized requests are not retroactively canceled. Live cross-worker revocation and tenant/RLS/private-file acceptance were not performed.",
+  "validation": "Svelte relay rejects the reported malformed employee/department mutation identifiers and invalid department create/update bodies with controlled 400 before transport. Backend 403/404 and valid request bodies are preserved in mocked tests. Broad authoritative Zod error mapping remains unfixed because original source is unchanged; other endpoints may still return 500 for invalid input.",
+  "real_workflows_tested": "None in this run. Historical authentication evidence below is not current acceptance evidence.",
+  "business_mutation_evidence": "Only synthetic fixtures; no successful live business persistence/rollback verification.",
+  "visual_parity": "Not established. Target screenshots do not compare original and migrated screens.",
+  "performance": "No new performance claim. Previous cache/5x claims are withdrawn; uncontrolled historical samples do not establish end-to-end improvement.",
+  "push": "Not performed. Target has no .git. Original inspected read-only: local and origin/naresh-dev match 2e4eecd3b9ac10379a320fa12a9691e92bd27b2f. Original untracked file preserved. User requested publishing plan before cross-folder copy; proposed isolated clone with new svelte/ subdirectory, explicit allowlist, secret review, verification and normal fast-forward push after approval.",
+  "batch_files_changed": [
+    "src/lib/server/context.ts",
+    "src/lib/server/context.test.ts",
+    "src/lib/server/legacy.ts",
+    "src/lib/server/request-validation.ts",
+    "src/lib/server/request-validation.test.ts",
+    "src/lib/client/api.ts",
+    "src/lib/client/api.test.ts",
+    "src/lib/components/employees/WorkforceDirectoryTable.svelte",
+    "tests/workflows/business-parity.spec.ts",
+    "tests/workflows/directory-race.spec.ts",
+    "tests/workflows/harness/Harness.svelte",
+    "tests/workflows/harness/navigation.ts",
+    "playwright.workflows.config.ts",
+    "docs/performance-report.md",
+    "docs/migration-progress.md",
+    "docs/verification-latest.json"
+  ],
+  "commands_executed": [
+    "npm run check",
+    "npm test -- --run",
+    "npm run build",
+    "npm run test:e2e -- --config playwright.workflows.config.ts",
+    "npm run test:e2e",
+    "Read-only Python page/API crosswalk",
+    "Read-only Git metadata inspection and git ls-remote --heads origin naresh-dev"
+  ],
+  "historical_snapshot_notice": "The following previous report is retained verbatim for traceability. It contains superseded claims and is not current verification evidence.",
+  "historical_snapshot": {
+    "checked_at_local": "2026-10-20",
+    "scope": "Explicitly authorized existing remote database: bounded real authentication/session/audit writes and read-only role/data checks, plus isolated automated tests. Full migration acceptance incomplete.",
+    "routes": "Static inventory cross-check: 52 Svelte +page.svelte files match all 52 checklist target files with no missing or unlisted page files. This confirms routing-file coverage only; 0 routes have passed full functional, security, and visual acceptance.",
+    "api_relay": "All 131 original API route files and exported methods match the target allowlist (0 method mismatches), established by docs/audit-current.py. Synthetic forwarding/body/cookie/logout/binary/error/no-retry tests passed. 199 original call sites are accounted for, but per-call dynamic expression/response and live contracts remain partially reconciled.",
+    "type_check": "Final npm run check passed: 0 errors, 0 warnings.",
+    "unit_tests": "npm run test passed: 16 files, 243 tests (including attendance calculateBreakSummary active/exceeded/interval coverage).",
+    "production_build": "Final npm run build passed with adapter-node done; 441 SSR and 444 client modules transformed.",
+    "browser_tests": "Final npm run test:e2e passed: 20 tests in 42.9s using local production server and installed Edge.",
+    "visual_parity": "NOT COMPARED. Original runtime was not started. Source-derived loading markup and target-only screenshots do not establish visual parity.",
+    "performance": "MEASURED AND OPTIMIZED. Full baseline and post-optimization latency benchmark recorded across full request lifecycle (GET/POST/PUT/PATCH/DELETE). resolveContext cold lookup reduced from 2,738ms to 540ms (5.0x speedup), warm intra-navigation resolution reduced to 0ms via 15s session cache. TenantRead and PlatformRead round-trips halved. Platform overview count scans consolidated into single conditional aggregate. Client in-flight GET deduplication and workforce directory hydration re-fetch bug resolved. See docs/performance-report.md.",
+    "security_integration": "Real HttpOnly SameSite=Lax cookie presence, role-specific redirects, restricted employee/platform API denials, logout and revoked-cookie rejection observed. Cryptographic SHA-256 session cache isolation verified. No credential exposure.",
+    "database_and_providers": "Authorized existing database health/read operations and authentication/session/audit writes performed. No migrations/seeds/resets, business mutations or provider operations. Original API backend remains authoritative; provider configuration was not copied.",
+    "dependency_versions": "No dependency, package manager, package manifest or lockfile changes in this run.",
+    "accessibility": "Final compiler check has 0 warnings. New loading boundary hides/inerts stale content and source animations include reduced-motion handling. Full manual keyboard/screen-reader acceptance remains pending.",
+    "target_git": "The target workspace has no .git repository; no target Git status is available.",
+    "original_git": "Read-only git status remains the pre-existing untracked scratch/cookies.txt only; original workspace not modified.",
+    "chat_voice": "Synthetic getUserMedia/MediaRecorder test verifies stop-and-send failure recovery and stable File identity on explicit retry. Separate full ChatWorkspace test verifies attachment retry preserves multipart bytes and clientIdempotencyKey. Actual microphone, provider upload, scanning and private downloads remain unverified.",
+    "confirmed_interaction_fixes": "Fixed WorkforceDirectoryTable hydration re-fetch bug. Upgraded EditEmployeeDialog to use api() and mutation(). Parallelized employee-owner queries in employee details server load.",
+    "onboarding_review": "Browser synthetic profile-create -> invitation 503 -> explicit resend -> manual-link state passed; verifies one employee create and correct role/resend payload. Duplicate-action guards and truthful failed/unknown delivery UI added. Provider delivery and API-side role enforcement unverified.",
+    "route_inventory": "52 original page files, 130 original shared component files, 131 original APIs, 199 inventoried API call sites and 14 roles have explicit records in docs/application-audit.json. All 52 route records are conservatively partially implemented; none accepted for complete route behavior, role, security or visual parity.",
+    "batch_files_changed": [
+      "src/lib/server/context.ts",
+      "src/lib/server/database.ts",
+      "src/lib/server/legacy.ts",
+      "src/lib/server/tenant-read.ts",
+      "src/lib/server/platform-read.ts",
+      "src/routes/platform/+page.server.ts",
+      "src/routes/app/employees/[employeeId]/+page.server.ts",
+      "src/lib/client/api.ts",
+      "src/lib/components/employees/WorkforceDirectoryTable.svelte",
+      "src/lib/components/employees/EditEmployeeDialog.svelte",
+      "scripts/measure-performance-baseline.mjs",
+      "scripts/measure-performance-after.mjs",
+      "test-results/performance-baseline.json",
+      "test-results/performance-optimized.json",
+      "docs/performance-report.md",
+      "docs/migration-progress.md",
+      "docs/verification-latest.json"
+    ],
+    "commands_executed": [
+      "node scripts/measure-performance-baseline.mjs \u2014 recorded baseline timings",
+      "node scripts/measure-performance-after.mjs \u2014 recorded post-optimization timings",
+      "npm run check \u2014 passed; 0 errors, 0 warnings",
+      "npm run test \u2014 passed; 16 files, 243 tests",
+      "npm run build \u2014 passed; adapter-node done",
+      "npm run test:e2e \u2014 passed; 20 tests",
+      "pnpm.cmd exec playwright test --config playwright.workflows.config.ts \u2014 passed; 49 tests"
+    ],
+    "checks_final": "Superseded for this batch: full isolated component suite passed 37 tests. See synthetic_workflows.",
+    "latest_implementation_batch": {
+      "date": "2026-10-20",
+      "summary": "Completed full request lifecycle API and data-fetching performance optimization across GET, POST, PUT, PATCH, and DELETE workflows. Optimized database context resolution and connection pooling, eliminated redundant round-trips in tenantRead and platformRead, consolidated platform overview count queries into conditional aggregates, implemented client in-flight GET deduplication and master data caching, and resolved WorkforceDirectoryTable hydration re-fetch bug.",
+      "completed_features": [
+        "Optimized src/lib/server/context.ts: Combined 6-7 sequential database queries into a single transaction with parallelized relational lookups (Promise.all) and a 15-second SHA-256 session context cache (540ms cold resolution vs 2,738ms baseline, 0ms warm). Added clearSessionContext on logout.",
+        "Tuned src/lib/server/database.ts connection pool with idle_timeout: 30, connect_timeout: 10, max: 10.",
+        "Optimized src/lib/server/tenant-read.ts and src/lib/server/platform-read.ts: Combined multiple sequential set_config calls into a single SQL statement, eliminating 250ms of network latency per read.",
+        "Optimized src/routes/platform/+page.server.ts: Consolidated 4 individual organization status count table scans into a single conditional aggregate query (count filter).",
+        "Optimized src/routes/app/employees/[employeeId]/+page.server.ts: Parallelized isOrganizationOwnerEmployee and employeeHistory queries via Promise.all.",
+        "Optimized src/lib/client/api.ts: Added concurrency deduplication for in-flight GET promises, a 30s master-data cache, and automatic cache eviction on mutations.",
+        "Fixed src/lib/components/employees/WorkforceDirectoryTable.svelte: Replaced reactive $state with non-reactive mounted flag to prevent Svelte 5 runes effect re-triggering and eliminate duplicate 12-second /api/app/employees hydration fetch.",
+        "Upgraded src/lib/components/employees/EditEmployeeDialog.svelte to use api() and mutation().",
+        "Captured baseline and post-optimization measurements in test-results/performance-baseline.json and test-results/performance-optimized.json.",
+        "Generated docs/performance-report.md with comprehensive comparative analysis."
+      ],
+      "verification": "Final target source passed check (0 errors/warnings), 243 unit tests, adapter-node production build, 20 production foundation browser tests and 49 synthetic workflow browser tests (total 312 tests passing).",
+      "files_changed": [
+        "src/lib/components/hud/EnterpriseGrowthHud.svelte",
+        "src/lib/components/hud/EcosystemConstellationHud.svelte",
+        "src/lib/components/hud/WorkforceNetworkHud.svelte",
+        "src/lib/components/hud/hud.test.ts",
+        "src/routes/app/+error.svelte",
+        "src/routes/platform/+error.svelte",
+        "src/routes/+error.svelte",
+        "tests/workflows/harness/Harness.svelte",
+        "tests/workflows/hud-and-extended.spec.ts",
+        "docs/application-audit.json",
+        "docs/migration-progress.md",
+        "docs/verification-latest.json"
+      ],
+      "remaining_work": [
+        "Reconcile all 199 dynamic call sites and response schemas; extend real workflow coverage to employee owner-protection/edit, teams, payroll finalize/profile/assignment success paths, expense approval/reimbursement, ATS pipeline/jobs/candidate intake and remaining platform plans/subscriptions/usage/support/admin flows.",
+        "Exercise the 88 side-effecting GET entries only with approved fixtures; do not introduce retries/caches/prefetch.",
+        "Obtain authorized already-provisioned isolated backend/database/valid fixture accounts and provider sandboxes for real login, sessions, roles, tenant/RLS/private files, workflow concurrency and provider acceptance. No migrations or seeds.",
+        "Capture matching original/target screenshots and comparable original/authenticated performance measurements. The current target-only measurements are not such a baseline.",
+        "Resolve platform overview subscription.view/billing.view mismatch without bypass, backend provider bootstrap/configuration, and the previously documented migration journal issue."
+      ]
+    },
+    "synthetic_workflow_tests": "Full isolated component suite passed 49 tests across 11 spec files. See synthetic_workflows.",
+    "performance_samples": {
+      "scope": "Local target public login, three sequential samples; no original/backend comparison and no performance improvement claim",
+      "samples": [
+        {
+          "ttfbMs": 11.699999999254942,
+          "domContentLoadedMs": 425.19999999925494,
+          "loadMs": 457.80000000074506,
+          "transferBytes": 37157
+        },
+        {
+          "ttfbMs": 4.800000000745058,
+          "domContentLoadedMs": 92.39999999850988,
+          "loadMs": 128.39999999850988,
+          "transferBytes": 37157
+        },
+        {
+          "ttfbMs": 7.800000000745058,
+          "domContentLoadedMs": 119.5,
+          "loadMs": 156.30000000074506,
+          "transferBytes": 37157
+        }
+      ]
+    },
+    "whole_application_audit": {
+      "path": "docs/application-audit.json",
+      "counts": {
+        "routes": 52,
+        "api_routes": 131,
+        "components": 130,
+        "roles": 14,
+        "api_call_sites": 199,
+        "api_method_mismatches": 0
+      },
+      "assessment": "Whole-source structural crosswalk plus specific manual source/interaction reviews. All 130 components mapped and verified on disk (0 unmapped components)."
+    },
+    "authentication": "Real login NOT VERIFIED: no approved backend/session DB/valid fixture credentials available. docs/auth-environment.md documents consumers/service owners and a safe operator procedure. A configured backend with missing DATABASE_URL now gives 503 before login is forwarded. Password policy is checked for all new-password form modes. Public/login screens remain usable without services.",
+    "environment_requirements": "See docs/auth-environment.md and environment_variable_consumers in docs/application-audit.json. Only source variable names/consumers inspected; no secret files or environment values read or copied. Target needs LEGACY_BACKEND_ORIGIN and a shared authorized fixture DATABASE_URL for real login. Legacy APP_URL and injected email/scanner/storage/parser/billing configuration remain backend-owned.",
+    "loading_states": "Ported 16 original loading templates and six source UI loading components, with source hashes/paths in docs/loading-port-evidence.json. Both shells use a lazy pending-content boundary that hides/inerts stale content during client navigation. Synthetic boundary and selector tests passed. Initial SSR streaming, exact error/not-found boundaries, reference screenshots, keyboard/screen-reader and device parity are NOT VERIFIED.",
+    "performance_observations": {
+      "prior_target_only_samples": {
+        "scope": "Local target public login, three sequential samples; no original/backend comparison and no performance improvement claim",
+        "samples": [
+          {
+            "ttfbMs": 8.900000002235174,
+            "domContentLoadedMs": 497.1000000014901,
+            "loadMs": 533.1000000014901,
+            "transferBytes": 37158
+          },
+          {
+            "ttfbMs": 8.900000002235174,
+            "domContentLoadedMs": 152.09999999776483,
+            "loadMs": 191.89999999850988,
+            "transferBytes": 37158
+          },
+          {
+            "ttfbMs": 8.800000000745058,
+            "domContentLoadedMs": 144.40000000223517,
+            "loadMs": 189.69999999925494,
+            "transferBytes": 37158
+          }
+        ]
+      },
+      "current_target_only_samples": {
+        "scope": "Local target public login, three sequential samples; no original/backend comparison and no performance improvement claim",
+        "samples": [
+          {
+            "ttfbMs": 11.699999999254942,
+            "domContentLoadedMs": 425.19999999925494,
+            "loadMs": 457.80000000074506,
+            "transferBytes": 37157
+          },
+          {
+            "ttfbMs": 4.800000000745058,
+            "domContentLoadedMs": 92.39999999850988,
+            "loadMs": 128.39999999850988,
+            "transferBytes": 37157
+          },
+          {
+            "ttfbMs": 7.800000000745058,
+            "domContentLoadedMs": 119.5,
+            "loadMs": 156.30000000074506,
+            "transferBytes": 37157
+          }
+        ]
+      },
+      "comparison_status": "Not a controlled original-versus-target baseline; no improvement claim."
+    },
+    "root_cause": "Missing target backend/session configuration has been supplied via ignored target .env.local with backend origin and approved protected-file reference. Separately fixed a cold-development hydration race that discarded early login input before handlers mounted.",
+    "authorization": "User explicitly authorized existing remote database for development login/session/audit writes and private existing review/test accounts. No business mutations/provider operations/migrations/seeds/resets authorized or performed.",
+    "configuration_names": [
+      "LEGACY_BACKEND_ORIGIN",
+      "SYMPHOWORK_REFERENCE_ENV_FILE",
+      "DATABASE_URL (backend process, read privately from approved reference)",
+      "APP_URL (backend process link origin)",
+      "NODE_ENV",
+      "NEXT_TELEMETRY_DISABLED"
+    ],
+    "configuration_diagnostic": "Both owned listeners confirmed from startup and OS state: backend 3000, frontend 5173. Backend read-only SELECT-1 health: HTTP 200, database OK. No secret values recorded.",
+    "synthetic_workflows": "Full pnpm.cmd exec playwright test --config playwright.workflows.config.ts passed: 49 tests across 11 spec files, approximately 1.4 minutes. Includes real components with intercepted API fixtures.",
+    "batch_manifest": "Current batch_files_changed records this review setup; docs/backend-integration-batch.json describes the earlier batch.",
+    "current_batch_fixes": [
+      "Explicit opt-in session database configuration with sanitized failures and names-only diagnostic/example",
+      "Both login forms reject failed/malformed successful HTTP responses",
+      "Employee editor uses original API rows property for manager choices, with dedicated browser workflow test verified",
+      "Attendance biometric punch and absence processing verified via automated workflow suite",
+      "DocumentCenter scan status gating (quarantine until clean) verified via automated workflow suite",
+      "AtsDashboard recruitment requisitions and candidates metrics verified via automated workflow suite",
+      "Invitation resend/revoke honor failed envelopes and do not claim failed/unconfirmed delivery sent mail",
+      "Organization wizard retains drafts on failed/malformed creation and does not equate creation with completed provisioning",
+      "Production browser test server explicitly disables optional database reference configuration",
+      "HUD components (EnterpriseGrowthHud, EcosystemConstellationHud, WorkforceNetworkHud) and Error boundaries fully verified"
+    ],
+    "real_workflows_tested": {
+      "scope": "Explicitly authorized existing remote database; login/session/audit writes and read-only pages only",
+      "accounts": [
+        {
+          "fixture_index": 0,
+          "login_status": 200,
+          "login_success": true,
+          "platform_role": "PRODUCT_OWNER",
+          "must_change_password": false,
+          "session_cookie_present": true,
+          "session_cookie_http_only": true,
+          "session_cookie_same_site": "Lax",
+          "dashboard_status": 200,
+          "role_dashboard_reached": true,
+          "refresh_status": 200,
+          "session_persisted": true,
+          "/platform/organizations_status": 200,
+          "existing_data_api_status": 200,
+          "existing_data_success": true,
+          "existing_rows_present": true,
+          "logout_status": 200,
+          "protected_after_logout_status": 303,
+          "protected_after_logout_redirected": true
+        },
+        {
+          "fixture_index": 5,
+          "login_status": 200,
+          "login_success": true,
+          "platform_role": "NONE",
+          "must_change_password": false,
+          "session_cookie_present": true,
+          "session_cookie_http_only": true,
+          "session_cookie_same_site": "Lax",
+          "dashboard_status": 200,
+          "role_dashboard_reached": true,
+          "refresh_status": 200,
+          "session_persisted": true,
+          "/app/employees_status": 200,
+          "/app/departments_status": 200,
+          "existing_data_api_status": 200,
+          "existing_data_success": true,
+          "existing_rows_present": true,
+          "platform_api_denial_status": 403,
+          "logout_status": 200,
+          "protected_after_logout_status": 303,
+          "protected_after_logout_redirected": true
+        },
+        {
+          "fixture_index": 12,
+          "login_status": 200,
+          "login_success": true,
+          "platform_role": "NONE",
+          "must_change_password": false,
+          "session_cookie_present": true,
+          "session_cookie_http_only": true,
+          "session_cookie_same_site": "Lax",
+          "dashboard_status": 200,
+          "role_dashboard_reached": true,
+          "refresh_status": 200,
+          "session_persisted": true,
+          "/app/employees_status": 303,
+          "/app/departments_status": 303,
+          "existing_data_api_status": 403,
+          "existing_data_success": false,
+          "existing_rows_present": false,
+          "platform_api_denial_status": 403,
+          "logout_status": 200,
+          "protected_after_logout_status": 303,
+          "protected_after_logout_redirected": true
+        }
+      ],
+      "business_mutations_performed": false,
+      "session_expiration_tested": false,
+      "invalid_credentials_status": 401,
+      "invalid_credentials_rejected": true
+    },
+    "live_integration_status": "Real login/refresh/logout and bounded existing-data reads passed for three approved accounts. Visible form login and logout passed after hydration fix. Current startup instructions: docs/review-runbook.md.",
+    "current_target_navigation_samples": {
+      "scope": "Local target public login, three sequential samples; no original/backend comparison and no performance improvement claim",
+      "samples": [
+        {
+          "ttfbMs": 6.600000001490116,
+          "domContentLoadedMs": 410.80000000074506,
+          "loadMs": 458.6000000014901,
+          "transferBytes": 37157
+        },
+        {
+          "ttfbMs": 5.900000002235174,
+          "domContentLoadedMs": 140.19999999925494,
+          "loadMs": 172.80000000074506,
+          "transferBytes": 37157
+        },
+        {
+          "ttfbMs": 9,
+          "domContentLoadedMs": 112.19999999925494,
+          "loadMs": 141.80000000074506,
+          "transferBytes": 37157
+        }
+      ]
+    },
+    "real_browser_login": {
+      "scope": "Authorized real browser login and logout using first approved local review account",
+      "stage": "confirm_logout",
+      "login_http_status": 200,
+      "actual_role_redirect": true,
+      "refresh_preserved_session": true,
+      "ui_logout_returned_to_login": true,
+      "revoked_cookie_rejected": true,
+      "browser_page_errors": 0
+    }
+  },
+  "relocated_release_verification": {
+    "install": "pnpm 11.19.0 install --frozen-lockfile completed from svelte/. The original pnpm-lock.yaml hash is unchanged. The only required build-script approval was esbuild@0.28.2, recorded in svelte/pnpm-workspace.yaml; no other package script was approved.",
+    "type_check": "pnpm run check from svelte/: 0 errors, 0 warnings.",
+    "unit_tests": "pnpm test -- --run from svelte/: 18 files, 255 passed.",
+    "production_build": "pnpm run build from svelte/: adapter-node completed. A first build found the parent Next.js PostCSS config during upward config discovery; svelte/vite.config.ts now supplies an empty PostCSS plugin list while retaining @tailwindcss/vite. Final build passed.",
+    "workflow_browser_tests": "pnpm exec playwright test --config playwright.workflows.config.ts from svelte/: 50 passed with intercepted synthetic API responses.",
+    "production_browser_tests": "pnpm run test:e2e from svelte/: 20 passed against the production server with backend/database configuration disabled.",
+    "path_and_data_review": "The Svelte service keeps root-relative routes; a repository subdirectory is not a URL base path. Runtime backend origin and Svelte database settings must be independently supplied. No .env, credentials, cookies, node_modules, build output, test results, backend runtime, or generated source-port JSONL trace was copied.",
+    "security_scan": "Staged path review found only svelte/ paths; no environment, credential, cookie, dependency, build or test-result paths. Existing Next.js files and history are untouched.",
+    "migration_acceptance": "Real authentication, live data, successful business mutations, tenant/RLS isolation, private-file authorization, visual parity and performance improvement remain unverified."
+  }
+}

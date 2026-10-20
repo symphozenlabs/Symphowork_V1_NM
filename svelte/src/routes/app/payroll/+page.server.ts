@@ -1,0 +1,2 @@
+import{redirect}from'@sveltejs/kit';import{can}from'$lib/auth/policy';
+export const load:import('./$types').PageServerLoad=async({locals})=>{const c=await locals.context;const role=c?.role?.key;const allowed=role==='ORGANIZATION_OWNER'||c?.user.platformRole==='PLATFORM_OWNER'||['FINANCE_ADMIN','FINANCE_MANAGER','HR_ADMIN'].includes(role??'')||can(c??null,'payroll.view')||can(c??null,'payroll.manage');if(!allowed)redirect(303,'/app/payroll/payslips');return{};};

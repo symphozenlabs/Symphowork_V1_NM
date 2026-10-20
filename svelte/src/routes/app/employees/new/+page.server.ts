@@ -1,0 +1,1 @@
+import{redirect}from'@sveltejs/kit';import{can}from'$lib/auth/policy';export const load:import('./$types').PageServerLoad=async({locals})=>{const context=await locals.context;if(!can(context??null,'employee.create'))redirect(303,'/app/employees');return{tenant:{role:context!.role,organization:context!.organization!}};};

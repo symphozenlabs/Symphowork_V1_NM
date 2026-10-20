@@ -1,0 +1,3 @@
+import{legacyJSON}from'$lib/server/legacy';
+type Analytics={totals:{organizations:number;activeOrganizations:number;newOrganizations:number;activeEmployees:number;activeSubscriptions:number;subscriptions:number;failedProvisioning:number};planDistribution:{code:string;plan:string;value:number}[];limitUsage:{organization:{id:string;name:string};employeeLimit:number|null;activeEmployees:number;plan:{name:string}|null}[];trend:{day:string;value:number}[]};
+export const load:import('./$types').PageServerLoad=async({request,parent})=>{await parent();const body=await legacyJSON<{analytics:Analytics}>(request,'/api/platform/analytics?days=30');return{analytics:body.analytics};};

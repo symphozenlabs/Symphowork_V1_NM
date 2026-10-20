@@ -1,0 +1,41 @@
+{
+  "scope": "Backend diagnosis and isolated response-contract corrections; no live integration",
+  "files_changed": [
+    ".env.example",
+    "scripts/check-integration.mjs",
+    "src/lib/server/integration-configuration.ts",
+    "src/lib/server/integration-configuration.test.ts",
+    "src/lib/server/database.ts",
+    "src/lib/server/legacy.ts",
+    "src/lib/components/auth/LoginForm.svelte",
+    "src/lib/components/auth/AuthForm.svelte",
+    "src/lib/components/employees/EditEmployeeDialog.svelte",
+    "src/lib/components/employees/EmployeeInvitationActions.svelte",
+    "src/lib/components/platform/OrganizationCreateWizard.svelte",
+    "playwright.config.ts",
+    "tests/browser/foundation.spec.ts",
+    "tests/workflows/harness/Harness.svelte",
+    "tests/workflows/invitation-contract.spec.ts",
+    "docs/application-audit.json",
+    "docs/auth-environment.md",
+    "docs/migration-progress.md",
+    "docs/verification-latest.json",
+    "docs/backend-integration-batch.json"
+  ],
+  "commands": [
+    "node scripts/check-integration.mjs",
+    "npm run check",
+    "npm run test",
+    "pnpm.cmd exec playwright test --config playwright.workflows.config.ts",
+    "pnpm.cmd exec playwright test --config playwright.workflows.config.ts invitation-contract.spec.ts",
+    "python docs/audit-current.py",
+    "npm run build",
+    "npm run test:e2e"
+  ],
+  "notes": [
+    "Target has no Git history; list records this batch writes, not a baseline diff. Existing changes were preserved.",
+    "Read-only source inspection used PowerShell Get-Content, rg and local process/configuration metadata; no secret values printed.",
+    "Build and tests regenerate ignored .svelte-kit, build and test-results artifacts.",
+    "No live login or existing-data workflow tested. Employee manager-list correction is source/type verified only."
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "name": "symphowork-svelte-v1",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": "24.16.x",
+    "pnpm": "11.19.x"
+  },
+  "scripts": {
+    "dev": "vite dev",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "build": "vite build",
+    "start": "node build/index.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@sveltejs/adapter-node": "5.5.7",
+    "@sveltejs/kit": "2.70.3",
+    "@sveltejs/vite-plugin-svelte": "6.2.4",
+    "@tailwindcss/vite": "4.3.3",
+    "@types/node": "24.10.0",
+    "esbuild": "0.28.2",
+    "svelte": "5.57.2",
+    "svelte-check": "4.7.7",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3",
+    "vite": "7.3.7",
+    "vitest": "4.1.12"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.3",
+    "postgres": "3.4.7"
+  }
+}

@@ -1,0 +1,1115 @@
+[
+  {
+    "route": "/api/app/approvals/[taskId]",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/approvals/[taskId]/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/approvals",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/approvals/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/ats/applications/[applicationId]/stage",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/applications/[applicationId]/stage/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/ats/applications",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/ats/applications/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/ats/candidates/[candidateId]/resumes",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/candidates/[candidateId]/resumes/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/ats/candidates/[candidateId]",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/ats/candidates/[candidateId]/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/ats/candidates",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/candidates/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/ats/employee-options",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/ats/employee-options/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/ats/intelligence/config",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/intelligence/config/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/ats/intelligence/search",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/intelligence/search/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/ats/interviews/[interviewId]/feedback",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/interviews/[interviewId]/feedback/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/ats/interviews/list",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/ats/interviews/list/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/ats/interviews",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/interviews/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/ats/jobs/[jobId]/intelligence",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/jobs/[jobId]/intelligence/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/ats/jobs/[jobId]/publish",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/jobs/[jobId]/publish/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/ats/jobs",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/jobs/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/ats/pipeline",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/ats/pipeline/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/ats/requisitions/[requisitionId]/submit",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/requisitions/[requisitionId]/submit/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/ats/requisitions",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/requisitions/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/ats/resume-config",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/resume-config/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/ats/resume-fields/[fieldId]/review",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/resume-fields/[fieldId]/review/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/ats/resumes/[documentId]/download",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/ats/resumes/[documentId]/download/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/ats/resumes/jobs/[jobId]/process",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/resumes/jobs/[jobId]/process/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/ats/talent-pools",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/ats/talent-pools/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/attendance/organization",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/attendance/organization/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/attendance/process-absent",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/attendance/process-absent/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/attendance/punch",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/attendance/punch/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/attendance/regularization",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/attendance/regularization/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> getOrEnsureEmployeeForUser -> conditional employee INSERT"
+  },
+  {
+    "route": "/api/app/attendance/reminder",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/attendance/reminder/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> checkAndEnsureAttendanceReminder -> employee setup and createNotification -> notifications/outbox/delivery/audit INSERTs"
+  },
+  {
+    "route": "/api/app/attendance",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/attendance/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> getOrEnsureEmployeeForUser; also db.update(attendanceRecords) on missing_punch status correction"
+  },
+  {
+    "route": "/api/app/billing",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/billing/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/chat/conversations/[conversationId]/attachments/[attachmentId]",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/chat/conversations/[conversationId]/attachments/[attachmentId]/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> getChatAttachment -> employeeForUser -> getOrEnsureEmployeeForUser; private authorization/download also requires review"
+  },
+  {
+    "route": "/api/app/chat/conversations/[conversationId]/attachments",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/chat/conversations/[conversationId]/attachments/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/chat/conversations/[conversationId]/messages/[messageId]/reactions",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/chat/conversations/[conversationId]/messages/[messageId]/reactions/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/chat/conversations/[conversationId]/messages",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/chat/conversations/[conversationId]/messages/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> listMessages -> employeeForUser -> getOrEnsureEmployeeForUser"
+  },
+  {
+    "route": "/api/app/chat/conversations/[conversationId]/read",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/chat/conversations/[conversationId]/read/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/chat/conversations/[conversationId]/typing",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/chat/conversations/[conversationId]/typing/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/chat/conversations",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/chat/conversations/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> listConversations -> employeeForUser -> getOrEnsureEmployeeForUser"
+  },
+  {
+    "route": "/api/app/chat/messages/[messageId]/task",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/chat/messages/[messageId]/task/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/chat/presence",
+    "methods": [
+      "POST",
+      "GET"
+    ],
+    "source": "src/app/api/app/chat/presence/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/chat/recipients",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/chat/recipients/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> listChatRecipients -> employeeForUser -> getOrEnsureEmployeeForUser"
+  },
+  {
+    "route": "/api/app/chat/search",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/chat/search/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> searchMessages -> employeeForUser -> getOrEnsureEmployeeForUser"
+  },
+  {
+    "route": "/api/app/chat/unread-count",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/chat/unread-count/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> getUnreadConversationCount -> employeeForUser -> getOrEnsureEmployeeForUser"
+  },
+  {
+    "route": "/api/app/departments/[departmentId]/deletion-check",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/departments/[departmentId]/deletion-check/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/departments/[departmentId]",
+    "methods": [
+      "GET",
+      "PATCH",
+      "DELETE"
+    ],
+    "source": "src/app/api/app/departments/[departmentId]/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/departments/[departmentId]/teams/[teamId]",
+    "methods": [
+      "PATCH",
+      "DELETE"
+    ],
+    "source": "src/app/api/app/departments/[departmentId]/teams/[teamId]/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/departments/[departmentId]/teams",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/departments/[departmentId]/teams/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/departments/eligible-managers",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/departments/eligible-managers/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/departments/eligible-team-leads",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/departments/eligible-team-leads/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/departments",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/departments/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/directory",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/directory/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/documents/[documentId]",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "source": "src/app/api/app/documents/[documentId]/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/documents",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/documents/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/documents/types",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/documents/types/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/employees/[employeeId]/invite/revoke",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/employees/[employeeId]/invite/revoke/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/employees/[employeeId]/invite",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/employees/[employeeId]/invite/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/employees/[employeeId]/onboarding",
+    "methods": [
+      "GET",
+      "PATCH",
+      "POST"
+    ],
+    "source": "src/app/api/app/employees/[employeeId]/onboarding/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/employees/[employeeId]",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "source": "src/app/api/app/employees/[employeeId]/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/employees",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/employees/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/expenses/[claimId]",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "source": "src/app/api/app/expenses/[claimId]/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> getOrEnsureEmployeeForUser -> conditional employee INSERT"
+  },
+  {
+    "route": "/api/app/expenses/[claimId]/submit",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/expenses/[claimId]/submit/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/expenses/categories",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/expenses/categories/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/expenses/items/[itemId]/receipt",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/expenses/items/[itemId]/receipt/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/expenses",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/expenses/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> listExpenseClaims -> employeeForUser -> getOrEnsureEmployeeForUser"
+  },
+  {
+    "route": "/api/app/leave",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/leave/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> getOrEnsureEmployeeForUser -> conditional employee INSERT"
+  },
+  {
+    "route": "/api/app/leave/types",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/leave/types/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/master-data/[resource]/[itemId]",
+    "methods": [
+      "PATCH",
+      "DELETE"
+    ],
+    "source": "src/app/api/app/master-data/[resource]/[itemId]/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/master-data/departments",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/master-data/departments/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/master-data/designations",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/master-data/designations/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/master-data/employment-types",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/master-data/employment-types/route.ts",
+    "review": "CONFIRMED static conditional write path: GET inserts standard employment types when empty (route.ts:38-49)"
+  },
+  {
+    "route": "/api/app/master-data/holidays",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/master-data/holidays/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/master-data/locations",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/master-data/locations/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/master-data/shifts",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/master-data/shifts/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/master-data/teams",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/master-data/teams/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/master-data/working-days",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/master-data/working-days/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/me/employee",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "source": "src/app/api/app/me/employee/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> getOrEnsureEmployeeForUser -> conditional employee INSERT; employees/service.ts:1132 onward"
+  },
+  {
+    "route": "/api/app/notifications/[notificationId]",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/notifications/[notificationId]/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/notifications/preferences",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/notifications/preferences/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/notifications",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "source": "src/app/api/app/notifications/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/payroll/config",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/payroll/config/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/payroll/employee-options",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/payroll/employee-options/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/payroll/payslips",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/payroll/payslips/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> listEmployeePayslips -> getOrEnsureEmployeeForUser"
+  },
+  {
+    "route": "/api/app/payroll/periods",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/payroll/periods/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/payroll/profiles",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/payroll/profiles/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/payroll/runs/[runId]/finalize",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/payroll/runs/[runId]/finalize/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/payroll/runs/[runId]/pay",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/app/payroll/runs/[runId]/pay/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/app/payroll/runs/[runId]",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/app/payroll/runs/[runId]/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/payroll/runs",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/payroll/runs/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/payroll/salary-assignments",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/payroll/salary-assignments/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/projects/[projectId]",
+    "methods": [
+      "GET",
+      "PATCH",
+      "POST"
+    ],
+    "source": "src/app/api/app/projects/[projectId]/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> getProject -> employeeForUser -> getOrEnsureEmployeeForUser"
+  },
+  {
+    "route": "/api/app/projects",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/projects/route.ts",
+    "review": "CONFIRMED static conditional write path: GET -> listProjects -> employeeForUser -> getOrEnsureEmployeeForUser"
+  },
+  {
+    "route": "/api/app/reports",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/reports/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/tasks/[taskId]",
+    "methods": [
+      "GET",
+      "PATCH",
+      "POST"
+    ],
+    "source": "src/app/api/app/tasks/[taskId]/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/tasks",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/tasks/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/app/workflows",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/app/workflows/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/auth/change-password",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/auth/change-password/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/auth/forgot-password",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/auth/forgot-password/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/auth/invitations/accept/preview",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/auth/invitations/accept/preview/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/auth/invitations/accept",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/auth/invitations/accept/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/auth/login",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/auth/login/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/auth/logout",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/auth/logout/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/auth/register",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/auth/register/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/auth/reset-password",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/auth/reset-password/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/auth/verify-email/resend",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/auth/verify-email/resend/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/auth/verify-email",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/auth/verify-email/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/health",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/health/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/platform/analytics",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/platform/analytics/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/platform/audit",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/platform/audit/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/platform/auth/login",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/platform/auth/login/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/platform/billing",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/platform/billing/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/platform/configuration",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "source": "src/app/api/platform/configuration/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/platform/features/[featureId]",
+    "methods": [
+      "PATCH"
+    ],
+    "source": "src/app/api/platform/features/[featureId]/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/platform/features",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/platform/features/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/platform/health",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/platform/health/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/platform/organizations/[organizationId]/approve",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/platform/organizations/[organizationId]/approve/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/platform/organizations/[organizationId]/invitation/link",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/platform/organizations/[organizationId]/invitation/link/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/platform/organizations/[organizationId]/invitation/resend",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/platform/organizations/[organizationId]/invitation/resend/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/platform/organizations/[organizationId]",
+    "methods": [
+      "GET",
+      "DELETE"
+    ],
+    "source": "src/app/api/platform/organizations/[organizationId]/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/platform/organizations/[organizationId]/status",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/platform/organizations/[organizationId]/status/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/platform/organizations",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/platform/organizations/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/platform/plans/[planId]",
+    "methods": [
+      "GET",
+      "PATCH",
+      "PUT",
+      "DELETE"
+    ],
+    "source": "src/app/api/platform/plans/[planId]/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/platform/plans",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/platform/plans/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/platform/provisioning/[organizationId]/retry",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/platform/provisioning/[organizationId]/retry/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/platform/provisioning",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/platform/provisioning/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/platform/subscriptions/[subscriptionId]",
+    "methods": [
+      "PATCH"
+    ],
+    "source": "src/app/api/platform/subscriptions/[subscriptionId]/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/platform/subscriptions",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/platform/subscriptions/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/platform/support",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "source": "src/app/api/platform/support/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/platform/usage",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/platform/usage/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/platform/users",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "source": "src/app/api/platform/users/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  },
+  {
+    "route": "/api/public/jobs/[slug]/apply",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/app/api/public/jobs/[slug]/apply/route.ts",
+    "review": "Not a GET handler; mutation ownership required"
+  },
+  {
+    "route": "/api/public/jobs/[slug]",
+    "methods": [
+      "GET"
+    ],
+    "source": "src/app/api/public/jobs/[slug]/route.ts",
+    "review": "UNREVIEWED full call graph; no safety inference from GET method"
+  }
+]

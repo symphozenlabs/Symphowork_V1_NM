@@ -1,0 +1,1 @@
+export const load:import('./$types').PageServerLoad=async({locals,url})=>{const context=await locals.context;const canViewOthers=['ORGANIZATION_OWNER','HR_ADMIN','HR_EXECUTIVE'].includes(context?.role?.key??'');return{canViewOthers,tenant:{role:context?.role},initialEmployeeId:canViewOthers?url.searchParams.get('employeeId')??'':'',initialDate:url.searchParams.get('date')??''};};
