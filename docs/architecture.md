@@ -1,16 +1,15 @@
 # Architecture
 
-SymphoWork uses a modular monolith: one Next.js deployment with explicit domain and infrastructure boundaries. The UI lives under `src/app` and `src/components`; cross-cutting contracts live under `src/lib`; persistence lives under `src/db`; future business capabilities belong under `src/modules/<domain>`.
-
-Prompt 2 adds identity, organizations, memberships, tenant-aware request context, and authorization without moving the shell. Platform identity remains separate from organization membership.
-
-Prompt 3 adds a separate employee domain. Employees reference organizations and may optionally reference users; employee lifecycle, history, onboarding, and documents never replace the authentication identity model.
+SymphoWork now has a SvelteKit frontend in `svelte/` and a separately run Next.js API/backend at the repository root. The migration removes the legacy React presentation layer while retaining the Next.js server because Svelte still relays authentication and business API requests to its route handlers.
 
 ## Boundaries
 
-- Presentation: App Router pages, layouts, and reusable UI components.
-- Application/domain: future module services and validation schemas.
-- Infrastructure: Drizzle/PostgreSQL, email, object storage, AI, and jobs.
-- Platform: configuration, logging, errors, and security policy.
+- Presentation: Svelte pages, components, and browser behavior under `svelte/src/`.
+- API/backend: Next.js route handlers under `src/app/api/`.
+- Application/domain: services, validation, authentication, and authorization under `src/modules/` and `src/lib/`.
+- Persistence: PostgreSQL and Drizzle schema/client/migrations under `src/db/` and `drizzle/`.
+- Svelte session/context reads: the Svelte server uses the approved database connection and backend session semantics; see `svelte/docs/auth-environment.md`.
 
-Organization-owned tables must carry `organization_id` when they are introduced. Platform data must remain separate from tenant data.
+The Next.js app shell and middleware remain only to host and protect the API runtime. There are no Next.js user-facing pages or React component library in this repository. React remains a transitive/runtime requirement of Next.js and the backend's Next request-context helpers.
+
+Svelte and the API are separate services. SvelteKit needs `LEGACY_BACKEND_ORIGIN` for API forwarding and an approved `DATABASE_URL` for its session/context reads. The Next.js backend uses its own environment configuration. Do not infer that structurally mapped routes establish complete business parity or tenant/file security; the migration evidence in `svelte/docs/verification-latest.json` records outstanding acceptance gaps.

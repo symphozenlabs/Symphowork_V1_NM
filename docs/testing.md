@@ -1,5 +1,9 @@
 # Release test matrix
 
+The Next.js React UI tests and root Playwright suite were removed with the legacy presentation layer. Backend route and domain unit tests remain at the repository root. The canonical Svelte frontend owns component, workflow, and browser tests under `svelte/`; run them with `pnpm --dir svelte test -- --run` and `pnpm --dir svelte run test:e2e` after installing the Svelte lockfile. These automated suites do not replace authorized live integration checks.
+
+Root backend checks are `pnpm typecheck`, `pnpm test`, and `pnpm build`. The root build verifies the API service, not the frontend. Svelte checks are `pnpm --dir svelte run check`, `pnpm --dir svelte test -- --run`, and `pnpm --dir svelte run build`.
+
 | Area | Unit | Integration/RLS | E2E | Status |
 | --- | --- | --- | --- | --- |
 | Auth/RBAC | Existing tests plus endpoint hardening | Pending database fixtures | Run result reported per release | YELLOW |

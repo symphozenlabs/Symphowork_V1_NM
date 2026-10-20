@@ -3,10 +3,6 @@ import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
-  const isProtected = path.startsWith("/app") || (path.startsWith("/platform") && path !== "/platform/login");
-  const hasSession = Boolean(request.cookies.get("symphowork_session")?.value);
-  if (isProtected && !hasSession) return NextResponse.redirect(new URL(path.startsWith("/platform") ? "/platform/login" : "/login", request.url));
-  if ((path === "/login" || path === "/register") && hasSession) return NextResponse.redirect(new URL("/app", request.url));
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", path);
   const response = NextResponse.next({

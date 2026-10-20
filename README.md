@@ -1,39 +1,49 @@
-# SymphoWork_v1
+# SymphoWork
 
-Production foundation for SymphoWork, a future multi-tenant HRMS, ATS, recruitment intelligence, and productivity platform.
+SymphoWork's canonical user interface is the Svelte 5 + SvelteKit application in [`svelte/`](svelte/). The root Next.js application is retained as the authoritative API/backend while Svelte migration coverage is completed. Its user-facing React routes and components have been removed.
 
-## Current milestone
+## Application layout
 
-This repository contains the foundation plus identity, SaaS security, organization/employee operations, attendance, leave, configurable workflows, approvals, and notification-event foundations.
+- `svelte/` contains the SvelteKit frontend, its own lockfile, checks, tests, and Node deployment adapter.
+- `src/app/api/` contains the authoritative Next.js API routes used by the Svelte relay.
+- `src/db/`, `src/modules/`, and `src/lib/` contain the PostgreSQL/Drizzle access, authentication, tenant authorization, business services, provider integrations, and shared backend logic used by those routes.
+- The root Next.js package runs the API service. It is not the canonical frontend.
 
-## Stack
+Svelte currently requires the Next.js API origin and approved database configuration for session/context reads. See [`svelte/docs/auth-environment.md`](svelte/docs/auth-environment.md) and [`svelte/docs/relocation-and-development.md`](svelte/docs/relocation-and-development.md). Do not copy production credentials into local files or run database migrations as part of ordinary startup.
 
-Next.js App Router, React, TypeScript strict mode, Tailwind CSS v4, shadcn-style Radix primitives, PostgreSQL, Drizzle ORM, Zod, Vitest, Playwright, ESLint, Prettier, and pnpm.
+## Local development
 
-## Commands
+Install each application from its own directory with the pinned pnpm version and frozen lockfile:
 
-```bash
-pnpm install
-cp .env.example .env
-pnpm dev
+```powershell
+pnpm install --frozen-lockfile
+pnpm --dir svelte install --frozen-lockfile
+```
+
+Configure the root Next.js API and Svelte frontend with an authorized development backend/database using the environment variable names documented in their respective environment guides. Start the API from the repository root with `pnpm dev` (Next.js defaults to port 3000), then start the frontend with `pnpm --dir svelte dev` (Vite defaults to port 5173). The Svelte API relay must target the running API through `LEGACY_BACKEND_ORIGIN`.
+
+Frontend checks:
+
+```powershell
+pnpm --dir svelte run check
+pnpm --dir svelte test -- --run
+pnpm --dir svelte run build
+pnpm --dir svelte run test:e2e
+```
+
+Backend checks:
+
+```powershell
 pnpm lint
 pnpm typecheck
 pnpm test
-pnpm test:e2e
 pnpm build
 ```
 
-Database commands: `pnpm db:generate`, `pnpm db:migrate`, `pnpm db:push`, and `pnpm db:studio`.
+The root `pnpm build` builds the API service. Database commands such as `db:migrate`, `db:push`, and bootstrap scripts are operational data changes; run them only through the separately approved database process.
 
-See [docs/architecture.md](docs/architecture.md), [docs/authentication.md](docs/authentication.md), [docs/multi-tenancy.md](docs/multi-tenancy.md), [docs/rbac.md](docs/rbac.md), [docs/provisioning.md](docs/provisioning.md), [docs/security.md](docs/security.md), and [docs/decisions/0001-foundation.md](docs/decisions/0001-foundation.md).
-Prompt 4 modules are documented in [docs/attendance.md](docs/attendance.md), [docs/leave.md](docs/leave.md), [docs/workflows.md](docs/workflows.md), and [docs/approval-engine.md](docs/approval-engine.md).
-Prompt 5 modules are documented in [docs/expenses.md](docs/expenses.md), [docs/documents.md](docs/documents.md), and [docs/notifications.md](docs/notifications.md).
-Prompt 6 payroll is documented in [docs/payroll.md](docs/payroll.md). It is a configurable India payroll foundation, not a legal-compliance claim; statutory values require production verification.
-Prompt 7 ATS core is documented in [docs/ats.md](docs/ats.md). Resume intelligence, semantic search, and AI scoring are intentionally deferred to later prompts.
-Prompt 8 resume intelligence is documented in [docs/resume-intelligence.md](docs/resume-intelligence.md). Deterministic extraction and provider contracts are included; external AI, embeddings, and ranking remain deferred.
-Prompt 9 recruiter intelligence is documented in [docs/recruiter-intelligence.md](docs/recruiter-intelligence.md). Transparent deterministic search, requirement extraction, matching, explanations, versioned snapshots, and provider-neutral embedding persistence are included; real vector retrieval and external AI remain opt-in/deferred.
-Prompt 10 collaboration is documented in [docs/projects-tasks.md](docs/projects-tasks.md) and [docs/internal-chat.md](docs/internal-chat.md). Organization-scoped projects, tasks, comments, dependency protection, conversations, paginated messages, and Prompt 11 source boundaries are included; realtime, full attachment flows, and Chat-to-Task automation remain deferred.
-Prompt 11 is documented in [docs/chat-to-task.md](docs/chat-to-task.md), [docs/billing.md](docs/billing.md), and [docs/reporting.md](docs/reporting.md). Chat-to-Task conversion, provider-neutral entitlements, usage foundations, and permission-controlled operational reports are included; real payment processing, realtime, and advanced reporting remain deferred.
-Prompt 13 establishes the platform/organization product boundary in [docs/platform-organization-separation.md](docs/platform-organization-separation.md): separate console/workspace shells, platform login, platform roles/permissions, route/API boundaries, and preserved tenant access controls.
-PO-3 commercial management is documented in [docs/platform-commercial.md](docs/platform-commercial.md): platform-owned plans, pricing configuration, entitlements, subscriptions, provider boundary, and active-employee licensing usage.
-PO-4 platform operations and intelligence are documented in [docs/platform-operations-intelligence.md](docs/platform-operations-intelligence.md): analytics, feature flags, support boundaries, provider health, and safe platform configuration.
+## Architecture and acceptance status
+
+The Svelte frontend is structurally independent from the removed React presentation layer. It is not yet independent of the Next.js API/backend. See [`docs/architecture.md`](docs/architecture.md), [`docs/development.md`](docs/development.md), and the Svelte migration records in [`svelte/docs/`](svelte/docs/).
+
+Removing the React UI does not establish live tenant isolation, private-file authorization, successful business mutation parity, visual parity, or performance improvements. Those remain explicit acceptance gaps until verified against an authorized integration environment.
