@@ -1,0 +1,2645 @@
+{
+  "generatedAt": "2026-11-01",
+  "workspace": "C:\\Users\\nares\\Symphowork_Svelte_V1",
+  "branch": "svelte-migration",
+  "head": "2e4eecd3b9ac10379a320fa12a9691e92bd27b2f",
+  "sourceInventories": {
+    "apis": "docs/api-routes.csv",
+    "routes": "docs/routes.csv"
+  },
+  "summary": {
+    "apiInventoryCount": 131,
+    "frontendInventoryCount": 52,
+    "apiStructuralMethodMatches": 131,
+    "routeFilesPresent": 52,
+    "apiAdaptersPresent": 131,
+    "apiFunctionalNotVerified": 131,
+    "svelteApiAdapters": 132,
+    "routeFunctionalNotVerified": 52,
+    "sveltePageFiles": 52,
+    "svelteInternalHelperEndpoints": 1
+  },
+  "routes": [
+    {
+      "originalRoute": "/app/approvals",
+      "targetRoute": "/app/approvals",
+      "targetFile": "src/routes/app/approvals/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/attendance",
+      "targetRoute": "/app/attendance",
+      "targetFile": "src/routes/app/attendance/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/chat",
+      "targetRoute": "/app/chat",
+      "targetFile": "src/routes/app/chat/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/departments/[departmentId]",
+      "targetRoute": "/app/departments/[departmentId]",
+      "targetFile": "src/routes/app/departments/[departmentId]/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/departments",
+      "targetRoute": "/app/departments",
+      "targetFile": "src/routes/app/departments/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/directory",
+      "targetRoute": "/app/directory",
+      "targetFile": "src/routes/app/directory/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/documents",
+      "targetRoute": "/app/documents",
+      "targetFile": "src/routes/app/documents/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/employees/[employeeId]",
+      "targetRoute": "/app/employees/[employeeId]",
+      "targetFile": "src/routes/app/employees/[employeeId]/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/employees/new",
+      "targetRoute": "/app/employees/new",
+      "targetFile": "src/routes/app/employees/new/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/employees",
+      "targetRoute": "/app/employees",
+      "targetFile": "src/routes/app/employees/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/expenses/[claimId]",
+      "targetRoute": "/app/expenses/[claimId]",
+      "targetFile": "src/routes/app/expenses/[claimId]/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/expenses",
+      "targetRoute": "/app/expenses",
+      "targetFile": "src/routes/app/expenses/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/leave",
+      "targetRoute": "/app/leave",
+      "targetFile": "src/routes/app/leave/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/notifications",
+      "targetRoute": "/app/notifications",
+      "targetFile": "src/routes/app/notifications/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app",
+      "targetRoute": "/app",
+      "targetFile": "src/routes/app/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/payroll",
+      "targetRoute": "/app/payroll",
+      "targetFile": "src/routes/app/payroll/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/payroll/payslips",
+      "targetRoute": "/app/payroll/payslips",
+      "targetFile": "src/routes/app/payroll/payslips/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/profile",
+      "targetRoute": "/app/profile",
+      "targetFile": "src/routes/app/profile/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/recruitment/candidates/[candidateId]",
+      "targetRoute": "/app/recruitment/candidates/[candidateId]",
+      "targetFile": "src/routes/app/recruitment/candidates/[candidateId]/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/recruitment/intelligence",
+      "targetRoute": "/app/recruitment/intelligence",
+      "targetFile": "src/routes/app/recruitment/intelligence/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/recruitment",
+      "targetRoute": "/app/recruitment",
+      "targetFile": "src/routes/app/recruitment/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/reports",
+      "targetRoute": "/app/reports",
+      "targetFile": "src/routes/app/reports/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/settings/billing",
+      "targetRoute": "/app/settings/billing",
+      "targetFile": "src/routes/app/settings/billing/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/settings",
+      "targetRoute": "/app/settings",
+      "targetFile": "src/routes/app/settings/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/settings/workflows",
+      "targetRoute": "/app/settings/workflows",
+      "targetFile": "src/routes/app/settings/workflows/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/app/work",
+      "targetRoute": "/app/work",
+      "targetFile": "src/routes/app/work/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/change-password",
+      "targetRoute": "/change-password",
+      "targetFile": "src/routes/change-password/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/forgot-password",
+      "targetRoute": "/forgot-password",
+      "targetFile": "src/routes/forgot-password/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/invitations/accept",
+      "targetRoute": "/invitations/accept",
+      "targetFile": "src/routes/invitations/accept/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/jobs/[slug]/apply",
+      "targetRoute": "/jobs/[slug]/apply",
+      "targetFile": "src/routes/jobs/[slug]/apply/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/jobs/[slug]",
+      "targetRoute": "/jobs/[slug]",
+      "targetFile": "src/routes/jobs/[slug]/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/login",
+      "targetRoute": "/login",
+      "targetFile": "src/routes/login/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/",
+      "targetRoute": "/",
+      "targetFile": "src/routes/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform/analytics",
+      "targetRoute": "/platform/analytics",
+      "targetFile": "src/routes/platform/analytics/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform/audit",
+      "targetRoute": "/platform/audit",
+      "targetFile": "src/routes/platform/audit/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform/configuration",
+      "targetRoute": "/platform/configuration",
+      "targetFile": "src/routes/platform/configuration/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform/features",
+      "targetRoute": "/platform/features",
+      "targetFile": "src/routes/platform/features/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform/health",
+      "targetRoute": "/platform/health",
+      "targetFile": "src/routes/platform/health/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform/login",
+      "targetRoute": "/platform/login",
+      "targetFile": "src/routes/platform/login/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform/organizations/[organizationId]",
+      "targetRoute": "/platform/organizations/[organizationId]",
+      "targetFile": "src/routes/platform/organizations/[organizationId]/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform/organizations/new",
+      "targetRoute": "/platform/organizations/new",
+      "targetFile": "src/routes/platform/organizations/new/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform/organizations",
+      "targetRoute": "/platform/organizations",
+      "targetFile": "src/routes/platform/organizations/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform",
+      "targetRoute": "/platform",
+      "targetFile": "src/routes/platform/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform/plans",
+      "targetRoute": "/platform/plans",
+      "targetFile": "src/routes/platform/plans/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform/provisioning",
+      "targetRoute": "/platform/provisioning",
+      "targetFile": "src/routes/platform/provisioning/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform/subscriptions",
+      "targetRoute": "/platform/subscriptions",
+      "targetFile": "src/routes/platform/subscriptions/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform/support",
+      "targetRoute": "/platform/support",
+      "targetFile": "src/routes/platform/support/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform/usage",
+      "targetRoute": "/platform/usage",
+      "targetFile": "src/routes/platform/usage/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/platform/users",
+      "targetRoute": "/platform/users",
+      "targetFile": "src/routes/platform/users/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/register",
+      "targetRoute": "/register",
+      "targetFile": "src/routes/register/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/reset-password",
+      "targetRoute": "/reset-password",
+      "targetFile": "src/routes/reset-password/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    },
+    {
+      "originalRoute": "/verify-email",
+      "targetRoute": "/verify-email",
+      "targetFile": "src/routes/verify-email/+page.svelte",
+      "targetFilePresent": true,
+      "inventoryStatus": "PROPOSED mapping; not implemented; runtime/UI parity UNKNOWN",
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Route inventory and page-file presence only; no claim of workflow parity"
+    }
+  ],
+  "apis": [
+    {
+      "route": "/api/app/approvals/[taskId]",
+      "originalSource": "src/app/api/app/approvals/[taskId]/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\approvals\\[taskId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/approvals",
+      "originalSource": "src/app/api/app/approvals/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\approvals\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/applications/[applicationId]/stage",
+      "originalSource": "src/app/api/app/ats/applications/[applicationId]/stage/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\applications\\[applicationId]\\stage\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/applications",
+      "originalSource": "src/app/api/app/ats/applications/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\applications\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/candidates/[candidateId]/resumes",
+      "originalSource": "src/app/api/app/ats/candidates/[candidateId]/resumes/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\candidates\\[candidateId]\\resumes\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/candidates/[candidateId]",
+      "originalSource": "src/app/api/app/ats/candidates/[candidateId]/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\candidates\\[candidateId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/candidates",
+      "originalSource": "src/app/api/app/ats/candidates/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\candidates\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/employee-options",
+      "originalSource": "src/app/api/app/ats/employee-options/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\employee-options\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/intelligence/config",
+      "originalSource": "src/app/api/app/ats/intelligence/config/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\intelligence\\config\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/intelligence/search",
+      "originalSource": "src/app/api/app/ats/intelligence/search/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\intelligence\\search\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/interviews/[interviewId]/feedback",
+      "originalSource": "src/app/api/app/ats/interviews/[interviewId]/feedback/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\interviews\\[interviewId]\\feedback\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/interviews/list",
+      "originalSource": "src/app/api/app/ats/interviews/list/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\interviews\\list\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/interviews",
+      "originalSource": "src/app/api/app/ats/interviews/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\interviews\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/jobs/[jobId]/intelligence",
+      "originalSource": "src/app/api/app/ats/jobs/[jobId]/intelligence/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\jobs\\[jobId]\\intelligence\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/jobs/[jobId]/publish",
+      "originalSource": "src/app/api/app/ats/jobs/[jobId]/publish/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\jobs\\[jobId]\\publish\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/jobs",
+      "originalSource": "src/app/api/app/ats/jobs/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\jobs\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/pipeline",
+      "originalSource": "src/app/api/app/ats/pipeline/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\pipeline\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/requisitions/[requisitionId]/submit",
+      "originalSource": "src/app/api/app/ats/requisitions/[requisitionId]/submit/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\requisitions\\[requisitionId]\\submit\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/requisitions",
+      "originalSource": "src/app/api/app/ats/requisitions/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\requisitions\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/resume-config",
+      "originalSource": "src/app/api/app/ats/resume-config/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\resume-config\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/resume-fields/[fieldId]/review",
+      "originalSource": "src/app/api/app/ats/resume-fields/[fieldId]/review/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\resume-fields\\[fieldId]\\review\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/resumes/[documentId]/download",
+      "originalSource": "src/app/api/app/ats/resumes/[documentId]/download/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\resumes\\[documentId]\\download\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/resumes/jobs/[jobId]/process",
+      "originalSource": "src/app/api/app/ats/resumes/jobs/[jobId]/process/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\resumes\\jobs\\[jobId]\\process\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/ats/talent-pools",
+      "originalSource": "src/app/api/app/ats/talent-pools/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\ats\\talent-pools\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/attendance/organization",
+      "originalSource": "src/app/api/app/attendance/organization/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\attendance\\organization\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/attendance/process-absent",
+      "originalSource": "src/app/api/app/attendance/process-absent/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\attendance\\process-absent\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/attendance/punch",
+      "originalSource": "src/app/api/app/attendance/punch/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\attendance\\punch\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/attendance/regularization",
+      "originalSource": "src/app/api/app/attendance/regularization/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\attendance\\regularization\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/attendance/reminder",
+      "originalSource": "src/app/api/app/attendance/reminder/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\attendance\\reminder\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/attendance",
+      "originalSource": "src/app/api/app/attendance/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\attendance\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/billing",
+      "originalSource": "src/app/api/app/billing/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\billing\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/chat/conversations/[conversationId]/attachments/[attachmentId]",
+      "originalSource": "src/app/api/app/chat/conversations/[conversationId]/attachments/[attachmentId]/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\chat\\conversations\\[conversationId]\\attachments\\[attachmentId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/chat/conversations/[conversationId]/attachments",
+      "originalSource": "src/app/api/app/chat/conversations/[conversationId]/attachments/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\chat\\conversations\\[conversationId]\\attachments\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/chat/conversations/[conversationId]/messages/[messageId]/reactions",
+      "originalSource": "src/app/api/app/chat/conversations/[conversationId]/messages/[messageId]/reactions/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\chat\\conversations\\[conversationId]\\messages\\[messageId]\\reactions\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/chat/conversations/[conversationId]/messages",
+      "originalSource": "src/app/api/app/chat/conversations/[conversationId]/messages/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\chat\\conversations\\[conversationId]\\messages\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/chat/conversations/[conversationId]/read",
+      "originalSource": "src/app/api/app/chat/conversations/[conversationId]/read/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\chat\\conversations\\[conversationId]\\read\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/chat/conversations/[conversationId]/typing",
+      "originalSource": "src/app/api/app/chat/conversations/[conversationId]/typing/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\chat\\conversations\\[conversationId]\\typing\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/chat/conversations",
+      "originalSource": "src/app/api/app/chat/conversations/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\chat\\conversations\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/chat/messages/[messageId]/task",
+      "originalSource": "src/app/api/app/chat/messages/[messageId]/task/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\chat\\messages\\[messageId]\\task\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/chat/presence",
+      "originalSource": "src/app/api/app/chat/presence/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\chat\\presence\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/chat/recipients",
+      "originalSource": "src/app/api/app/chat/recipients/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\chat\\recipients\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/chat/search",
+      "originalSource": "src/app/api/app/chat/search/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\chat\\search\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/chat/unread-count",
+      "originalSource": "src/app/api/app/chat/unread-count/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\chat\\unread-count\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/departments/[departmentId]/deletion-check",
+      "originalSource": "src/app/api/app/departments/[departmentId]/deletion-check/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\departments\\[departmentId]\\deletion-check\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/departments/[departmentId]",
+      "originalSource": "src/app/api/app/departments/[departmentId]/route.ts",
+      "originalMethods": [
+        "DELETE",
+        "GET",
+        "PATCH"
+      ],
+      "targetFile": "src\\routes\\api\\app\\departments\\[departmentId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "DELETE",
+        "GET",
+        "PATCH"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/departments/[departmentId]/teams/[teamId]",
+      "originalSource": "src/app/api/app/departments/[departmentId]/teams/[teamId]/route.ts",
+      "originalMethods": [
+        "DELETE",
+        "PATCH"
+      ],
+      "targetFile": "src\\routes\\api\\app\\departments\\[departmentId]\\teams\\[teamId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "DELETE",
+        "PATCH"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/departments/[departmentId]/teams",
+      "originalSource": "src/app/api/app/departments/[departmentId]/teams/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\departments\\[departmentId]\\teams\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/departments/eligible-managers",
+      "originalSource": "src/app/api/app/departments/eligible-managers/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\departments\\eligible-managers\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/departments/eligible-team-leads",
+      "originalSource": "src/app/api/app/departments/eligible-team-leads/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\departments\\eligible-team-leads\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/departments",
+      "originalSource": "src/app/api/app/departments/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\departments\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/directory",
+      "originalSource": "src/app/api/app/directory/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\directory\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/documents/[documentId]",
+      "originalSource": "src/app/api/app/documents/[documentId]/route.ts",
+      "originalMethods": [
+        "GET",
+        "PATCH"
+      ],
+      "targetFile": "src\\routes\\api\\app\\documents\\[documentId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "PATCH"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/documents",
+      "originalSource": "src/app/api/app/documents/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\documents\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/documents/types",
+      "originalSource": "src/app/api/app/documents/types/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\documents\\types\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/employees/[employeeId]/invite/revoke",
+      "originalSource": "src/app/api/app/employees/[employeeId]/invite/revoke/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\employees\\[employeeId]\\invite\\revoke\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/employees/[employeeId]/invite",
+      "originalSource": "src/app/api/app/employees/[employeeId]/invite/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\employees\\[employeeId]\\invite\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/employees/[employeeId]/onboarding",
+      "originalSource": "src/app/api/app/employees/[employeeId]/onboarding/route.ts",
+      "originalMethods": [
+        "GET",
+        "PATCH",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\employees\\[employeeId]\\onboarding\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "PATCH",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/employees/[employeeId]",
+      "originalSource": "src/app/api/app/employees/[employeeId]/route.ts",
+      "originalMethods": [
+        "GET",
+        "PATCH"
+      ],
+      "targetFile": "src\\routes\\api\\app\\employees\\[employeeId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "PATCH"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/employees",
+      "originalSource": "src/app/api/app/employees/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\employees\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/expenses/[claimId]",
+      "originalSource": "src/app/api/app/expenses/[claimId]/route.ts",
+      "originalMethods": [
+        "GET",
+        "PATCH"
+      ],
+      "targetFile": "src\\routes\\api\\app\\expenses\\[claimId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "PATCH"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/expenses/[claimId]/submit",
+      "originalSource": "src/app/api/app/expenses/[claimId]/submit/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\expenses\\[claimId]\\submit\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/expenses/categories",
+      "originalSource": "src/app/api/app/expenses/categories/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\expenses\\categories\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/expenses/items/[itemId]/receipt",
+      "originalSource": "src/app/api/app/expenses/items/[itemId]/receipt/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\expenses\\items\\[itemId]\\receipt\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/expenses",
+      "originalSource": "src/app/api/app/expenses/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\expenses\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/leave",
+      "originalSource": "src/app/api/app/leave/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\leave\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/leave/types",
+      "originalSource": "src/app/api/app/leave/types/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\leave\\types\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/master-data/[resource]/[itemId]",
+      "originalSource": "src/app/api/app/master-data/[resource]/[itemId]/route.ts",
+      "originalMethods": [
+        "DELETE",
+        "PATCH"
+      ],
+      "targetFile": "src\\routes\\api\\app\\master-data\\[resource]\\[itemId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "DELETE",
+        "PATCH"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/master-data/departments",
+      "originalSource": "src/app/api/app/master-data/departments/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\master-data\\departments\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/master-data/designations",
+      "originalSource": "src/app/api/app/master-data/designations/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\master-data\\designations\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/master-data/employment-types",
+      "originalSource": "src/app/api/app/master-data/employment-types/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\master-data\\employment-types\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/master-data/holidays",
+      "originalSource": "src/app/api/app/master-data/holidays/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\master-data\\holidays\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/master-data/locations",
+      "originalSource": "src/app/api/app/master-data/locations/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\master-data\\locations\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/master-data/shifts",
+      "originalSource": "src/app/api/app/master-data/shifts/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\master-data\\shifts\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/master-data/teams",
+      "originalSource": "src/app/api/app/master-data/teams/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\master-data\\teams\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/master-data/working-days",
+      "originalSource": "src/app/api/app/master-data/working-days/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\master-data\\working-days\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/me/employee",
+      "originalSource": "src/app/api/app/me/employee/route.ts",
+      "originalMethods": [
+        "GET",
+        "PATCH"
+      ],
+      "targetFile": "src\\routes\\api\\app\\me\\employee\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "PATCH"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/notifications/[notificationId]",
+      "originalSource": "src/app/api/app/notifications/[notificationId]/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\notifications\\[notificationId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/notifications/preferences",
+      "originalSource": "src/app/api/app/notifications/preferences/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\notifications\\preferences\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/notifications",
+      "originalSource": "src/app/api/app/notifications/route.ts",
+      "originalMethods": [
+        "GET",
+        "PATCH"
+      ],
+      "targetFile": "src\\routes\\api\\app\\notifications\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "PATCH"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/payroll/config",
+      "originalSource": "src/app/api/app/payroll/config/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\payroll\\config\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/payroll/employee-options",
+      "originalSource": "src/app/api/app/payroll/employee-options/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\payroll\\employee-options\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/payroll/payslips",
+      "originalSource": "src/app/api/app/payroll/payslips/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\payroll\\payslips\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/payroll/periods",
+      "originalSource": "src/app/api/app/payroll/periods/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\payroll\\periods\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/payroll/profiles",
+      "originalSource": "src/app/api/app/payroll/profiles/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\payroll\\profiles\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/payroll/runs/[runId]/finalize",
+      "originalSource": "src/app/api/app/payroll/runs/[runId]/finalize/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\payroll\\runs\\[runId]\\finalize\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/payroll/runs/[runId]/pay",
+      "originalSource": "src/app/api/app/payroll/runs/[runId]/pay/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\payroll\\runs\\[runId]\\pay\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/payroll/runs/[runId]",
+      "originalSource": "src/app/api/app/payroll/runs/[runId]/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\app\\payroll\\runs\\[runId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/payroll/runs",
+      "originalSource": "src/app/api/app/payroll/runs/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\payroll\\runs\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/payroll/salary-assignments",
+      "originalSource": "src/app/api/app/payroll/salary-assignments/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\payroll\\salary-assignments\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/projects/[projectId]",
+      "originalSource": "src/app/api/app/projects/[projectId]/route.ts",
+      "originalMethods": [
+        "GET",
+        "PATCH",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\projects\\[projectId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "PATCH",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/projects",
+      "originalSource": "src/app/api/app/projects/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\projects\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/reports",
+      "originalSource": "src/app/api/app/reports/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\reports\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/tasks/[taskId]",
+      "originalSource": "src/app/api/app/tasks/[taskId]/route.ts",
+      "originalMethods": [
+        "GET",
+        "PATCH",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\tasks\\[taskId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "PATCH",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/tasks",
+      "originalSource": "src/app/api/app/tasks/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\tasks\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/app/workflows",
+      "originalSource": "src/app/api/app/workflows/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\app\\workflows\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/auth/change-password",
+      "originalSource": "src/app/api/auth/change-password/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\auth\\change-password\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/auth/forgot-password",
+      "originalSource": "src/app/api/auth/forgot-password/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\auth\\forgot-password\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/auth/invitations/accept/preview",
+      "originalSource": "src/app/api/auth/invitations/accept/preview/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\auth\\invitations\\accept\\preview\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/auth/invitations/accept",
+      "originalSource": "src/app/api/auth/invitations/accept/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\auth\\invitations\\accept\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/auth/login",
+      "originalSource": "src/app/api/auth/login/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\auth\\login\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/auth/logout",
+      "originalSource": "src/app/api/auth/logout/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\auth\\logout\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/auth/register",
+      "originalSource": "src/app/api/auth/register/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\auth\\register\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/auth/reset-password",
+      "originalSource": "src/app/api/auth/reset-password/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\auth\\reset-password\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/auth/verify-email/resend",
+      "originalSource": "src/app/api/auth/verify-email/resend/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\auth\\verify-email\\resend\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/auth/verify-email",
+      "originalSource": "src/app/api/auth/verify-email/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\auth\\verify-email\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/health",
+      "originalSource": "src/app/api/health/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\health\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/analytics",
+      "originalSource": "src/app/api/platform/analytics/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\analytics\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/audit",
+      "originalSource": "src/app/api/platform/audit/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\audit\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/auth/login",
+      "originalSource": "src/app/api/platform/auth/login/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\auth\\login\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/billing",
+      "originalSource": "src/app/api/platform/billing/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\billing\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/configuration",
+      "originalSource": "src/app/api/platform/configuration/route.ts",
+      "originalMethods": [
+        "GET",
+        "PATCH"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\configuration\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "PATCH"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/features/[featureId]",
+      "originalSource": "src/app/api/platform/features/[featureId]/route.ts",
+      "originalMethods": [
+        "PATCH"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\features\\[featureId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "PATCH"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/features",
+      "originalSource": "src/app/api/platform/features/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\features\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/health",
+      "originalSource": "src/app/api/platform/health/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\health\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/organizations/[organizationId]/approve",
+      "originalSource": "src/app/api/platform/organizations/[organizationId]/approve/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\organizations\\[organizationId]\\approve\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/organizations/[organizationId]/invitation/link",
+      "originalSource": "src/app/api/platform/organizations/[organizationId]/invitation/link/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\organizations\\[organizationId]\\invitation\\link\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/organizations/[organizationId]/invitation/resend",
+      "originalSource": "src/app/api/platform/organizations/[organizationId]/invitation/resend/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\organizations\\[organizationId]\\invitation\\resend\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/organizations/[organizationId]",
+      "originalSource": "src/app/api/platform/organizations/[organizationId]/route.ts",
+      "originalMethods": [
+        "DELETE",
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\organizations\\[organizationId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "DELETE",
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/organizations/[organizationId]/status",
+      "originalSource": "src/app/api/platform/organizations/[organizationId]/status/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\organizations\\[organizationId]\\status\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/organizations",
+      "originalSource": "src/app/api/platform/organizations/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\organizations\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/plans/[planId]",
+      "originalSource": "src/app/api/platform/plans/[planId]/route.ts",
+      "originalMethods": [
+        "DELETE",
+        "GET",
+        "PATCH",
+        "PUT"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\plans\\[planId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "DELETE",
+        "GET",
+        "PATCH",
+        "PUT"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/plans",
+      "originalSource": "src/app/api/platform/plans/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\plans\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/provisioning/[organizationId]/retry",
+      "originalSource": "src/app/api/platform/provisioning/[organizationId]/retry/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\provisioning\\[organizationId]\\retry\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/provisioning",
+      "originalSource": "src/app/api/platform/provisioning/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\provisioning\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/subscriptions/[subscriptionId]",
+      "originalSource": "src/app/api/platform/subscriptions/[subscriptionId]/route.ts",
+      "originalMethods": [
+        "PATCH"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\subscriptions\\[subscriptionId]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "PATCH"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/subscriptions",
+      "originalSource": "src/app/api/platform/subscriptions/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\subscriptions\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/support",
+      "originalSource": "src/app/api/platform/support/route.ts",
+      "originalMethods": [
+        "GET",
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\support\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/usage",
+      "originalSource": "src/app/api/platform/usage/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\usage\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/platform/users",
+      "originalSource": "src/app/api/platform/users/route.ts",
+      "originalMethods": [
+        "GET",
+        "PATCH"
+      ],
+      "targetFile": "src\\routes\\api\\platform\\users\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET",
+        "PATCH"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/public/jobs/[slug]/apply",
+      "originalSource": "src/app/api/public/jobs/[slug]/apply/route.ts",
+      "originalMethods": [
+        "POST"
+      ],
+      "targetFile": "src\\routes\\api\\public\\jobs\\[slug]\\apply\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "POST"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    },
+    {
+      "route": "/api/public/jobs/[slug]",
+      "originalSource": "src/app/api/public/jobs/[slug]/route.ts",
+      "originalMethods": [
+        "GET"
+      ],
+      "targetFile": "src\\routes\\api\\public\\jobs\\[slug]\\+server.ts",
+      "targetFilePresent": true,
+      "targetMethods": [
+        "GET"
+      ],
+      "structuralMethodMatch": true,
+      "functionalStatus": "NOT VERIFIED",
+      "evidenceScope": "Adapter method exports and inventory only; handler behavior, authorization, persistence and tenant isolation not proven"
+    }
+  ],
+  "masterMissionVerification": {
+    "date": "2026-11-01",
+    "branch": "svelte-migration",
+    "head": "2e4eecd3b9ac10379a320fa12a9691e92bd27b2f",
+    "staticFrontend": {
+      "inventoryRoutes": 52,
+      "sveltePageFiles": 52,
+      "result": "STRUCTURAL_ONLY"
+    },
+    "staticApi": {
+      "inventoryRoutes": 131,
+      "svelteHandlerFiles": 131,
+      "result": "STRUCTURAL_ONLY"
+    },
+    "routeBehavior": {
+      "verified": 0,
+      "notVerified": 52
+    },
+    "apiBehavior": {
+      "verified": 0,
+      "notVerified": 131
+    },
+    "databaseAcceptance": "BLOCKED",
+    "tenantIsolation": "NOT_VERIFIED",
+    "businessPersistence": "NOT_VERIFIED"
+  },
+  "latestVerification": {
+    "checkedAt": "2026-11-01",
+    "check": "PASS (0 errors, 0 warnings)",
+    "unitTests": "PASS_WITH_SKIPS (908 passed, 9 skipped; 102 files passed, 1 gated RLS suite skipped)",
+    "build": "PASS (adapter-node)",
+    "browserFoundation": "PASS_SYNTHETIC (20/20)",
+    "workflowHarness": "PASS_SYNTHETIC (50/50)",
+    "focusedPrivateFile": "PASS_MOCKED (22/22 in aggregate current security-focused counts; latest route regression 4/4)",
+    "devStartup": "PASS (fresh port 5173; /login HTTP 200; stopped)",
+    "originalRoutes": {
+      "total": 52,
+      "present": 52,
+      "functionallyAccepted": 0
+    },
+    "originalApiRoutes": {
+      "total": 131,
+      "present": 131,
+      "functionallyAccepted": 0
+    },
+    "svelteApiEndpoints": {
+      "total": 132,
+      "extraLocalStorageHelper": 1
+    },
+    "databaseRls": "BLOCKED (no approved app-role QA runtime and no reviewed migration/rollback)",
+    "tenantIsolation": "NOT_VERIFIED",
+    "businessPersistence": "NOT_VERIFIED",
+    "productionDecision": "NO_GO",
+    "diffCheck": "PASS (exit 0; LF/CRLF advisories only; no staged changes)",
+    "tableQueryInventory": "CANDIDATE_ONLY (116/140 table matches; 24 unmatched; 7 raw SQL call sites)"
+  }
+}

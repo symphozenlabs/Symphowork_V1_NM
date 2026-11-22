@@ -1054,54 +1054,61 @@ export async function createDepartment(
   const cleanCode = input.code.trim().toUpperCase();
   const cleanName = input.name.trim();
 
-  return db.transaction(async (tx) => {
-    // Validate unique code within organization
-    const [existingCode] = await tx
-      .select({ id: departments.id })
-      .from(departments)
-      .where(
-        and(
-          eq(departments.organizationId, organizationId),
-          sql`upper(${departments.code}) = ${cleanCode}`
+  return withTenantTransaction(organizationId, async (tx) => {
+    const execute = async (client: DbTransaction | typeof db) => {
+      // Validate unique code within organization
+      const [existingCode] = await client
+        .select({ id: departments.id })
+        .from(departments)
+        .where(
+          and(
+            eq(departments.organizationId, organizationId),
+            sql`upper(${departments.code}) = ${cleanCode}`
+          )
         )
-      )
-      .limit(1);
+        .limit(1);
 
-    if (existingCode) {
-      throw new AppError(
-        "VALIDATION_ERROR",
-        `A department with code "${cleanCode}" already exists in this organization.`,
-        409
-      );
-    }
+      if (existingCode) {
+        throw new AppError(
+          "VALIDATION_ERROR",
+          `A department with code "${cleanCode}" already exists in this organization.`,
+          409
+        );
+      }
 
-    // Validate manager within transaction
-    if (input.headEmployeeId) {
-      await validateManagerEmployee(organizationId, input.headEmployeeId, undefined, tx);
-    }
+      // Validate manager within transaction
+      if (input.headEmployeeId) {
+        await validateManagerEmployee(organizationId, input.headEmployeeId, undefined, client);
+      }
 
-    const [created] = await tx
-      .insert(departments)
-      .values({
+      const [created] = await client
+        .insert(departments)
+        .values({
+          organizationId,
+          code: cleanCode,
+          name: cleanName,
+          description: input.description?.trim() || null,
+          headEmployeeId: input.headEmployeeId || null,
+          status: input.status || "active",
+        })
+        .returning();
+
+      await recordAudit({
+        actorUserId,
         organizationId,
-        code: cleanCode,
-        name: cleanName,
-        description: input.description?.trim() || null,
-        headEmployeeId: input.headEmployeeId || null,
-        status: input.status || "active",
-      })
-      .returning();
+        action: "department_created",
+        resource: "department",
+        resourceId: created.id,
+        metadata: { code: created.code, name: created.name },
+      });
 
-    await recordAudit({
-      actorUserId,
-      organizationId,
-      action: "department_created",
-      resource: "department",
-      resourceId: created.id,
-      metadata: { code: created.code, name: created.name },
-    });
+      return created;
+    };
 
-    return created;
+    if (typeof (tx as any).transaction === "function" && (tx as any) === db) {
+      return (tx as any).transaction(execute);
+    }
+    return execute(tx);
   });
 }
 
@@ -1113,170 +1120,188 @@ export async function updateDepartment(
 ): Promise<typeof departments.$inferSelect> {
   await authorize({ organizationId, permission: "department.update" });
 
-  return db.transaction(async (tx) => {
-    const [current] = await tx
-      .select()
-      .from(departments)
-      .where(and(eq(departments.id, departmentId), eq(departments.organizationId, organizationId)))
-      .limit(1);
+  return withTenantTransaction(organizationId, async (tx) => {
+    const execute = async (client: DbTransaction | typeof db) => {
+      const [current] = await client
+        .select()
+        .from(departments)
+        .where(and(eq(departments.id, departmentId), eq(departments.organizationId, organizationId)))
+        .limit(1);
 
-    if (!current) {
-      throw new AppError("NOT_FOUND", "Department was not found in this organization.", 404);
-    }
+      if (!current) {
+        throw new AppError("NOT_FOUND", "Department was not found in this organization.", 404);
+      }
 
-    const patch: Partial<typeof departments.$inferInsert> = {
-      updatedAt: new Date(),
+      const patch: Partial<typeof departments.$inferInsert> = {
+        updatedAt: new Date(),
+      };
+
+      if (input.name !== undefined) {
+        patch.name = input.name.trim();
+      }
+
+      if (input.description !== undefined) {
+        patch.description = input.description ? input.description.trim() : null;
+      }
+
+      if (input.status !== undefined) {
+        patch.status = input.status;
+      }
+
+      if (input.code !== undefined) {
+        const cleanCode = input.code.trim().toUpperCase();
+        if (cleanCode !== current.code.toUpperCase()) {
+          const [duplicate] = await client
+            .select({ id: departments.id })
+            .from(departments)
+            .where(
+              and(
+                eq(departments.organizationId, organizationId),
+                sql`upper(${departments.code}) = ${cleanCode}`,
+                ne(departments.id, departmentId)
+              )
+            )
+            .limit(1);
+
+          if (duplicate) {
+            throw new AppError(
+              "VALIDATION_ERROR",
+              `A department with code "${cleanCode}" already exists in this organization.`,
+              409
+            );
+          }
+          patch.code = cleanCode;
+        }
+      }
+
+      if (input.headEmployeeId !== undefined) {
+        if (input.headEmployeeId) {
+          await validateManagerEmployee(organizationId, input.headEmployeeId, departmentId, client);
+          patch.headEmployeeId = input.headEmployeeId;
+        } else {
+          patch.headEmployeeId = null;
+        }
+      }
+
+      const [updated] = await client
+        .update(departments)
+        .set(patch)
+        .where(and(eq(departments.id, departmentId), eq(departments.organizationId, organizationId)))
+        .returning();
+
+      await recordAudit({
+        actorUserId,
+        organizationId,
+        action: "department_updated",
+        resource: "department",
+        resourceId: departmentId,
+        metadata: { changes: patch },
+      });
+
+      return updated;
     };
 
-    if (input.name !== undefined) {
-      patch.name = input.name.trim();
+    if (typeof (tx as any).transaction === "function" && (tx as any) === db) {
+      return (tx as any).transaction(execute);
     }
-
-    if (input.description !== undefined) {
-      patch.description = input.description ? input.description.trim() : null;
-    }
-
-    if (input.status !== undefined) {
-      patch.status = input.status;
-    }
-
-    if (input.code !== undefined) {
-      const cleanCode = input.code.trim().toUpperCase();
-      if (cleanCode !== current.code.toUpperCase()) {
-        const [duplicate] = await tx
-          .select({ id: departments.id })
-          .from(departments)
-          .where(
-            and(
-              eq(departments.organizationId, organizationId),
-              sql`upper(${departments.code}) = ${cleanCode}`,
-              ne(departments.id, departmentId)
-            )
-          )
-          .limit(1);
-
-        if (duplicate) {
-          throw new AppError(
-            "VALIDATION_ERROR",
-            `A department with code "${cleanCode}" already exists in this organization.`,
-            409
-          );
-        }
-        patch.code = cleanCode;
-      }
-    }
-
-    if (input.headEmployeeId !== undefined) {
-      if (input.headEmployeeId) {
-        await validateManagerEmployee(organizationId, input.headEmployeeId, departmentId, tx);
-        patch.headEmployeeId = input.headEmployeeId;
-      } else {
-        patch.headEmployeeId = null;
-      }
-    }
-
-    const [updated] = await tx
-      .update(departments)
-      .set(patch)
-      .where(and(eq(departments.id, departmentId), eq(departments.organizationId, organizationId)))
-      .returning();
-
-    await recordAudit({
-      actorUserId,
-      organizationId,
-      action: "department_updated",
-      resource: "department",
-      resourceId: departmentId,
-      metadata: { changes: patch },
-    });
-
-    return updated;
+    return execute(tx);
   });
 }
 
 export async function checkDepartmentDeletionSafety(
   organizationId: string,
-  departmentId: string
+  departmentId: string,
+  tx?: DbTransaction | typeof db
 ): Promise<DepartmentDeletionSafety> {
-  const [empCount] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(employees)
-    .where(
-      and(
-        eq(employees.departmentId, departmentId),
-        eq(employees.organizationId, organizationId),
-        sql`${employees.status} NOT IN ('terminated', 'exited')`
-      )
-    );
+  const run = async (client: DbTransaction | typeof db) => {
+    const [empCount] = await client
+      .select({ count: sql<number>`count(*)::int` })
+      .from(employees)
+      .where(
+        and(
+          eq(employees.departmentId, departmentId),
+          eq(employees.organizationId, organizationId),
+          sql`${employees.status} NOT IN ('terminated', 'exited')`
+        )
+      );
 
-  const [teamCount] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(teams)
-    .where(
-      and(
-        eq(teams.departmentId, departmentId),
-        eq(teams.organizationId, organizationId),
-        eq(teams.status, "active")
-      )
-    );
+    const [teamCount] = await client
+      .select({ count: sql<number>`count(*)::int` })
+      .from(teams)
+      .where(
+        and(
+          eq(teams.departmentId, departmentId),
+          eq(teams.organizationId, organizationId),
+          eq(teams.status, "active")
+        )
+      );
 
-  const [reqCount] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(atsRequisitions)
-    .where(
-      and(
-        eq(atsRequisitions.departmentId, departmentId),
-        eq(atsRequisitions.organizationId, organizationId),
-        inArray(atsRequisitions.status, ["draft", "pending_approval", "approved", "open"])
-      )
-    );
+    const [reqCount] = await client
+      .select({ count: sql<number>`count(*)::int` })
+      .from(atsRequisitions)
+      .where(
+        and(
+          eq(atsRequisitions.departmentId, departmentId),
+          eq(atsRequisitions.organizationId, organizationId),
+          inArray(atsRequisitions.status, ["draft", "pending_approval", "approved", "open"])
+        )
+      );
 
-  const [policyCount] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(expensePolicies)
-    .where(
-      and(
-        eq(expensePolicies.departmentId, departmentId),
-        eq(expensePolicies.organizationId, organizationId),
-        eq(expensePolicies.active, true)
-      )
-    );
+    const [policyCount] = await client
+      .select({ count: sql<number>`count(*)::int` })
+      .from(expensePolicies)
+      .where(
+        and(
+          eq(expensePolicies.departmentId, departmentId),
+          eq(expensePolicies.organizationId, organizationId),
+          eq(expensePolicies.active, true)
+        )
+      );
 
-  const activeEmployeesCount = Number(empCount?.count ?? 0);
-  const activeTeamsCount = Number(teamCount?.count ?? 0);
-  const activeRequisitionsCount = Number(reqCount?.count ?? 0);
-  const activeExpensePoliciesCount = Number(policyCount?.count ?? 0);
+    const activeEmployeesCount = Number(empCount?.count ?? 0);
+    const activeTeamsCount = Number(teamCount?.count ?? 0);
+    const activeRequisitionsCount = Number(reqCount?.count ?? 0);
+    const activeExpensePoliciesCount = Number(policyCount?.count ?? 0);
 
-  const reasons: string[] = [];
-  if (activeEmployeesCount > 0) {
-    reasons.push(
-      `${activeEmployeesCount} active employee${activeEmployeesCount === 1 ? " is" : "s are"} currently assigned to this department.`
-    );
-  }
-  if (activeTeamsCount > 0) {
-    reasons.push(
-      `${activeTeamsCount} active team${activeTeamsCount === 1 ? " is" : "s are"} mapped to this department.`
-    );
-  }
-  if (activeRequisitionsCount > 0) {
-    reasons.push(
-      `${activeRequisitionsCount} active job requisition${activeRequisitionsCount === 1 ? " is" : "s are"} tagged with this department.`
-    );
-  }
-  if (activeExpensePoliciesCount > 0) {
-    reasons.push(
-      `${activeExpensePoliciesCount} active expense polic${activeExpensePoliciesCount === 1 ? "y is" : "ies are"} scoped to this department.`
-    );
-  }
+    const reasons: string[] = [];
+    if (activeEmployeesCount > 0) {
+      reasons.push(
+        `${activeEmployeesCount} active employee${activeEmployeesCount === 1 ? " is" : "s are"} currently assigned to this department.`
+      );
+    }
+    if (activeTeamsCount > 0) {
+      reasons.push(
+        `${activeTeamsCount} active team${activeTeamsCount === 1 ? " is" : "s are"} mapped to this department.`
+      );
+    }
+    if (activeRequisitionsCount > 0) {
+      reasons.push(
+        `${activeRequisitionsCount} active job requisition${activeRequisitionsCount === 1 ? " is" : "s are"} tagged with this department.`
+      );
+    }
+    if (activeExpensePoliciesCount > 0) {
+      reasons.push(
+        `${activeExpensePoliciesCount} active expense polic${activeExpensePoliciesCount === 1 ? "y is" : "ies are"} scoped to this department.`
+      );
+    }
 
-  return {
-    safe: reasons.length === 0,
-    activeEmployeesCount,
-    activeTeamsCount,
-    activeRequisitionsCount,
-    activeExpensePoliciesCount,
-    reasons,
+    return {
+      safe: reasons.length === 0,
+      activeEmployeesCount,
+      activeTeamsCount,
+      activeRequisitionsCount,
+      activeExpensePoliciesCount,
+      reasons,
+    };
   };
+
+  if (tx && tx !== db) {
+    return run(tx);
+  }
+  if (typeof withTenantTransaction === "function") {
+    return withTenantTransaction(organizationId, run);
+  }
+  return run(db);
 }
 
 export async function deleteDepartment(
@@ -1287,60 +1312,62 @@ export async function deleteDepartment(
 ): Promise<{ success: boolean; mode: "hard" | "soft" }> {
   await authorize({ organizationId, permission: "department.manage" });
 
-  const [dept] = await db
-    .select()
-    .from(departments)
-    .where(and(eq(departments.id, departmentId), eq(departments.organizationId, organizationId)))
-    .limit(1);
+  return withTenantTransaction(organizationId, async (tx) => {
+    const [dept] = await tx
+      .select()
+      .from(departments)
+      .where(and(eq(departments.id, departmentId), eq(departments.organizationId, organizationId)))
+      .limit(1);
 
-  if (!dept) {
-    throw new AppError("NOT_FOUND", "Department was not found in this organization.", 404);
-  }
+    if (!dept) {
+      throw new AppError("NOT_FOUND", "Department was not found in this organization.", 404);
+    }
 
-  if (forceSoft) {
-    // Soft deactivation
-    await db
-      .update(departments)
-      .set({ status: "inactive", updatedAt: new Date() })
+    if (forceSoft) {
+      // Soft deactivation
+      await tx
+        .update(departments)
+        .set({ status: "inactive", updatedAt: new Date() })
+        .where(and(eq(departments.id, departmentId), eq(departments.organizationId, organizationId)));
+
+      await recordAudit({
+        actorUserId,
+        organizationId,
+        action: "department_deactivated",
+        resource: "department",
+        resourceId: departmentId,
+        metadata: { code: dept.code, name: dept.name },
+      });
+
+      return { success: true, mode: "soft" };
+    }
+
+    // Pre-flight safety check
+    const safety = await checkDepartmentDeletionSafety(organizationId, departmentId, tx);
+    if (!safety.safe) {
+      throw new AppError(
+        "VALIDATION_ERROR",
+        `Cannot delete department "${dept.name}". ${safety.reasons.join(" ")} Reassign these resources before deleting, or deactivate the department instead.`,
+        409
+      );
+    }
+
+    // Safe hard delete
+    await tx
+      .delete(departments)
       .where(and(eq(departments.id, departmentId), eq(departments.organizationId, organizationId)));
 
     await recordAudit({
       actorUserId,
       organizationId,
-      action: "department_deactivated",
+      action: "department_deleted",
       resource: "department",
       resourceId: departmentId,
       metadata: { code: dept.code, name: dept.name },
     });
 
-    return { success: true, mode: "soft" };
-  }
-
-  // Pre-flight safety check
-  const safety = await checkDepartmentDeletionSafety(organizationId, departmentId);
-  if (!safety.safe) {
-    throw new AppError(
-      "VALIDATION_ERROR",
-      `Cannot delete department "${dept.name}". ${safety.reasons.join(" ")} Reassign these resources before deleting, or deactivate the department instead.`,
-      409
-    );
-  }
-
-  // Safe hard delete
-  await db
-    .delete(departments)
-    .where(and(eq(departments.id, departmentId), eq(departments.organizationId, organizationId)));
-
-  await recordAudit({
-    actorUserId,
-    organizationId,
-    action: "department_deleted",
-    resource: "department",
-    resourceId: departmentId,
-    metadata: { code: dept.code, name: dept.name },
+    return { success: true, mode: "hard" };
   });
-
-  return { success: true, mode: "hard" };
 }
 
 export async function listDepartmentTeams(

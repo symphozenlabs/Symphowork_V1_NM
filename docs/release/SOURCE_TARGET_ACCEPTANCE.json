@@ -1,0 +1,1466 @@
+[
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\verify-email\\page.tsx",
+    "target": "src/routes/verify-email/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\page.tsx",
+    "target": "src/routes/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\reset-password\\page.tsx",
+    "target": "src/routes/reset-password/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\login\\page.tsx",
+    "target": "src/routes/login/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\register\\page.tsx",
+    "target": "src/routes/register/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\change-password\\page.tsx",
+    "target": "src/routes/change-password/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\forgot-password\\page.tsx",
+    "target": "src/routes/forgot-password/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\jobs\\[slug]\\page.tsx",
+    "target": "src/routes/jobs/[slug]/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\audit\\page.tsx",
+    "target": "src/routes/platform/audit/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\analytics\\page.tsx",
+    "target": "src/routes/platform/analytics/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\invitations\\accept\\page.tsx",
+    "target": "src/routes/invitations/accept/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\page.tsx",
+    "target": "src/routes/platform/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\users\\page.tsx",
+    "target": "src/routes/platform/users/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\provisioning\\page.tsx",
+    "target": "src/routes/platform/provisioning/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\features\\page.tsx",
+    "target": "src/routes/platform/features/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\subscriptions\\page.tsx",
+    "target": "src/routes/platform/subscriptions/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\work\\page.tsx",
+    "target": "src/routes/app/work/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\support\\page.tsx",
+    "target": "src/routes/platform/support/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\jobs\\[slug]\\apply\\page.tsx",
+    "target": "src/routes/jobs/[slug]/apply/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\public\\jobs\\[slug]\\route.ts",
+    "target": "src/lib/server/api/public/jobs/[slug]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\login\\page.tsx",
+    "target": "src/routes/platform/login/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\plans\\page.tsx",
+    "target": "src/routes/platform/plans/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\organizations\\page.tsx",
+    "target": "src/routes/platform/organizations/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\health\\page.tsx",
+    "target": "src/routes/platform/health/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\configuration\\page.tsx",
+    "target": "src/routes/platform/configuration/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\health\\route.ts",
+    "target": "src/lib/server/api/health/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\usage\\page.tsx",
+    "target": "src/routes/platform/usage/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\organizations\\[organizationId]\\page.tsx",
+    "target": "src/routes/platform/organizations/[organizationId]/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\platform\\organizations\\new\\page.tsx",
+    "target": "src/routes/platform/organizations/new/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\public\\jobs\\[slug]\\apply\\route.ts",
+    "target": "src/lib/server/api/public/jobs/[slug]/apply/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\expenses\\page.tsx",
+    "target": "src/routes/app/expenses/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\attendance\\page.tsx",
+    "target": "src/routes/app/attendance/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\settings\\workflows\\page.tsx",
+    "target": "src/routes/app/settings/workflows/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\settings\\page.tsx",
+    "target": "src/routes/app/settings/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\auth\\login\\route.ts",
+    "target": "src/lib/server/api/auth/login/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\expenses\\[claimId]\\page.tsx",
+    "target": "src/routes/app/expenses/[claimId]/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\auth\\verify-email\\route.ts",
+    "target": "src/lib/server/api/auth/verify-email/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\users\\route.ts",
+    "target": "src/lib/server/api/platform/users/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\auth\\forgot-password\\route.ts",
+    "target": "src/lib/server/api/auth/forgot-password/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\documents\\page.tsx",
+    "target": "src/routes/app/documents/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\profile\\page.tsx",
+    "target": "src/routes/app/profile/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\approvals\\page.tsx",
+    "target": "src/routes/app/approvals/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\settings\\billing\\page.tsx",
+    "target": "src/routes/app/settings/billing/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\auth\\verify-email\\resend\\route.ts",
+    "target": "src/lib/server/api/auth/verify-email/resend/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\departments\\[departmentId]\\page.tsx",
+    "target": "src/routes/app/departments/[departmentId]/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\departments\\page.tsx",
+    "target": "src/routes/app/departments/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\usage\\route.ts",
+    "target": "src/lib/server/api/platform/usage/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\chat\\page.tsx",
+    "target": "src/routes/app/chat/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\directory\\page.tsx",
+    "target": "src/routes/app/directory/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\reports\\page.tsx",
+    "target": "src/routes/app/reports/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\employees\\[employeeId]\\page.tsx",
+    "target": "src/routes/app/employees/[employeeId]/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\employees\\page.tsx",
+    "target": "src/routes/app/employees/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\auth\\reset-password\\route.ts",
+    "target": "src/lib/server/api/auth/reset-password/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\auth\\change-password\\route.ts",
+    "target": "src/lib/server/api/auth/change-password/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\recruitment\\page.tsx",
+    "target": "src/routes/app/recruitment/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\workflows\\route.ts",
+    "target": "src/lib/server/api/app/workflows/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\billing\\route.ts",
+    "target": "src/lib/server/api/app/billing/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\support\\route.ts",
+    "target": "src/lib/server/api/platform/support/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\employees\\new\\page.tsx",
+    "target": "src/routes/app/employees/new/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\payroll\\payslips\\page.tsx",
+    "target": "src/routes/app/payroll/payslips/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\payroll\\page.tsx",
+    "target": "src/routes/app/payroll/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\page.tsx",
+    "target": "src/routes/app/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\auth\\register\\route.ts",
+    "target": "src/lib/server/api/auth/register/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\auth\\logout\\route.ts",
+    "target": "src/lib/server/api/auth/logout/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\recruitment\\intelligence\\page.tsx",
+    "target": "src/routes/app/recruitment/intelligence/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\auth\\invitations\\accept\\route.ts",
+    "target": "src/lib/server/api/auth/invitations/accept/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\recruitment\\candidates\\[candidateId]\\page.tsx",
+    "target": "src/routes/app/recruitment/candidates/[candidateId]/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\analytics\\route.ts",
+    "target": "src/lib/server/api/platform/analytics/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\attendance\\route.ts",
+    "target": "src/lib/server/api/app/attendance/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\notifications\\page.tsx",
+    "target": "src/routes/app/notifications/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\employees\\[employeeId]\\route.ts",
+    "target": "src/lib/server/api/app/employees/[employeeId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\features\\[featureId]\\route.ts",
+    "target": "src/lib/server/api/platform/features/[featureId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\features\\route.ts",
+    "target": "src/lib/server/api/platform/features/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\talent-pools\\route.ts",
+    "target": "src/lib/server/api/app/ats/talent-pools/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\auth\\invitations\\accept\\preview\\route.ts",
+    "target": "src/lib/server/api/auth/invitations/accept/preview/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\tasks\\[taskId]\\route.ts",
+    "target": "src/lib/server/api/app/tasks/[taskId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\tasks\\route.ts",
+    "target": "src/lib/server/api/app/tasks/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\audit\\route.ts",
+    "target": "src/lib/server/api/platform/audit/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\attendance\\reminder\\route.ts",
+    "target": "src/lib/server/api/app/attendance/reminder/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\intelligence\\search\\route.ts",
+    "target": "src/lib/server/api/app/ats/intelligence/search/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\app\\leave\\page.tsx",
+    "target": "src/routes/app/leave/+page.svelte",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\employees\\[employeeId]\\onboarding\\route.ts",
+    "target": "src/lib/server/api/app/employees/[employeeId]/onboarding/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\subscriptions\\[subscriptionId]\\route.ts",
+    "target": "src/lib/server/api/platform/subscriptions/[subscriptionId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\subscriptions\\route.ts",
+    "target": "src/lib/server/api/platform/subscriptions/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\approvals\\[taskId]\\route.ts",
+    "target": "src/lib/server/api/app/approvals/[taskId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\approvals\\route.ts",
+    "target": "src/lib/server/api/app/approvals/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\auth\\login\\route.ts",
+    "target": "src/lib/server/api/platform/auth/login/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\billing\\route.ts",
+    "target": "src/lib/server/api/platform/billing/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\reports\\route.ts",
+    "target": "src/lib/server/api/app/reports/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\attendance\\regularization\\route.ts",
+    "target": "src/lib/server/api/app/attendance/regularization/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\configuration\\route.ts",
+    "target": "src/lib/server/api/platform/configuration/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\intelligence\\config\\route.ts",
+    "target": "src/lib/server/api/app/ats/intelligence/config/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\pipeline\\route.ts",
+    "target": "src/lib/server/api/app/ats/pipeline/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\attendance\\punch\\route.ts",
+    "target": "src/lib/server/api/app/attendance/punch/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\employees\\[employeeId]\\invite\\route.ts",
+    "target": "src/lib/server/api/app/employees/[employeeId]/invite/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\resumes\\[documentId]\\download\\route.ts",
+    "target": "src/lib/server/api/app/ats/resumes/[documentId]/download/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\resume-config\\route.ts",
+    "target": "src/lib/server/api/app/ats/resume-config/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\employee-options\\route.ts",
+    "target": "src/lib/server/api/app/ats/employee-options/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\applications\\route.ts",
+    "target": "src/lib/server/api/app/ats/applications/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\attendance\\process-absent\\route.ts",
+    "target": "src/lib/server/api/app/attendance/process-absent/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\plans\\[planId]\\route.ts",
+    "target": "src/lib/server/api/platform/plans/[planId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\plans\\route.ts",
+    "target": "src/lib/server/api/platform/plans/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\employees\\[employeeId]\\invite\\revoke\\route.ts",
+    "target": "src/lib/server/api/app/employees/[employeeId]/invite/revoke/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\candidates\\[candidateId]\\route.ts",
+    "target": "src/lib/server/api/app/ats/candidates/[candidateId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\employees\\route.ts",
+    "target": "src/lib/server/api/app/employees/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\projects\\[projectId]\\route.ts",
+    "target": "src/lib/server/api/app/projects/[projectId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\interviews\\list\\route.ts",
+    "target": "src/lib/server/api/app/ats/interviews/list/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\interviews\\route.ts",
+    "target": "src/lib/server/api/app/ats/interviews/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\projects\\route.ts",
+    "target": "src/lib/server/api/app/projects/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\provisioning\\route.ts",
+    "target": "src/lib/server/api/platform/provisioning/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\candidates\\route.ts",
+    "target": "src/lib/server/api/app/ats/candidates/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\jobs\\route.ts",
+    "target": "src/lib/server/api/app/ats/jobs/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\provisioning\\[organizationId]\\retry\\route.ts",
+    "target": "src/lib/server/api/platform/provisioning/[organizationId]/retry/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\requisitions\\route.ts",
+    "target": "src/lib/server/api/app/ats/requisitions/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\attendance\\organization\\route.ts",
+    "target": "src/lib/server/api/app/attendance/organization/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\applications\\[applicationId]\\stage\\route.ts",
+    "target": "src/lib/server/api/app/ats/applications/[applicationId]/stage/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\jobs\\[jobId]\\publish\\route.ts",
+    "target": "src/lib/server/api/app/ats/jobs/[jobId]/publish/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\resumes\\jobs\\[jobId]\\process\\route.ts",
+    "target": "src/lib/server/api/app/ats/resumes/jobs/[jobId]/process/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\candidates\\[candidateId]\\resumes\\route.ts",
+    "target": "src/lib/server/api/app/ats/candidates/[candidateId]/resumes/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\jobs\\[jobId]\\intelligence\\route.ts",
+    "target": "src/lib/server/api/app/ats/jobs/[jobId]/intelligence/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\interviews\\[interviewId]\\feedback\\route.ts",
+    "target": "src/lib/server/api/app/ats/interviews/[interviewId]/feedback/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\requisitions\\[requisitionId]\\submit\\route.ts",
+    "target": "src/lib/server/api/app/ats/requisitions/[requisitionId]/submit/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\departments\\route.ts",
+    "target": "src/lib/server/api/app/departments/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\documents\\route.ts",
+    "target": "src/lib/server/api/app/documents/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\directory\\route.ts",
+    "target": "src/lib/server/api/app/directory/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\documents\\types\\route.ts",
+    "target": "src/lib/server/api/app/documents/types/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\documents\\[documentId]\\route.ts",
+    "target": "src/lib/server/api/app/documents/[documentId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\departments\\eligible-team-leads\\route.ts",
+    "target": "src/lib/server/api/app/departments/eligible-team-leads/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\organizations\\[organizationId]\\status\\route.ts",
+    "target": "src/lib/server/api/platform/organizations/[organizationId]/status/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\organizations\\[organizationId]\\route.ts",
+    "target": "src/lib/server/api/platform/organizations/[organizationId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\payroll\\employee-options\\route.ts",
+    "target": "src/lib/server/api/app/payroll/employee-options/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\payroll\\salary-assignments\\route.ts",
+    "target": "src/lib/server/api/app/payroll/salary-assignments/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\payroll\\config\\route.ts",
+    "target": "src/lib/server/api/app/payroll/config/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\payroll\\periods\\route.ts",
+    "target": "src/lib/server/api/app/payroll/periods/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\chat\\unread-count\\route.ts",
+    "target": "src/lib/server/api/app/chat/unread-count/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\master-data\\holidays\\route.ts",
+    "target": "src/lib/server/api/app/master-data/holidays/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\leave\\types\\route.ts",
+    "target": "src/lib/server/api/app/leave/types/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\leave\\route.ts",
+    "target": "src/lib/server/api/app/leave/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\departments\\eligible-managers\\route.ts",
+    "target": "src/lib/server/api/app/departments/eligible-managers/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\master-data\\[resource]\\[itemId]\\route.ts",
+    "target": "src/lib/server/api/app/master-data/[resource]/[itemId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\notifications\\[notificationId]\\route.ts",
+    "target": "src/lib/server/api/app/notifications/[notificationId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\notifications\\route.ts",
+    "target": "src/lib/server/api/app/notifications/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\payroll\\runs\\[runId]\\route.ts",
+    "target": "src/lib/server/api/app/payroll/runs/[runId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\ats\\resume-fields\\[fieldId]\\review\\route.ts",
+    "target": "src/lib/server/api/app/ats/resume-fields/[fieldId]/review/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\expenses\\route.ts",
+    "target": "src/lib/server/api/app/expenses/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\expenses\\[claimId]\\route.ts",
+    "target": "src/lib/server/api/app/expenses/[claimId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\payroll\\payslips\\route.ts",
+    "target": "src/lib/server/api/app/payroll/payslips/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\chat\\search\\route.ts",
+    "target": "src/lib/server/api/app/chat/search/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\payroll\\runs\\route.ts",
+    "target": "src/lib/server/api/app/payroll/runs/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\master-data\\employment-types\\route.ts",
+    "target": "src/lib/server/api/app/master-data/employment-types/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\notifications\\preferences\\route.ts",
+    "target": "src/lib/server/api/app/notifications/preferences/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\expenses\\[claimId]\\submit\\route.ts",
+    "target": "src/lib/server/api/app/expenses/[claimId]/submit/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\departments\\[departmentId]\\teams\\[teamId]\\route.ts",
+    "target": "src/lib/server/api/app/departments/[departmentId]/teams/[teamId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\departments\\[departmentId]\\teams\\route.ts",
+    "target": "src/lib/server/api/app/departments/[departmentId]/teams/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\departments\\[departmentId]\\route.ts",
+    "target": "src/lib/server/api/app/departments/[departmentId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\master-data\\working-days\\route.ts",
+    "target": "src/lib/server/api/app/master-data/working-days/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\organizations\\[organizationId]\\invitation\\resend\\route.ts",
+    "target": "src/lib/server/api/platform/organizations/[organizationId]/invitation/resend/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\master-data\\departments\\route.ts",
+    "target": "src/lib/server/api/app/master-data/departments/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\master-data\\designations\\route.ts",
+    "target": "src/lib/server/api/app/master-data/designations/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\chat\\recipients\\route.ts",
+    "target": "src/lib/server/api/app/chat/recipients/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\organizations\\route.ts",
+    "target": "src/lib/server/api/platform/organizations/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\payroll\\profiles\\route.ts",
+    "target": "src/lib/server/api/app/payroll/profiles/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\payroll\\runs\\[runId]\\pay\\route.ts",
+    "target": "src/lib/server/api/app/payroll/runs/[runId]/pay/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\departments\\[departmentId]\\deletion-check\\route.ts",
+    "target": "src/lib/server/api/app/departments/[departmentId]/deletion-check/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\organizations\\[organizationId]\\invitation\\link\\route.ts",
+    "target": "src/lib/server/api/platform/organizations/[organizationId]/invitation/link/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\master-data\\teams\\route.ts",
+    "target": "src/lib/server/api/app/master-data/teams/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\payroll\\runs\\[runId]\\finalize\\route.ts",
+    "target": "src/lib/server/api/app/payroll/runs/[runId]/finalize/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\master-data\\shifts\\route.ts",
+    "target": "src/lib/server/api/app/master-data/shifts/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\health\\route.ts",
+    "target": "src/lib/server/api/platform/health/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\master-data\\locations\\route.ts",
+    "target": "src/lib/server/api/app/master-data/locations/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\platform\\organizations\\[organizationId]\\approve\\route.ts",
+    "target": "src/lib/server/api/platform/organizations/[organizationId]/approve/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\chat\\presence\\route.ts",
+    "target": "src/lib/server/api/app/chat/presence/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\chat\\messages\\[messageId]\\task\\route.ts",
+    "target": "src/lib/server/api/app/chat/messages/[messageId]/task/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\me\\employee\\route.ts",
+    "target": "src/lib/server/api/app/me/employee/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\expenses\\categories\\route.ts",
+    "target": "src/lib/server/api/app/expenses/categories/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\chat\\conversations\\route.ts",
+    "target": "src/lib/server/api/app/chat/conversations/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\expenses\\items\\[itemId]\\receipt\\route.ts",
+    "target": "src/lib/server/api/app/expenses/items/[itemId]/receipt/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\chat\\conversations\\[conversationId]\\typing\\route.ts",
+    "target": "src/lib/server/api/app/chat/conversations/[conversationId]/typing/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\chat\\conversations\\[conversationId]\\read\\route.ts",
+    "target": "src/lib/server/api/app/chat/conversations/[conversationId]/read/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\chat\\conversations\\[conversationId]\\messages\\route.ts",
+    "target": "src/lib/server/api/app/chat/conversations/[conversationId]/messages/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\chat\\conversations\\[conversationId]\\attachments\\route.ts",
+    "target": "src/lib/server/api/app/chat/conversations/[conversationId]/attachments/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\chat\\conversations\\[conversationId]\\attachments\\[attachmentId]\\route.ts",
+    "target": "src/lib/server/api/app/chat/conversations/[conversationId]/attachments/[attachmentId]/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  },
+  {
+    "original": "C:\\Users\\nares\\Symphowork_V1_NM\\src\\app\\api\\app\\chat\\conversations\\[conversationId]\\messages\\[messageId]\\reactions\\route.ts",
+    "target": "src/lib/server/api/app/chat/conversations/[conversationId]/messages/[messageId]/reactions/route.ts",
+    "targetPresent": true,
+    "status": "STRUCTURALLY PRESENT",
+    "acceptance": "NOT VERIFIED LIVE",
+    "scope": "File mapping only; not semantic or functional acceptance"
+  }
+]

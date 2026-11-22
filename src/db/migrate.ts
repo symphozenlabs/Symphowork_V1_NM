@@ -1,6 +1,14 @@
-import dotenv from "dotenv";
+import { existsSync, readFileSync } from "node:fs";
+import { parseEnv } from "node:util";
 
-dotenv.config({ path: ".env.local" });
+if (existsSync(".env.local")) {
+  try {
+    const env = parseEnv(readFileSync(".env.local", "utf8"));
+    for (const [k, v] of Object.entries(env)) {
+      if (v !== undefined && !process.env[k]) process.env[k] = v;
+    }
+  } catch {}
+}
 
 async function main() {
   const { migrate } = await import("drizzle-orm/postgres-js/migrator");

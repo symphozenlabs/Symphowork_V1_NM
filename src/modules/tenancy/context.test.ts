@@ -19,6 +19,7 @@ const { mockCookies, cookies } = vi.hoisted(() => {
 const requireSession = vi.fn();
 const withTenantTransaction = vi.fn();
 const withUserTransaction = vi.fn(async (_userId: string, cb: (tx: unknown) => Promise<unknown>) => cb(db));
+const withPlatformTransaction = vi.fn(async (cb: (tx: unknown) => Promise<unknown>) => cb(db));
 
 const db = {
   query: {
@@ -33,7 +34,7 @@ const db = {
 
 vi.mock("next/headers", () => ({ cookies }));
 vi.mock("@/modules/identity/auth", () => ({ requireSession }));
-vi.mock("@/db/client", () => ({ db, withTenantTransaction, withUserTransaction }));
+vi.mock("@/db/client", () => ({ db, withPlatformTransaction, withTenantTransaction, withUserTransaction }));
 
 const {
   resolveTenantContext,

@@ -166,7 +166,7 @@ vi.mock("@/lib/audit", () => ({ recordAudit }));
 vi.mock("@/lib/email", () => ({ sendInvitationEmail, buildInvitationUrl }));
 
 const { createEmployee } = await import("@/modules/employees/service");
-const { POST: inviteRoutePost } = await import("@/app/api/app/employees/[employeeId]/invite/route");
+const { POST: inviteRoutePost } = await import("@/lib/server/api/app/employees/[employeeId]/invite/route");
 
 describe("Employee creation duplicate prevention", () => {
   beforeEach(() => {

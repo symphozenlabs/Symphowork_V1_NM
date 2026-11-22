@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { cache } from "react";
+import { cache, getRequestCacheStore } from "react";
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
 import { emailVerificationTokens, passwordResetTokens, sessions, users } from "@/db/schema";
@@ -27,6 +27,17 @@ export async function setSessionCookie(token: string) {
 export async function clearSessionCookie() { (await cookies()).delete(SESSION_COOKIE); }
 
 export const getSessionUser = cache(async () => {
+  const store = getRequestCacheStore?.();
+  if (store) {
+    const svelteContext = store.sharedData.get('svelteContext');
+    if (svelteContext?.user) {
+      return svelteContext.user;
+    }
+    const tenantContext = store.sharedData.get('tenantContext');
+    if (tenantContext?.user) {
+      return tenantContext.user;
+    }
+  }
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) return null;
   const [row] = await db

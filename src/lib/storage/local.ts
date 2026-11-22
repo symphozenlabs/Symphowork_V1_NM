@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import type { StorageProvider } from "@/lib/providers";
 import { AppError } from "@/lib/errors";
+import { signLocalStorageUrl } from "@/lib/storage/local-signature";
 
 const MAX_KEY_LENGTH = 500;
 
@@ -26,7 +27,8 @@ export function createLocalStorageProvider(baseDir: string = path.join(process.c
   const resolvePath = (key: string) => {
     const safeKey = validateStorageKey(key);
     const resolved = path.resolve(baseDir, safeKey);
-    if (!resolved.startsWith(path.resolve(baseDir))) {
+    const relative = path.relative(path.resolve(baseDir), resolved);
+    if (!relative || relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
       throw new AppError("VALIDATION_ERROR", "Invalid storage path traversal.", 400);
     }
     return resolved;
@@ -60,9 +62,11 @@ export function createLocalStorageProvider(baseDir: string = path.join(process.c
         }
       }
     },
-    async getSignedUrl(key) {
-      validateStorageKey(key);
-      return `/api/app/storage/file?key=${encodeURIComponent(key)}`;
+    async getSignedUrl(key, expiresInSeconds = 300) {
+      const safeKey = validateStorageKey(key);
+      const expiresAt = Math.floor(Date.now() / 1000) + Math.max(1, Math.min(Math.floor(expiresInSeconds), 900));
+      const signature = signLocalStorageUrl(safeKey, expiresAt);
+      return `/api/app/storage/file?key=${encodeURIComponent(safeKey)}&expires=${expiresAt}&signature=${signature}`;
     },
     async healthCheck() {
       await fs.mkdir(baseDir, { recursive: true });

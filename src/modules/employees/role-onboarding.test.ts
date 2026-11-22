@@ -145,8 +145,8 @@ vi.mock("@/modules/tenancy/context", () => ({ resolveTenantContext }));
 vi.mock("@/lib/audit", () => ({ recordAudit }));
 vi.mock("@/lib/email", () => ({ sendInvitationEmail, buildInvitationUrl }));
 
-const { POST: inviteRoutePost } = await import("@/app/api/app/employees/[employeeId]/invite/route");
-const { POST: revokeRoutePost } = await import("@/app/api/app/employees/[employeeId]/invite/revoke/route");
+const { POST: inviteRoutePost } = await import("@/lib/server/api/app/employees/[employeeId]/invite/route");
+const { POST: revokeRoutePost } = await import("@/lib/server/api/app/employees/[employeeId]/invite/revoke/route");
 
 describe("Role-Based Invitation and Revocation Workflow", () => {
   const organizationId = "org-1";

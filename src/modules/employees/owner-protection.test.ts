@@ -438,7 +438,7 @@ describe("Organization Owner Employee Protection — Regression Tests", () => {
 
   describe("API routes mutation protection", () => {
     it("POST /api/app/employees/[employeeId]/invite rejects non-owner attempting to invite/resend for owner record", async () => {
-      const { POST } = await import("@/app/api/app/employees/[employeeId]/invite/route");
+      const { POST } = await import("@/lib/server/api/app/employees/[employeeId]/invite/route");
 
       const req = new Request(`http://localhost/api/app/employees/${ownerEmployeeId}/invite`, {
         method: "POST",
@@ -456,7 +456,7 @@ describe("Organization Owner Employee Protection — Regression Tests", () => {
     });
 
     it("POST /api/app/employees/[employeeId]/invite/revoke rejects non-owner attempting to revoke owner invitation", async () => {
-      const { POST } = await import("@/app/api/app/employees/[employeeId]/invite/revoke/route");
+      const { POST } = await import("@/lib/server/api/app/employees/[employeeId]/invite/revoke/route");
 
       const req = new Request(`http://localhost/api/app/employees/${ownerEmployeeId}/invite/revoke`, {
         method: "POST",
@@ -472,7 +472,7 @@ describe("Organization Owner Employee Protection — Regression Tests", () => {
     });
 
     it("PATCH /api/app/employees/[employeeId]/onboarding rejects non-owner attempting to alter owner checklist items", async () => {
-      const { PATCH } = await import("@/app/api/app/employees/[employeeId]/onboarding/route");
+      const { PATCH } = await import("@/lib/server/api/app/employees/[employeeId]/onboarding/route");
 
       const req = new Request(`http://localhost/api/app/employees/${ownerEmployeeId}/onboarding`, {
         method: "PATCH",
@@ -490,7 +490,7 @@ describe("Organization Owner Employee Protection — Regression Tests", () => {
     });
 
     it("POST /api/app/employees/[employeeId]/onboarding rejects non-owner attempting to complete owner onboarding", async () => {
-      const { POST } = await import("@/app/api/app/employees/[employeeId]/onboarding/route");
+      const { POST } = await import("@/lib/server/api/app/employees/[employeeId]/onboarding/route");
 
       const req = new Request(`http://localhost/api/app/employees/${ownerEmployeeId}/onboarding`, {
         method: "POST",
@@ -506,7 +506,7 @@ describe("Organization Owner Employee Protection — Regression Tests", () => {
     });
 
     it("GET /api/app/employees/[employeeId] rejects unauthorized roles lacking employee.read permission with 403", async () => {
-      const { GET } = await import("@/app/api/app/employees/[employeeId]/route");
+      const { GET } = await import("@/lib/server/api/app/employees/[employeeId]/route");
 
       authorize.mockRejectedValueOnce(new AppError("FORBIDDEN", "You are not authorized to perform this action.", 403));
 

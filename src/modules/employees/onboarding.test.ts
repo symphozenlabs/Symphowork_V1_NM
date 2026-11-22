@@ -69,7 +69,7 @@ vi.mock("@/modules/tenancy/authorization", () => ({ authorize }));
 vi.mock("@/lib/audit", () => ({ recordAudit }));
 vi.mock("@/db/client", () => ({ db }));
 
-const { POST, PATCH } = await import("@/app/api/app/employees/[employeeId]/onboarding/route");
+const { POST, PATCH } = await import("@/lib/server/api/app/employees/[employeeId]/onboarding/route");
 
 describe("employee onboarding API lifecycle and idempotency", () => {
   const organizationId = "org-1111";

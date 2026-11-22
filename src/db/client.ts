@@ -1,14 +1,96 @@
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { parseEnv } from "node:util";
 import postgres from "postgres";
 import { sql as drizzleSql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import * as schema from "@/db/schema";
+import { isRuntimeDatabaseUrlAllowed, runtimeDatabaseRoleError } from './runtime-role';
 
-const globalForDb = globalThis as unknown as { sql?: ReturnType<typeof postgres> };
-const sql = globalForDb.sql ?? postgres(process.env.DATABASE_URL ?? "postgresql://localhost/symphowork", { max: 10, prepare: false });
-if (process.env.NODE_ENV !== "production") globalForDb.sql = sql;
+export class DatabaseConfigurationError extends Error {
+  constructor(message = "DATABASE_URL is required for database-backed application features.") {
+    super(message);
+    this.name = "DatabaseConfigurationError";
+  }
+}
 
-export const db = drizzle(sql, { schema });
-export { sql };
+function resolveDatabaseUrl(): string | undefined {
+  if (process.env.DATABASE_URL?.trim()) return process.env.DATABASE_URL.trim();
+  for (const envFile of [".env.local", ".env"]) {
+    const p = resolve(process.cwd(), envFile);
+    if (existsSync(p)) {
+      try {
+        const parsed = parseEnv(readFileSync(p, "utf8"));
+        if (parsed.DATABASE_URL?.trim()) {
+          process.env.DATABASE_URL = parsed.DATABASE_URL.trim();
+          return parsed.DATABASE_URL.trim();
+        }
+      } catch {
+        throw new DatabaseConfigurationError();
+      }
+    }
+  }
+  return undefined;
+}
+
+export function isDatabaseConfigured(): boolean {
+  try {
+    const url = resolveDatabaseUrl();
+    return Boolean(url && isRuntimeDatabaseUrlAllowed(url));
+  } catch {
+    return false;
+  }
+}
+
+type SqlClient = ReturnType<typeof postgres>;
+function createDrizzleClient(client: SqlClient) {
+  return drizzle(client, { schema });
+}
+type DrizzleClient = ReturnType<typeof createDrizzleClient>;
+type DatabaseClients = { url: string; sql: SqlClient; db: DrizzleClient };
+
+const globalForDb = globalThis as unknown as { clients?: DatabaseClients };
+let localClients: DatabaseClients | undefined;
+
+function clients(): DatabaseClients {
+  const url = resolveDatabaseUrl();
+  if (!url) throw new DatabaseConfigurationError();
+  if (!isRuntimeDatabaseUrlAllowed(url)) throw new DatabaseConfigurationError(runtimeDatabaseRoleError());
+  if (localClients?.url === url) return localClients;
+  if (globalForDb.clients?.url === url) {
+    localClients = globalForDb.clients;
+    return localClients;
+  }
+
+  const sqlClient = postgres(url, { max: 10, prepare: false, idle_timeout: 30, connect_timeout: 30 });
+  const next: DatabaseClients = { url, sql: sqlClient, db: createDrizzleClient(sqlClient) };
+  localClients = next;
+  if (process.env.NODE_ENV !== "production") globalForDb.clients = next;
+  return next;
+}
+
+// Defer pool creation until a database operation is actually requested. This
+// lets public pages and production builds work without credentials while
+// database-backed features fail closed instead of targeting localhost.
+export const db = new Proxy({} as DrizzleClient, {
+  get(_target, property) {
+    const instance = clients().db;
+    const value = Reflect.get(instance, property, instance);
+    return typeof value === "function" ? value.bind(instance) : value;
+  }
+});
+
+export const sql = new Proxy(function () {} as unknown as SqlClient, {
+  apply(_target, thisArg, args) {
+    const instance = clients().sql;
+    return Reflect.apply(instance as unknown as (...values: unknown[]) => unknown, thisArg, args);
+  },
+  get(_target, property) {
+    const instance = clients().sql;
+    const value = Reflect.get(instance, property, instance);
+    return typeof value === "function" ? value.bind(instance) : value;
+  }
+});
 
 export type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 

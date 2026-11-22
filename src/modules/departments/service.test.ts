@@ -1,16 +1,30 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import { assertIsOrganizationOwner } from "@/modules/departments/service";
 
-
-const { recordAudit } = vi.hoisted(() => ({
+const mocks = vi.hoisted(() => ({
   recordAudit: vi.fn(),
+  authorize: vi.fn(),
+  can: vi.fn(),
+  isActorPrivilegedForOwnerRecord: vi.fn(),
 }));
 
 vi.mock("@/lib/audit", () => ({
-  recordAudit,
+  recordAudit: mocks.recordAudit,
 }));
 
 vi.mock("@/modules/tenancy/authorization", () => ({
-  authorize: vi.fn().mockResolvedValue(true),
+  authorize: mocks.authorize,
+  can: mocks.can,
+}));
+
+vi.mock("@/modules/employees/service", () => ({
+  enrichEmployeesWithRoles: vi.fn(),
+  isActorPrivilegedForOwnerRecord: mocks.isActorPrivilegedForOwnerRecord,
+}));
+
+vi.mock("@/db/client", () => ({
+  db: {},
+  withTenantTransaction: vi.fn(),
 }));
 
 describe("Department Service Unit & Safety Tests", () => {
@@ -19,21 +33,27 @@ describe("Department Service Unit & Safety Tests", () => {
   });
 
   describe("assertIsOrganizationOwner", () => {
-    it("allows user with isSuperAdmin = true", async () => {
-      // Mock db select for super admin
-      vi.mock("@/db/client", () => ({
-        db: {
-          select: vi.fn(() => ({
-            from: vi.fn(() => ({
-              where: vi.fn().mockResolvedValue([{ isSuperAdmin: true }]),
-            })),
-          })),
-        },
-      }));
+    it("allows a user the owner-record policy marks privileged", async () => {
+      mocks.isActorPrivilegedForOwnerRecord.mockResolvedValue(true);
 
-      // Service re-evaluates through DB
-      // We test through isolated test or mock
-      expect(true).toBe(true);
+      await expect(assertIsOrganizationOwner("org-a", "user-a")).resolves.toBe(true);
+      expect(mocks.isActorPrivilegedForOwnerRecord).toHaveBeenCalledWith("org-a", "user-a", undefined);
+      expect(mocks.can).not.toHaveBeenCalled();
+    });
+
+    it("allows the department management permission", async () => {
+      mocks.isActorPrivilegedForOwnerRecord.mockResolvedValue(false);
+      mocks.can.mockResolvedValue(true);
+
+      await expect(assertIsOrganizationOwner("org-a", "user-a")).resolves.toBe(true);
+      expect(mocks.can).toHaveBeenCalledWith({ userId: "user-a", organizationId: "org-a", permission: "department.manage" });
+    });
+
+    it("rejects a user without owner privilege or department management permission", async () => {
+      mocks.isActorPrivilegedForOwnerRecord.mockResolvedValue(false);
+      mocks.can.mockResolvedValue(false);
+
+      await expect(assertIsOrganizationOwner("org-a", "user-a")).rejects.toMatchObject({ code: "FORBIDDEN", status: 403 });
     });
   });
 
