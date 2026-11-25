@@ -11,8 +11,7 @@ export const platformNavGroups: NavGroupDef[] = [
       { label: "Organizations", href: "/platform/organizations", iconKey: "organizations" },
       { label: "Provisioning", href: "/platform/provisioning", iconKey: "provisioning" },
       { label: "Plans", href: "/platform/plans", iconKey: "plans" },
-      { label: "Subscriptions", href: "/platform/subscriptions", iconKey: "subscriptions" },
-      { label: "Usage", href: "/platform/usage", iconKey: "usage" },
+      { label: "Subscriptions & Usage", href: "/platform/subscriptions", iconKey: "subscriptions" },
     ],
   },
   {
@@ -33,8 +32,24 @@ export const allPlatformItems = platformNavGroups.flatMap((group) =>
   group.items.map(({ label, href }) => ({ label, href }))
 );
 
+export const PLATFORM_BILLING_ALLOWED_PATHS = new Set([
+  "/platform",
+  "/platform/organizations",
+  "/platform/plans",
+  "/platform/subscriptions",
+  "/platform/analytics",
+]);
+
 export function platformNavigationForRole(role: string) {
   if (role === "PLATFORM_OWNER" || role === "PRODUCT_OWNER") return platformNavGroups;
+  if (role === "PLATFORM_BILLING") {
+    return platformNavGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => PLATFORM_BILLING_ALLOWED_PATHS.has(item.href)),
+      }))
+      .filter((group) => group.items.length > 0);
+  }
   return platformNavGroups
     .map((group) => ({ ...group, items: group.items.filter((item) => item.href !== "/platform/audit") }))
     .filter((group) => group.items.length > 0);

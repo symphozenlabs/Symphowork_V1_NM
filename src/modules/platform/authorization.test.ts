@@ -23,6 +23,15 @@ describe("platform authorization boundary", () => {
     expect(hasPlatformPermission("PRODUCT_OWNER", PLATFORM_PERMISSIONS.billingManage)).toBe(true);
     expect(hasPlatformPermission("PLATFORM_SUPPORT", PLATFORM_PERMISSIONS.billingManage)).toBe(false);
     expect(hasPlatformPermission("PLATFORM_BILLING", PLATFORM_PERMISSIONS.billingManage)).toBe(true);
+    expect(hasPlatformPermission("PLATFORM_BILLING", PLATFORM_PERMISSIONS.analyticsView)).toBe(true);
+    expect(hasPlatformPermission("PLATFORM_BILLING", PLATFORM_PERMISSIONS.provisioningView)).toBe(false);
+  });
+  it("authorizes analyticsView for PLATFORM_BILLING while denying provisioningView", async () => {
+    requireSession.mockResolvedValueOnce({ id: "actor", platformRole: "PLATFORM_BILLING" });
+    await expect(authorizePlatform(PLATFORM_PERMISSIONS.analyticsView)).resolves.toMatchObject({ platformRole: "PLATFORM_BILLING" });
+
+    requireSession.mockResolvedValueOnce({ id: "actor", platformRole: "PLATFORM_BILLING" });
+    await expect(authorizePlatform(PLATFORM_PERMISSIONS.provisioningView)).rejects.toMatchObject({ status: 403, code: "FORBIDDEN" });
   });
   it("maps all 5 platform roles to their respective console titles", () => {
     expect(platformConsoleTitle("PLATFORM_OWNER")).toBe("Platform Owner Console");

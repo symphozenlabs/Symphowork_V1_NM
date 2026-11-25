@@ -63,7 +63,7 @@ const currentTheme = $derived(statusColorMap[organization.status] || statusColor
           </div>
 
           <div class="flex flex-wrap items-center gap-3">
-            <OrganizationStatusActions organizationId={organization.id} status={organization.status} />
+            {#if data.canManageStatus}<OrganizationStatusActions organizationId={organization.id} status={organization.status} />{/if}
           </div>
         </div>
       </div>
@@ -186,6 +186,7 @@ const currentTheme = $derived(statusColorMap[organization.status] || statusColor
                 </Badge>{/if}
             </CardHeader>
             <CardContent class="pt-5">
+              {#if data.canManageInvitation}
               <OrganizationInvitationActions organizationId={organization.id} invitation={invitation
                     ? {
                         id: invitation.id,
@@ -193,11 +194,18 @@ const currentTheme = $derived(statusColorMap[organization.status] || statusColor
                         expiresAt: invitation.expiresAt,
                       }
                     : null} />
+              {:else}
+              <div class="flex items-center justify-between rounded-xl border border-border/70 bg-slate-50/50 p-3.5 text-xs">
+                <span class="text-muted">Invitation Status:</span>
+                <span class="font-medium text-slate-800 capitalize">{invitation?.status ?? "Not created"}</span>
+              </div>
+              {/if}
             </CardContent>
           </Card>
 
-          
+          {#if data.canViewSupportNotes}
           <OrganizationSupportNotes organizationId={organization.id} />
+          {/if}
         </div>
 
         
@@ -245,6 +253,7 @@ const currentTheme = $derived(statusColorMap[organization.status] || statusColor
           </Card>
 
           
+          {#if data.canViewTenantAudit}
           <Card class="border-border/80 bg-surface shadow-xs">
             <CardHeader class="border-b border-border/50 pb-3">
               <div class="flex items-center justify-between">
@@ -278,6 +287,7 @@ const currentTheme = $derived(statusColorMap[organization.status] || statusColor
                 </div>{/if}
             </CardContent>
           </Card>
+          {/if}
         </div>
       </div>
     </div>

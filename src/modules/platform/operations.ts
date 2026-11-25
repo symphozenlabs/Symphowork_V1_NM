@@ -77,7 +77,9 @@ export async function getPlatformOrganization(organizationId: string) {
     tx.query.invitations.findFirst({ where: and(eq(invitations.organizationId, organizationId), eq(invitations.intendedRole, "ORGANIZATION_OWNER")) }),
     tx.select({ employeeCount: count() }).from(employees).where(eq(employees.organizationId, organizationId)),
     tx.select({ activeEmployeeCount: count() }).from(employees).where(and(eq(employees.organizationId, organizationId), eq(employees.status, "active"))),
-    tx.select().from(auditLogs).where(eq(auditLogs.organizationId, organizationId)).orderBy(desc(auditLogs.createdAt)).limit(12),
+    user.platformRole === "PLATFORM_BILLING"
+      ? Promise.resolve([])
+      : tx.select().from(auditLogs).where(eq(auditLogs.organizationId, organizationId)).orderBy(desc(auditLogs.createdAt)).limit(12),
   ]));
   await recordAudit({ actorUserId: user.id, organizationId, action: "platform_organization_inspection", resource: "organization", resourceId: organizationId, platform: true });
   return { organization, job, invitation, subscription, employeeCount, activeEmployeeCount, activity };

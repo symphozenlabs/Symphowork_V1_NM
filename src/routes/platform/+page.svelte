@@ -32,10 +32,10 @@ import CardDescription from "$lib/components/ui/CardDescription.svelte";
 
         <div class="flex flex-wrap items-center gap-3">
           <LinkButton variant="outline" size="sm" href="/platform/organizations">View all organizations</LinkButton>
-          <LinkButton size="sm" class="gap-1.5 shadow-xs" href="/platform/organizations?create=true">
+          {#if data.canCreateOrganization}<LinkButton size="sm" class="gap-1.5 shadow-xs" href="/platform/organizations?create=true">
               <SvgIcon name="Plus" class="size-4" aria-hidden="true" />
               <span>Create organization</span>
-            </LinkButton>
+            </LinkButton>{/if}
         </div>
       </div>
 
@@ -200,7 +200,7 @@ import CardDescription from "$lib/components/ui/CardDescription.svelte";
         </Card>
 
         
-        <Card class="flex flex-col">
+        {#if data.canViewProvisioning}<Card class="flex flex-col">
           <CardHeader class="flex flex-row items-center justify-between pb-3">
             <div>
               <CardTitle class="text-base font-bold text-foreground">Provisioning Pipeline</CardTitle>
@@ -240,7 +240,7 @@ import CardDescription from "$lib/components/ui/CardDescription.svelte";
                 No provisioning operations recorded.
               </div>{/if}
           </CardContent>
-        </Card>
+        </Card>{/if}
 
         
         {#if data.canViewAudit}<Card class="flex flex-col">

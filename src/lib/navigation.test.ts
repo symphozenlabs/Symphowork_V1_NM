@@ -1,13 +1,58 @@
 import { describe, expect, it } from "vitest";
 import { isRouteActive } from "$lib/navigation";
-import { platformItemsForRole } from "$lib/components/layout/platform-navigation";
+import { platformItemsForRole, platformNavGroups } from "$lib/components/layout/platform-navigation";
 
 describe("isRouteActive utility", () => {
+  it("uses one combined subscriptions and usage item that stays active on the canonical route", () => {
+    const items = platformNavGroups.flatMap((group) => group.items);
+    expect(items.filter((item) => item.href === "/platform/subscriptions")).toEqual([
+      { label: "Subscriptions & Usage", href: "/platform/subscriptions", iconKey: "subscriptions" },
+    ]);
+    expect(items.some((item) => item.label === "Subscriptions" || item.label === "Usage")).toBe(false);
+    const hrefs = items.map((item) => item.href);
+    expect(isRouteActive("/platform/subscriptions", "/platform/subscriptions", hrefs)).toBe(true);
+    expect(isRouteActive("/platform/usage", "/platform/subscriptions", hrefs)).toBe(false);
+  });
+
   it("shows the audit navigation item only to platform and product owners", () => {
     const allowed = ["PLATFORM_OWNER", "PRODUCT_OWNER"];
     const denied = ["PLATFORM_ADMIN", "PLATFORM_SUPPORT", "PLATFORM_BILLING", "ORGANIZATION_OWNER", "HR_ADMIN", "HR_EXECUTIVE", "FINANCE_ADMIN", "MANAGER", "TEAM_LEAD", "PROJECT_MANAGER", "RECRUITER", "EMPLOYEE"];
     for (const role of allowed) expect(platformItemsForRole(role).some((item) => item.href === "/platform/audit")).toBe(true);
     for (const role of denied) expect(platformItemsForRole(role).some((item) => item.href === "/platform/audit")).toBe(false);
+  });
+
+  it("restricts navigation items exclusively for PLATFORM_BILLING", () => {
+    const billingItems = platformItemsForRole("PLATFORM_BILLING");
+    const billingHrefs = billingItems.map((item) => item.href);
+
+    expect(billingHrefs).toEqual([
+      "/platform",
+      "/platform/organizations",
+      "/platform/plans",
+      "/platform/subscriptions",
+      "/platform/analytics",
+    ]);
+
+    expect(billingHrefs).not.toContain("/platform/provisioning");
+    expect(billingHrefs).not.toContain("/platform/support");
+    expect(billingHrefs).not.toContain("/platform/health");
+    expect(billingHrefs).not.toContain("/platform/configuration");
+    expect(billingHrefs).not.toContain("/platform/users");
+    expect(billingHrefs).not.toContain("/platform/audit");
+    expect(billingHrefs).not.toContain("/platform/features");
+  });
+
+  it("preserves navigation for PLATFORM_ADMIN, PLATFORM_SUPPORT, PLATFORM_OWNER, PRODUCT_OWNER", () => {
+    const ownerHrefs = platformItemsForRole("PLATFORM_OWNER").map((i) => i.href);
+    expect(ownerHrefs).toContain("/platform/provisioning");
+    expect(ownerHrefs).toContain("/platform/support");
+    expect(ownerHrefs).toContain("/platform/audit");
+
+    const supportHrefs = platformItemsForRole("PLATFORM_SUPPORT").map((i) => i.href);
+    expect(supportHrefs).toContain("/platform/provisioning");
+    expect(supportHrefs).toContain("/platform/support");
+    expect(supportHrefs).toContain("/platform/health");
+    expect(supportHrefs).not.toContain("/platform/audit");
   });
 
   const workspaceHrefs = [

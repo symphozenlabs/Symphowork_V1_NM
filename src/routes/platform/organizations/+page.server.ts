@@ -1,5 +1,6 @@
 import { loadApiData } from '$lib/server/load-api-data';
 import type { PlanSummary } from '$lib/components/platform/organization-wizard-types';
+import { hasPlatformPermission, PLATFORM_PERMISSIONS as p } from '$lib/auth/platform';
 
 export const load: import('./$types').PageServerLoad = async ({ request, url, parent }) => {
   const { context } = await parent();
@@ -7,6 +8,6 @@ export const load: import('./$types').PageServerLoad = async ({ request, url, pa
   const result = await loadApiData<{ rows: Array<{ id: string; name: string; slug: string; status: string; createdAt: string; provisioningStatus?: string | null }>; total: number }>(request, '/api/platform/organizations?' + params);
   let plans: PlanSummary[] = [];
   try { plans = (await loadApiData<{ plans: PlanSummary[] }>(request, '/api/platform/plans')).plans; } catch { /* Source page keeps the registry usable if plan loading fails. */ }
-  const autoOpen = ['true', '1'].includes(url.searchParams.get('create') ?? '') || url.searchParams.get('action') === 'create';
-  return { context, result, plans, autoOpen, serializedRows: result.rows };
+  const autoOpen = (['true', '1'].includes(url.searchParams.get('create') ?? '') || url.searchParams.get('action') === 'create') && hasPlatformPermission(context.user.platformRole, p.organizationCreate);
+  return { context, result, plans, autoOpen, serializedRows: result.rows, canCreateOrganization: hasPlatformPermission(context.user.platformRole, p.organizationCreate) };
 };

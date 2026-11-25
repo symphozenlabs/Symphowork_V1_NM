@@ -32,7 +32,7 @@ const serializedRows = $derived(data.serializedRows);
           </p>
         </div>
         <div class="shrink-0">
-          <OrganizationCreateDialog defaultOpen={autoOpen} initialPlans={plansData} />
+          {#if data.canCreateOrganization}<OrganizationCreateDialog defaultOpen={autoOpen} initialPlans={plansData} />{/if}
         </div>
       </div>
 
