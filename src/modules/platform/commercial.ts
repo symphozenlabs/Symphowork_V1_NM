@@ -6,6 +6,7 @@ import { recordAudit } from "@/lib/audit";
 import { billingProviderConfigured } from "@/lib/billing";
 import { AppError } from "@/lib/errors";
 import { authorizePlatform, authorizePlatformTargetOrganization, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
+import { listSubscriptionUsageRows, type ListSubscriptionsUsageInput } from "@/modules/platform/subscriptions-usage";
 
 import { planInputSchema } from "@/modules/platform/validation";
 export { planInputSchema };
@@ -341,7 +342,7 @@ export interface OrganizationUsageRow {
     maxUsers: number | null;
     [key: string]: unknown;
   } | null;
-  subscription: unknown | null;
+  subscription: typeof subscriptions.$inferSelect | null;
   activeEmployees: number;
   employeeLimit: number | null;
   remaining: number | null;
@@ -401,10 +402,12 @@ export async function listOrganizationUsage(input?: ListUsageInput): Promise<Org
       .where(eq(employees.status, "active"))
       .groupBy(employees.organizationId);
 
-    const planRows = await tx
-      .selectDistinct({ id: plans.id, code: plans.code, name: plans.name })
-      .from(subscriptions)
-      .innerJoin(plans, eq(subscriptions.planId, plans.id));
+    const planRows = input
+      ? await tx
+          .selectDistinct({ id: plans.id, code: plans.code, name: plans.name })
+          .from(subscriptions)
+          .innerJoin(plans, eq(subscriptions.planId, plans.id))
+      : [];
 
     return { rows, counts, allSubscribedPlans: planRows };
   });
@@ -460,6 +463,43 @@ export async function listOrganizationUsage(input?: ListUsageInput): Promise<Org
     pageSize,
     pageCount,
     availablePlans: allSubscribedPlans,
+  };
+}
+
+/** Build the consolidated console dataset from the existing joined usage query and its grouped active-employee counts. */
+export async function listPlatformSubscriptionsUsage(input: ListSubscriptionsUsageInput = {}) {
+  await authorizePlatform(PLATFORM_PERMISSIONS.subscriptionView);
+  const rows = await listOrganizationUsage();
+  const result = listSubscriptionUsageRows(rows, input);
+  return {
+    ...result,
+    rows: result.rows.map((row) => ({
+      organization: { id: row.organization.id, name: row.organization.name, slug: row.organization.slug, status: row.organization.status, timezone: row.organization.timezone, dateFormat: row.organization.dateFormat },
+      plan: row.plan ? { id: row.plan.id, code: row.plan.code, name: row.plan.name, maxUsers: row.plan.maxUsers, trialDays: row.plan.trialDays, billingInterval: row.plan.billingInterval } : null,
+      subscription: row.subscription ? {
+        id: row.subscription.id,
+        status: row.subscription.status,
+        billingStatus: row.subscription.billingStatus,
+        billingCycle: row.subscription.billingCycle,
+        startsAt: row.subscription.startsAt,
+        renewalAt: row.subscription.renewalAt,
+        endsAt: row.subscription.endsAt,
+        providerCustomerId: row.subscription.providerCustomerId,
+        providerSubscriptionId: row.subscription.providerSubscriptionId,
+        createdAt: row.subscription.createdAt,
+        updatedAt: row.subscription.updatedAt,
+      } : null,
+      activeEmployees: row.activeEmployees,
+      employeeLimit: row.employeeLimit,
+      remaining: row.remaining,
+      overLimit: row.overLimit,
+      nearLimit: row.nearLimit,
+      limitReached: row.limitReached,
+      status: row.status,
+      statusLabel: row.statusLabel,
+      subscriptionStatus: row.subscriptionStatus,
+      subscriptionStatusLabel: row.subscriptionStatusLabel,
+    })),
   };
 }
 

@@ -1,2 +1,5 @@
-import{loadApiData}from'$lib/server/load-api-data';import type{SerializedUsageRow}from'$lib/components/platform/UsageManagement.svelte';
-export const load:import('./$types').PageServerLoad=async({request,url,parent})=>{await parent();const query=url.searchParams.get('q')??url.searchParams.get('query')??'';const page=Math.max(1,Number(url.searchParams.get('page'))||1);const status=url.searchParams.get('status')??'all';const plan=url.searchParams.get('plan')??'all';const params=new URLSearchParams({query,page:String(page),pageSize:'10'});if(status!=='all')params.set('status',status);if(plan!=='all')params.set('plan',plan);const result=await loadApiData<{usage:SerializedUsageRow[];total:number;page:number;pageSize:number;pageCount:number;availablePlans:{id:string;code:string;name:string}[]}>(request,'/api/platform/usage?'+params);return{result,query,status,plan,serializedRows:result.usage};};
+import { redirect } from "@sveltejs/kit";
+
+export const load: import("./$types").PageServerLoad = ({ url }) => {
+  redirect(308, `/platform/subscriptions${url.search}`);
+};

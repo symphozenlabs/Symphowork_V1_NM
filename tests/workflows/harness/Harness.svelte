@@ -41,6 +41,7 @@ import GrowthHud from '$lib/components/hud/EnterpriseGrowthHud.svelte';
 import ConstellationHud from '$lib/components/hud/EcosystemConstellationHud.svelte';
 import NetworkHud from '$lib/components/hud/WorkforceNetworkHud.svelte';
 import AtsDashboard from '$lib/components/ats/AtsDashboard.svelte';
+import SubscriptionUsageManagement from '$lib/components/platform/SubscriptionUsageManagement.svelte';
 
 const view=new URLSearchParams(location.search).get('view');
 
@@ -76,6 +77,12 @@ const sampleEmployee = {
 
 {#if view==='directory'}
   <Directory initialEmployees={[]} initialTotal={0} initialPage={1} initialPageSize={10} canInvite={false}/>
+{:else if view==='subscriptions-usage'}
+  <p>Persistent platform shell</p>
+  <SubscriptionUsageManagement
+    initialRows={[{organization:{id:'org-1',name:'Acme Example',slug:'acme-example',status:'active',timezone:'UTC',dateFormat:'yyyy-MM-dd'},plan:{id:'plan-1',code:'GROWTH',name:'Growth Plan',maxUsers:100,trialDays:14,billingInterval:'monthly'},subscription:{id:'sub-1',status:'active',billingStatus:'trialing',billingCycle:'monthly',startsAt:'2025-01-31T00:00:00.000Z',renewalAt:null,endsAt:null,providerCustomerId:'private-customer-id',providerSubscriptionId:'private-subscription-id',createdAt:'2025-01-31T00:00:00.000Z',updatedAt:'2025-01-31T00:00:00.000Z'},activeEmployees:12,employeeLimit:100,remaining:88,overLimit:false,nearLimit:false,limitReached:false,status:'within_limit',statusLabel:'Within limit',subscriptionStatus:'active',subscriptionStatusLabel:'Active'}]}
+    total={1} page={1} pageSize={10} pageCount={1} availablePlans={[{id:'plan-1',code:'GROWTH',name:'Growth Plan'}]}
+  />
 {:else if view==='organization-wizard'}
   <OrganizationWizard initialPlans={[{id:'plan-1',code:'FREE',name:'Free',description:null,monthlyPriceCents:0,annualPriceCents:0,currency:'INR',trialDays:0,maxUsers:10,maxStorageBytes:null,billingInterval:'monthly',active:true}]}/>
 {:else if view==='invitation'}

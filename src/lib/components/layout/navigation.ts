@@ -22,7 +22,6 @@ export const ICON_MAP: Record<string, string> = {
   provisioning: "Gauge",
   plans: "CreditCard",
   subscriptions: "WalletCards",
-  usage: "Gauge",
   analytics: "BarChart3",
   features: "ToggleLeft",
   support: "LifeBuoy",
