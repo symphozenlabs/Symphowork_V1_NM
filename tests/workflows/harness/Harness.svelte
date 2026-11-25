@@ -144,9 +144,8 @@ const sampleEmployee = {
   <FeatureFlags flag={{id:'flag-1',key:'ai_matching',name:'AI Matching',description:'Enable AI matching',enabled:false}}/>
 {:else if view==='audit-list'}
   <AuditList initialRows={[{
-    audit: { id: 'audit-1', action: 'ORGANIZATION_SUSPEND', resource: 'organization', organizationId: 'org-1', createdAt: '2026-10-20T12:00:00Z' },
-    actor: { name: 'admin@symphowork.test' },
-    organization: { name: 'Acme' }
+    audit: { id: 'audit-1', action: 'platform_role_changed', resource: 'user', createdAt: '2026-10-20T12:00:00Z' },
+    actor: { name: 'Platform Owner' }
   }]} total={1} page={1} pageSize={10} pageCount={1}/>
 {:else if view==='edit-employee'}
   <EditEmployee open={dialogOpen} employee={sampleEmployee} currentUserRole="ORGANIZATION_OWNER" isOwnerViewer={true} onSuccess={()=>saved=true} onOpenChange={(o)=>dialogOpen=o}/>

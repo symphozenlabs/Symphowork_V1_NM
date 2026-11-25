@@ -1,0 +1,7 @@
+# Platform Audit Stream Scope
+
+The `audit_logs` table does not persist whether a row was written as a platform event or which role the actor held when it was written. Platform writers commonly use a null `organization_id`, but ordinary sign-in events also use that scope, so `organization_id IS NULL` is not sufficient by itself.
+
+The platform Audit Logs list therefore fails closed. Its database query requires a null `organization_id` and a joined actor whose current `platform_role` is one of `PLATFORM_OWNER`, `PRODUCT_OWNER`, `PLATFORM_ADMIN`, `PLATFORM_SUPPORT`, or `PLATFORM_BILLING`. Search is nested under those predicates. The response returns only the event ID, action, resource, timestamp, and platform actor name; it omits event metadata, organization data, resource IDs, and email addresses. Organization-scoped events are excluded, including organization-specific administrative actions initiated by a platform operator.
+
+This rule can omit legitimate historical global platform activity when the actor was later demoted or deleted, because the schema has no role-at-event snapshot. To preserve that history without weakening tenant isolation, a future approved schema change should record an immutable event scope and actor platform role at write time, then backfill only rows whose classification can be established from authoritative evidence. Until that change is approved and safely backfilled, the list must retain the current fail-closed behavior. No database migration or historical data change was made for this implementation.

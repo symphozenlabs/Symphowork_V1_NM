@@ -1,4 +1,4 @@
-import{desc,eq,sql}from'drizzle-orm';import{platformRead}from'$lib/server/platform-read';import{organizations,provisioningJobs,auditLogs}from'$lib/server/schema';import{hasPlatformPermission,PLATFORM_PERMISSIONS as p}from'$lib/auth/platform';import{loadApiData}from'$lib/server/load-api-data';
+import{desc,eq,sql}from'drizzle-orm';import{platformRead}from'$lib/server/platform-read';import{organizations,provisioningJobs,auditLogs,users}from'$lib/server/schema';import{hasPlatformPermission,PLATFORM_PERMISSIONS as p}from'$lib/auth/platform';import{loadApiData}from'$lib/server/load-api-data';import{platformAuditWhere}from'@/modules/platform/audit-query';
 export const load:import('./$types').PageServerLoad=async({locals,parent,request})=>{await parent();const context=(await locals.context)!;
 const [[counts,recent],jobs,activity]=await Promise.all([platformRead(context,p.organizationView,tx=>Promise.all([
 tx.select({
@@ -9,10 +9,10 @@ tx.select({
 }).from(organizations),
 tx.select().from(organizations).orderBy(desc(organizations.createdAt)).limit(5)])),
 hasPlatformPermission(context.user.platformRole,p.provisioningView) ? platformRead(context,p.provisioningView,tx=>tx.select().from(provisioningJobs).orderBy(desc(provisioningJobs.createdAt)).limit(5)) : [],
-hasPlatformPermission(context.user.platformRole,p.auditView) ? platformRead(context,p.auditView,tx=>tx.select().from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(5)) : []]);
+hasPlatformPermission(context.user.platformRole,p.auditView) ? platformRead(context,p.auditView,tx=>tx.select({action:auditLogs.action,resource:auditLogs.resource,createdAt:auditLogs.createdAt}).from(auditLogs).innerJoin(users,eq(auditLogs.actorUserId,users.id)).where(platformAuditWhere()).orderBy(desc(auditLogs.createdAt)).limit(5)) : []]);
 const orgCounts = counts[0] ?? { total: 0, active: 0, pending: 0, suspended: 0 };
 let commercial:{total:number;active:number;overLimit:number;providerConfigured:boolean}|null=null;
 // The legacy provider flag has a stricter API permission than its overview service.
 // Never bypass that API permission or invent the provider state.
 if([p.billingView,p.subscriptionView,p.usageView].every(permission=>hasPlatformPermission(context.user.platformRole,permission))){try{const[all,active,usage,billing]=await Promise.all([loadApiData<{total:number}>(request,'/api/platform/subscriptions?pageSize=1'),loadApiData<{total:number}>(request,'/api/platform/subscriptions?status=active&pageSize=1'),loadApiData<{total:number}>(request,'/api/platform/usage?status=over_limit&pageSize=1'),loadApiData<{providerConfigured:boolean}>(request,'/api/platform/billing')]);commercial={total:all.total,active:active.total,overLimit:usage.total,providerConfigured:billing.providerConfigured};}catch{/* No guessed values when the authoritative summary is unavailable. */}}
-return{totalCount:Number(orgCounts.total??0),activeCount:Number(orgCounts.active??0),pendingCount:Number(orgCounts.pending??0),suspendedCount:Number(orgCounts.suspended??0),recent,jobs,activity,commercial};};
+return{totalCount:Number(orgCounts.total??0),activeCount:Number(orgCounts.active??0),pendingCount:Number(orgCounts.pending??0),suspendedCount:Number(orgCounts.suspended??0),recent,jobs,activity,canViewAudit:hasPlatformPermission(context.user.platformRole,p.auditView),commercial};};

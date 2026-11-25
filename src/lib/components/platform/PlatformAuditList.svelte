@@ -16,13 +16,9 @@ interface SerializedAuditRow {
     id: string;
     action: string;
     resource: string;
-    organizationId: string | null;
     createdAt: string;
   };
   actor: {
-    name: string | null;
-  } | null;
-  organization?: {
     name: string | null;
   } | null;
 }
@@ -108,7 +104,7 @@ const totalPages = $derived(Math.max(1, pageCount));
             Governance Ledger Events
           </CardTitle>
           <p class="text-xs text-muted">
-            Chronological audit stream recording security, authorization, and tenant lifecycle activity
+            Chronological audit stream for global platform activity
           </p>
         </div>
         <div class="relative w-full sm:w-72">
@@ -126,11 +122,11 @@ const totalPages = $derived(Math.max(1, pageCount));
                 <th class="px-4 py-3">Actor</th>
                 <th class="px-4 py-3">Action Event</th>
                 <th class="px-4 py-3">Resource</th>
-                <th class="px-4 py-3">Scope / Tenant</th>
+                <th class="px-4 py-3">Scope</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-border/50">
-              {#each rows as { audit, actor, organization }}<tr class="hover:bg-slate-50/70 transition-colors">
+              {#each rows as { audit, actor }}<tr class="hover:bg-slate-50/70 transition-colors">
                   <td class="px-4 py-3 text-xs text-muted whitespace-nowrap">
                     <div class="flex items-center gap-1.5">
                       <SvgIcon name="Clock" class="h-3 w-3 text-slate-400" />
@@ -151,9 +147,7 @@ const totalPages = $derived(Math.max(1, pageCount));
                     {audit.resource}
                   </td>
                   <td class="px-4 py-3 text-xs">
-                    {#if organization?.name}<span class="font-medium text-slate-800">{organization.name}</span>{:else}{#if audit.organizationId}<span class="font-mono text-slate-500">{audit.organizationId.slice(0, 8)}…</span>{:else}<span class="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-                        Global Platform
-                      </span>{/if}{/if}
+                    <span class="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">Global Platform</span>
                   </td>
                 </tr>{/each}
             </tbody>

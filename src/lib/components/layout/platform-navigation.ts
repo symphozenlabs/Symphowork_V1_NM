@@ -33,3 +33,16 @@ export const allPlatformItems = platformNavGroups.flatMap((group) =>
   group.items.map(({ label, href }) => ({ label, href }))
 );
 
+export function platformNavigationForRole(role: string) {
+  if (role === "PLATFORM_OWNER" || role === "PRODUCT_OWNER") return platformNavGroups;
+  return platformNavGroups
+    .map((group) => ({ ...group, items: group.items.filter((item) => item.href !== "/platform/audit") }))
+    .filter((group) => group.items.length > 0);
+}
+
+export function platformItemsForRole(role: string) {
+  return platformNavigationForRole(role).flatMap((group) =>
+    group.items.map(({ label, href }) => ({ label, href }))
+  );
+}
+

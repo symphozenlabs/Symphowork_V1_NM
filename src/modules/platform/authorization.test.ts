@@ -1,9 +1,23 @@
-import { describe, expect, it } from "vitest";
-import { hasPlatformPermission, PLATFORM_PERMISSIONS, platformConsoleTitle } from "./authorization";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+const { requireSession } = vi.hoisted(() => ({ requireSession: vi.fn() }));
+vi.mock("@/modules/identity/auth", () => ({ requireSession }));
+import { hasPlatformPermission, authorizePlatform, PLATFORM_PERMISSIONS, platformConsoleTitle } from "./authorization";
 describe("platform authorization boundary", () => {
   it("does not treat organization roles as platform roles", () => {
     expect(hasPlatformPermission("ORGANIZATION_OWNER", PLATFORM_PERMISSIONS.organizationView)).toBe(false);
     expect(hasPlatformPermission("EMPLOYEE", PLATFORM_PERMISSIONS.organizationView)).toBe(false);
+  });
+  it("authorizes the audit permission only for PLATFORM_OWNER and PRODUCT_OWNER", async () => {
+    const allowed = ["PLATFORM_OWNER", "PRODUCT_OWNER"];
+    const denied = ["PLATFORM_ADMIN", "PLATFORM_SUPPORT", "PLATFORM_BILLING", "ORGANIZATION_OWNER", "HR_ADMIN", "HR_EXECUTIVE", "FINANCE_ADMIN", "MANAGER", "TEAM_LEAD", "PROJECT_MANAGER", "RECRUITER", "EMPLOYEE"];
+    for (const role of allowed) {
+      requireSession.mockResolvedValueOnce({ id: "actor", platformRole: role });
+      await expect(authorizePlatform(PLATFORM_PERMISSIONS.auditView)).resolves.toMatchObject({ platformRole: role });
+    }
+    for (const role of denied) {
+      requireSession.mockResolvedValueOnce({ id: "actor", platformRole: role });
+      await expect(authorizePlatform(PLATFORM_PERMISSIONS.auditView)).rejects.toMatchObject({ status: 403, code: "FORBIDDEN" });
+    }
   });
   it("limits platform role capabilities", () => {
     expect(hasPlatformPermission("PRODUCT_OWNER", PLATFORM_PERMISSIONS.billingManage)).toBe(true);

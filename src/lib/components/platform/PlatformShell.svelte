@@ -1,8 +1,8 @@
 <script lang="ts">
 import {navigating} from '$app/state';
 import PendingContent from '$lib/components/loading/PendingContent.svelte';
-import type {Snippet}from'svelte';import type{Context}from'$lib/auth/policy';import{platformConsoleTitle}from'$lib/auth/platform';import{platformNavGroups,allPlatformItems}from'$lib/components/layout/platform-navigation';
-let{context,children}:{context:Context;children:Snippet}=$props();const user=$derived(context.user);const consoleTitle=$derived(platformConsoleTitle(user.platformRole));
+import type {Snippet}from'svelte';import type{Context}from'$lib/auth/policy';import{platformConsoleTitle}from'$lib/auth/platform';import{platformNavigationForRole,platformItemsForRole}from'$lib/components/layout/platform-navigation';
+let{context,children}:{context:Context;children:Snippet}=$props();const user=$derived(context.user);const consoleTitle=$derived(platformConsoleTitle(user.platformRole));const navigation=$derived(platformNavigationForRole(user.platformRole));const mobileNavigation=$derived(platformItemsForRole(user.platformRole));
 
 import SvgIcon from "$lib/components/ui/Icon.svelte";
 import SidebarNav from "$lib/components/layout/SidebarNav.svelte";
@@ -27,7 +27,7 @@ import LogoutButton from "$lib/components/layout/LogoutButton.svelte";
         </div>
 
         <div class="flex flex-1 min-h-0 flex-col overflow-y-auto overflow-x-hidden px-4 pb-6 pt-5 [scrollbar-width:thin] [scrollbar-color:var(--border)_transparent]">
-          <SidebarNav groups={platformNavGroups} />
+          <SidebarNav groups={navigation} />
 
           <div class="mt-auto pt-6">
             <div class="rounded-xl border border-[#D5E1D4] bg-surface p-3 shadow-xs">
@@ -45,7 +45,7 @@ import LogoutButton from "$lib/components/layout/LogoutButton.svelte";
       <div class="flex min-h-screen flex-col lg:pl-64">
         <header class="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-border bg-surface/90 px-5 backdrop-blur-md md:px-8">
           <div class="flex items-center gap-3">
-            <MobileNav items={allPlatformItems} label="Open platform navigation" />
+            <MobileNav items={mobileNavigation} label="Open platform navigation" />
             <Breadcrumb type="platform" />
           </div>
 

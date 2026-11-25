@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { isRouteActive } from "$lib/navigation";
+import { platformItemsForRole } from "$lib/components/layout/platform-navigation";
 
 describe("isRouteActive utility", () => {
+  it("shows the audit navigation item only to platform and product owners", () => {
+    const allowed = ["PLATFORM_OWNER", "PRODUCT_OWNER"];
+    const denied = ["PLATFORM_ADMIN", "PLATFORM_SUPPORT", "PLATFORM_BILLING", "ORGANIZATION_OWNER", "HR_ADMIN", "HR_EXECUTIVE", "FINANCE_ADMIN", "MANAGER", "TEAM_LEAD", "PROJECT_MANAGER", "RECRUITER", "EMPLOYEE"];
+    for (const role of allowed) expect(platformItemsForRole(role).some((item) => item.href === "/platform/audit")).toBe(true);
+    for (const role of denied) expect(platformItemsForRole(role).some((item) => item.href === "/platform/audit")).toBe(false);
+  });
+
   const workspaceHrefs = [
     "/app",
     "/app/employees",

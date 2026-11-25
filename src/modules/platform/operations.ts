@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, ne, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, ilike, ne, or } from "drizzle-orm";
 import { withPlatformTransaction } from "@/db/client";
 import { auditLogs, employees, invitations, organizations, provisioningJobs, subscriptions, users } from "@/db/schema";
 import { AppError } from "@/lib/errors";
@@ -6,6 +6,7 @@ import { recordAudit } from "@/lib/audit";
 import { authorizePlatform, authorizePlatformTargetOrganization, hasPlatformPermission, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
 import { runProvisioning } from "@/modules/platform/provisioning";
 import { organizationStatusSchema, platformRoleSchema } from "@/modules/platform/validation";
+import { platformAuditWhere } from "@/modules/platform/audit-query";
 import { z } from "zod";
 import { buildInvitationUrl, getInvitationBaseUrl, sendInvitationEmail } from "@/lib/email";
 import { createOpaqueToken, hashToken } from "@/lib/crypto";
@@ -312,9 +313,8 @@ export interface PlatformAuditQueryInput {
 
 export interface PlatformAuditResult {
   rows: Array<{
-    audit: typeof auditLogs.$inferSelect;
-    actor: { id: string; name: string; email: string } | null;
-    organization?: { id: string; name: string; slug: string } | null;
+    audit: { id: string; action: string; resource: string; createdAt: Date };
+    actor: { name: string };
   }>;
   total: number;
   page: number;
@@ -327,31 +327,25 @@ export async function listPlatformAudit(
 ): Promise<PlatformAuditResult> {
   await authorizePlatform(PLATFORM_PERMISSIONS.auditView);
   const options = typeof input === "string" ? { query: input } : (input ?? {});
-  const page = Math.max(1, options.page ?? 1);
-  const pageSize = Math.min(100, Math.max(1, options.pageSize ?? 10));
-  const query = options.query?.trim();
-
-  const whereClause = query
-    ? or(
-        ilike(users.fullName, `%${query}%`),
-        ilike(auditLogs.action, `%${query}%`),
-        ilike(auditLogs.resource, `%${query}%`),
-        ilike(organizations.name, `%${query}%`),
-        ilike(organizations.slug, `%${query}%`),
-        sql`${auditLogs.organizationId}::text ilike ${`%${query}%`}`
-      )
-    : undefined;
+  const requestedPage = Number.isFinite(options.page) ? Math.floor(options.page!) : 1;
+  const page = Math.max(1, requestedPage);
+  const requestedPageSize = Number.isFinite(options.pageSize) ? Math.floor(options.pageSize!) : 10;
+  const pageSize = Math.min(100, Math.max(1, requestedPageSize));
+  const whereClause = platformAuditWhere(options.query);
 
   return withPlatformTransaction(async (tx) => {
     const rows = await tx
       .select({
-        audit: auditLogs,
-        actor: { id: users.id, name: users.fullName, email: users.email },
-        organization: { id: organizations.id, name: organizations.name, slug: organizations.slug },
+        audit: {
+          id: auditLogs.id,
+          action: auditLogs.action,
+          resource: auditLogs.resource,
+          createdAt: auditLogs.createdAt,
+        },
+        actor: { name: users.fullName },
       })
       .from(auditLogs)
-      .leftJoin(users, eq(auditLogs.actorUserId, users.id))
-      .leftJoin(organizations, eq(auditLogs.organizationId, organizations.id))
+      .innerJoin(users, eq(auditLogs.actorUserId, users.id))
       .where(whereClause)
       .orderBy(desc(auditLogs.createdAt))
       .limit(pageSize)
@@ -360,8 +354,7 @@ export async function listPlatformAudit(
     const [{ total }] = await tx
       .select({ total: count() })
       .from(auditLogs)
-      .leftJoin(users, eq(auditLogs.actorUserId, users.id))
-      .leftJoin(organizations, eq(auditLogs.organizationId, organizations.id))
+      .innerJoin(users, eq(auditLogs.actorUserId, users.id))
       .where(whereClause);
 
     return {

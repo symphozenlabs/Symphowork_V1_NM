@@ -243,7 +243,7 @@ import CardDescription from "$lib/components/ui/CardDescription.svelte";
         </Card>
 
         
-        <Card class="flex flex-col">
+        {#if data.canViewAudit}<Card class="flex flex-col">
           <CardHeader class="flex flex-row items-center justify-between pb-3">
             <div>
               <CardTitle class="text-base font-bold text-foreground">Governance Stream</CardTitle>
@@ -272,6 +272,6 @@ import CardDescription from "$lib/components/ui/CardDescription.svelte";
                 No audit events recorded.
               </div>{/if}
           </CardContent>
-        </Card>
+        </Card>{/if}
       </div>
     </div>
