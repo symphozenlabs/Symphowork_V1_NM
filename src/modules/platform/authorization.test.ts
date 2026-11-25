@@ -33,6 +33,19 @@ describe("platform authorization boundary", () => {
     requireSession.mockResolvedValueOnce({ id: "actor", platformRole: "PLATFORM_BILLING" });
     await expect(authorizePlatform(PLATFORM_PERMISSIONS.provisioningView)).rejects.toMatchObject({ status: 403, code: "FORBIDDEN" });
   });
+  it("authorizes supportView and planView for PLATFORM_SUPPORT while denying provisioningView and planManage", async () => {
+    requireSession.mockResolvedValueOnce({ id: "actor", platformRole: "PLATFORM_SUPPORT" });
+    await expect(authorizePlatform(PLATFORM_PERMISSIONS.supportView)).resolves.toMatchObject({ platformRole: "PLATFORM_SUPPORT" });
+
+    requireSession.mockResolvedValueOnce({ id: "actor", platformRole: "PLATFORM_SUPPORT" });
+    await expect(authorizePlatform(PLATFORM_PERMISSIONS.planView)).resolves.toMatchObject({ platformRole: "PLATFORM_SUPPORT" });
+
+    requireSession.mockResolvedValueOnce({ id: "actor", platformRole: "PLATFORM_SUPPORT" });
+    await expect(authorizePlatform(PLATFORM_PERMISSIONS.provisioningView)).rejects.toMatchObject({ status: 403, code: "FORBIDDEN" });
+
+    requireSession.mockResolvedValueOnce({ id: "actor", platformRole: "PLATFORM_SUPPORT" });
+    await expect(authorizePlatform(PLATFORM_PERMISSIONS.planManage)).rejects.toMatchObject({ status: 403, code: "FORBIDDEN" });
+  });
   it("maps all 5 platform roles to their respective console titles", () => {
     expect(platformConsoleTitle("PLATFORM_OWNER")).toBe("Platform Owner Console");
     expect(platformConsoleTitle("PRODUCT_OWNER")).toBe("Product Owner Console");

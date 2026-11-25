@@ -40,6 +40,15 @@ export const PLATFORM_BILLING_ALLOWED_PATHS = new Set([
   "/platform/analytics",
 ]);
 
+export const PLATFORM_SUPPORT_ALLOWED_PATHS = new Set([
+  "/platform",
+  "/platform/organizations",
+  "/platform/plans",
+  "/platform/subscriptions",
+  "/platform/support",
+  "/platform/health",
+]);
+
 export function platformNavigationForRole(role: string) {
   if (role === "PLATFORM_OWNER" || role === "PRODUCT_OWNER") return platformNavGroups;
   if (role === "PLATFORM_BILLING") {
@@ -47,6 +56,14 @@ export function platformNavigationForRole(role: string) {
       .map((group) => ({
         ...group,
         items: group.items.filter((item) => PLATFORM_BILLING_ALLOWED_PATHS.has(item.href)),
+      }))
+      .filter((group) => group.items.length > 0);
+  }
+  if (role === "PLATFORM_SUPPORT") {
+    return platformNavGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => PLATFORM_SUPPORT_ALLOWED_PATHS.has(item.href)),
       }))
       .filter((group) => group.items.length > 0);
   }

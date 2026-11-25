@@ -42,17 +42,41 @@ describe("isRouteActive utility", () => {
     expect(billingHrefs).not.toContain("/platform/features");
   });
 
-  it("preserves navigation for PLATFORM_ADMIN, PLATFORM_SUPPORT, PLATFORM_OWNER, PRODUCT_OWNER", () => {
+  it("restricts navigation items exclusively for PLATFORM_SUPPORT", () => {
+    const supportItems = platformItemsForRole("PLATFORM_SUPPORT");
+    const supportHrefs = supportItems.map((item) => item.href);
+
+    expect(supportHrefs).toEqual([
+      "/platform",
+      "/platform/organizations",
+      "/platform/plans",
+      "/platform/subscriptions",
+      "/platform/support",
+      "/platform/health",
+    ]);
+
+    expect(supportHrefs).not.toContain("/platform/provisioning");
+    expect(supportHrefs).not.toContain("/platform/features");
+    expect(supportHrefs).not.toContain("/platform/configuration");
+    expect(supportHrefs).not.toContain("/platform/users");
+    expect(supportHrefs).not.toContain("/platform/audit");
+    expect(supportHrefs).not.toContain("/platform/analytics");
+  });
+
+  it("preserves navigation for PLATFORM_ADMIN, PLATFORM_OWNER, PRODUCT_OWNER", () => {
     const ownerHrefs = platformItemsForRole("PLATFORM_OWNER").map((i) => i.href);
     expect(ownerHrefs).toContain("/platform/provisioning");
     expect(ownerHrefs).toContain("/platform/support");
     expect(ownerHrefs).toContain("/platform/audit");
 
-    const supportHrefs = platformItemsForRole("PLATFORM_SUPPORT").map((i) => i.href);
-    expect(supportHrefs).toContain("/platform/provisioning");
-    expect(supportHrefs).toContain("/platform/support");
-    expect(supportHrefs).toContain("/platform/health");
-    expect(supportHrefs).not.toContain("/platform/audit");
+    const adminHrefs = platformItemsForRole("PLATFORM_ADMIN").map((i) => i.href);
+    expect(adminHrefs).toContain("/platform/provisioning");
+    expect(adminHrefs).toContain("/platform/support");
+    expect(adminHrefs).toContain("/platform/features");
+    expect(adminHrefs).toContain("/platform/configuration");
+    expect(adminHrefs).toContain("/platform/users");
+    expect(adminHrefs).toContain("/platform/health");
+    expect(adminHrefs).not.toContain("/platform/audit");
   });
 
   const workspaceHrefs = [
