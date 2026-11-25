@@ -31,8 +31,8 @@ let mockShifts: MockShift[] = [];
 let lastInsertedShift: (MockShift & Record<string, unknown>) | null = null;
 let lastUpdatedShift: Record<string, unknown> | null = null;
 
-vi.mock("@/db/client", () => ({
-  db: {
+vi.mock("@/db/client", () => {
+  const db = {
     select: vi.fn(() => ({
       from: vi.fn((table: unknown) => ({
         where: vi.fn().mockImplementation(() => {
@@ -55,8 +55,12 @@ vi.mock("@/db/client", () => ({
     execute: vi.fn().mockImplementation(async () => {
       return [{ id: "shift-1", ...lastUpdatedShift }];
     }),
-  },
-}));
+  };
+  return {
+    db,
+    withTenantTransaction: async (_organizationId: string, run: (tx: typeof db) => Promise<unknown>) => run(db),
+  };
+});
 
 describe("Shifts API — Creation, Editing, Validation & Retrieval", () => {
   beforeEach(() => {
@@ -226,7 +230,7 @@ describe("Shifts API — Creation, Editing, Validation & Retrieval", () => {
     });
 
     const res = await PATCH(req, {
-      params: Promise.resolve({ resource: "shifts", itemId: "shift-1" }),
+      params: { resource: "shifts", itemId: "shift-1" },
     });
 
     expect(res.status).toBe(200);
@@ -246,7 +250,7 @@ describe("Shifts API — Creation, Editing, Validation & Retrieval", () => {
     });
 
     const res = await PATCH(req, {
-      params: Promise.resolve({ resource: "shifts", itemId: "shift-1" }),
+      params: { resource: "shifts", itemId: "shift-1" },
     });
 
     expect(res.status).toBe(400);
@@ -340,7 +344,7 @@ describe("Shifts API — Creation, Editing, Validation & Retrieval", () => {
     });
 
     const res = await PATCH(req, {
-      params: Promise.resolve({ resource: "shifts", itemId: "shift-1" }),
+      params: { resource: "shifts", itemId: "shift-1" },
     });
 
     expect(res.status).toBe(200);
@@ -358,7 +362,7 @@ describe("Shifts API — Creation, Editing, Validation & Retrieval", () => {
     });
 
     const res = await PATCH(req, {
-      params: Promise.resolve({ resource: "shifts", itemId: "shift-1" }),
+      params: { resource: "shifts", itemId: "shift-1" },
     });
 
     expect(res.status).toBe(400);
@@ -376,7 +380,7 @@ describe("Shifts API — Creation, Editing, Validation & Retrieval", () => {
     });
 
     const res = await PATCH(req, {
-      params: Promise.resolve({ resource: "shifts", itemId: "shift-1" }),
+      params: { resource: "shifts", itemId: "shift-1" },
     });
 
     expect(res.status).toBe(400);

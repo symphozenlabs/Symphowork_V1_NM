@@ -26,7 +26,7 @@ describe('private chat attachment route', () => {
     mocks.resolveTenantContext.mockResolvedValue({ organization: null, user: { id: 'user-qa' } });
 
     const response = await GET(new Request('http://localhost/api/app/chat/conversations/test/attachments/test'), {
-      params: Promise.resolve({ conversationId, attachmentId })
+      params: { conversationId, attachmentId }
     });
 
     expect(response.status).toBe(403);
@@ -44,7 +44,7 @@ describe('private chat attachment route', () => {
     });
 
     const response = await GET(new Request('http://localhost/api/app/chat/conversations/test/attachments/test'), {
-      params: Promise.resolve({ conversationId, attachmentId })
+      params: { conversationId, attachmentId }
     });
 
     expect(response.status).toBe(200);

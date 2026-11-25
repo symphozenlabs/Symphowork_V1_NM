@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { createConversation, listConversations } from "@/modules/collaboration/service";
@@ -13,7 +12,7 @@ export async function GET() {
       userId: tenant.user.id,
     });
     const unreadConversationCount = conversations.filter((c) => (c.unreadCount ?? 0) > 0).length;
-    return NextResponse.json({ success: true, conversations, unreadConversationCount });
+    return Response.json({ success: true, conversations, unreadConversationCount });
   } catch (error) {
     return errorResponse(error);
   }
@@ -31,7 +30,7 @@ export async function POST(request: Request) {
       name: body.name,
       employeeIds: body.employeeIds,
     });
-    return NextResponse.json({ success: true, conversation }, { status: 201 });
+    return Response.json({ success: true, conversation }, { status: 201 });
   } catch (error) {
     return errorResponse(error);
   }

@@ -68,6 +68,8 @@ vi.mock("@/modules/tenancy/context", () => ({ resolveTenantContext }));
 vi.mock("@/modules/tenancy/authorization", () => ({ authorize }));
 vi.mock("@/lib/audit", () => ({ recordAudit }));
 vi.mock("@/db/client", () => ({ db }));
+vi.mock("@/lib/server/tenant-api-read", () => ({ tenantApiRead: (_tenant: unknown, read: (tx?: unknown) => Promise<unknown>) => read() }));
+vi.mock("@/lib/server/tenant-api-write", () => ({ tenantApiWrite: (_tenant: unknown, write: (tx?: unknown) => Promise<unknown>) => write() }));
 
 const { POST, PATCH } = await import("@/lib/server/api/app/employees/[employeeId]/onboarding/route");
 
@@ -117,7 +119,7 @@ describe("employee onboarding API lifecycle and idempotency", () => {
   it("completes pending onboarding and creates an employeeHistory event when checklist is 3/3 complete", async () => {
     mockPendingItems = []; // No pending items remain
 
-    const context = { params: Promise.resolve({ employeeId }) };
+    const context = { params: { employeeId } };
     const response = await POST(new Request("http://localhost/api/app/employees/emp-2222/onboarding", { method: "POST" }), context);
     const body = await response.json();
 
@@ -155,7 +157,7 @@ describe("employee onboarding API lifecycle and idempotency", () => {
       status: "active",
     };
 
-    const context = { params: Promise.resolve({ employeeId }) };
+    const context = { params: { employeeId } };
     const response = await POST(new Request("http://localhost/api/app/employees/emp-2222/onboarding", { method: "POST" }), context);
     const body = await response.json();
 
@@ -173,7 +175,7 @@ describe("employee onboarding API lifecycle and idempotency", () => {
   it("rejects POST completion when checklist items are still pending", async () => {
     mockPendingItems = [{ id: "item-1", status: "pending" }];
 
-    const context = { params: Promise.resolve({ employeeId }) };
+    const context = { params: { employeeId } };
     const response = await POST(new Request("http://localhost/api/app/employees/emp-2222/onboarding", { method: "POST" }), context);
     const body = await response.json();
 
@@ -191,7 +193,7 @@ describe("employee onboarding API lifecycle and idempotency", () => {
       completedAt: existingCompletedAt,
     };
 
-    const context = { params: Promise.resolve({ employeeId }) };
+    const context = { params: { employeeId } };
     const request = new Request("http://localhost/api/app/employees/emp-2222/onboarding", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
@@ -215,7 +217,7 @@ describe("employee onboarding API lifecycle and idempotency", () => {
       completedAt: null,
     };
 
-    const context = { params: Promise.resolve({ employeeId }) };
+    const context = { params: { employeeId } };
     const request = new Request("http://localhost/api/app/employees/emp-2222/onboarding", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
@@ -232,7 +234,7 @@ describe("employee onboarding API lifecycle and idempotency", () => {
 
   it("rejects POST completion when joiningDate is missing", async () => {
     mockEmployee!.joiningDate = null;
-    const context = { params: Promise.resolve({ employeeId }) };
+    const context = { params: { employeeId } };
     const response = await POST(new Request("http://localhost/api/app/employees/emp-2222/onboarding", { method: "POST" }), context);
     const body = await response.json();
     expect(response.status).toBe(400);
@@ -241,7 +243,7 @@ describe("employee onboarding API lifecycle and idempotency", () => {
 
   it("rejects POST completion when department is missing for a mandatory role", async () => {
     mockEmployee!.departmentId = null;
-    const context = { params: Promise.resolve({ employeeId }) };
+    const context = { params: { employeeId } };
     const response = await POST(new Request("http://localhost/api/app/employees/emp-2222/onboarding", { method: "POST" }), context);
     const body = await response.json();
     expect(response.status).toBe(400);
@@ -250,7 +252,7 @@ describe("employee onboarding API lifecycle and idempotency", () => {
 
   it("rejects POST completion when assigned department is inactive", async () => {
     mockDepartments = [{ id: "dept-1111", organizationId, status: "inactive" }];
-    const context = { params: Promise.resolve({ employeeId }) };
+    const context = { params: { employeeId } };
     const response = await POST(new Request("http://localhost/api/app/employees/emp-2222/onboarding", { method: "POST" }), context);
     const body = await response.json();
     expect(response.status).toBe(400);
@@ -259,7 +261,7 @@ describe("employee onboarding API lifecycle and idempotency", () => {
 
   it("rejects POST completion when assigned department belongs to another tenant", async () => {
     mockDepartments = []; // not found in this organization
-    const context = { params: Promise.resolve({ employeeId }) };
+    const context = { params: { employeeId } };
     const response = await POST(new Request("http://localhost/api/app/employees/emp-2222/onboarding", { method: "POST" }), context);
     const body = await response.json();
     expect(response.status).toBe(400);
@@ -268,7 +270,7 @@ describe("employee onboarding API lifecycle and idempotency", () => {
 
   it("rejects POST completion when assigned shift belongs to another tenant", async () => {
     mockShifts = []; // not found in this organization
-    const context = { params: Promise.resolve({ employeeId }) };
+    const context = { params: { employeeId } };
     const response = await POST(new Request("http://localhost/api/app/employees/emp-2222/onboarding", { method: "POST" }), context);
     const body = await response.json();
     expect(response.status).toBe(400);
@@ -277,7 +279,7 @@ describe("employee onboarding API lifecycle and idempotency", () => {
 
   it("rejects POST completion when assigned shift is inactive", async () => {
     mockShifts = [{ id: "shift-1111", organizationId, status: "inactive" }];
-    const context = { params: Promise.resolve({ employeeId }) };
+    const context = { params: { employeeId } };
     const response = await POST(new Request("http://localhost/api/app/employees/emp-2222/onboarding", { method: "POST" }), context);
     const body = await response.json();
     expect(response.status).toBe(400);

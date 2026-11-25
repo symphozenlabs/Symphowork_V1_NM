@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { withTenantTransaction } from "@/db/client";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { authorize } from "@/modules/tenancy/authorization";
@@ -49,22 +49,25 @@ export async function GET(request: Request) {
     // For CSV exports, get all records up to 1000
     const effectivePageSize = isExport ? 1000 : pageSize;
 
-    const data = await getOrganizationAttendanceDashboard({
-      organizationId: tenant.organization.id,
-      actorRoleKey: callerRoleKey,
-      date,
-      search,
-      departmentId,
-      shiftId,
-      status,
-      page: isExport ? 1 : page,
-      pageSize: effectivePageSize,
-    });
+    const organizationId = tenant.organization.id;
+    const data = await withTenantTransaction(organizationId, (tx) =>
+      getOrganizationAttendanceDashboard({
+        organizationId,
+        actorRoleKey: callerRoleKey,
+        date,
+        search,
+        departmentId,
+        shiftId,
+        status,
+        page: isExport ? 1 : page,
+        pageSize: effectivePageSize,
+      }, tx)
+    );
 
     if (isExport) {
       const csv = exportOrganizationAttendanceCsv(data.employees, data.timezone);
       const filename = `attendance-${data.date}.csv`;
-      return new NextResponse(csv, {
+      return new Response(csv, {
         status: 200,
         headers: {
           "Content-Type": "text/csv; charset=utf-8",
@@ -73,7 +76,7 @@ export async function GET(request: Request) {
       });
     }
 
-    return NextResponse.json(data);
+    return Response.json(data);
   } catch (error) {
     return errorResponse(error);
   }

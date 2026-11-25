@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { listEligibleManagers } from "@/modules/departments/service";
@@ -14,7 +13,7 @@ export async function GET(request: Request) {
     const departmentId = searchParams.get("departmentId") || undefined;
 
     const managers = await listEligibleManagers(tenant.organization.id, departmentId);
-    return NextResponse.json({ success: true, managers });
+    return Response.json({ success: true, managers });
   } catch (error) {
     return errorResponse(error);
   }

@@ -44,7 +44,7 @@ const tx = {
   select: vi.fn(() => ({
     from: vi.fn((table: unknown) => ({
       where: vi.fn().mockImplementation(() => {
-        if (table === employees) return Promise.resolve(mockEmployees);
+        if (table === employees) return Object.assign(Promise.resolve(mockEmployees), { for: vi.fn().mockResolvedValue(mockEmployees) });
         return Promise.resolve([]);
       }),
     })),
@@ -55,7 +55,7 @@ const tx = {
         if (table === invitations) {
           const inv = mockInvitations[0];
           if (inv) Object.assign(inv, setData);
-          return Promise.resolve([inv]);
+          return { returning: vi.fn().mockResolvedValue(inv ? [inv] : []) };
         }
         if (table === employees) {
           const emp = mockEmployees[0];
@@ -195,7 +195,7 @@ describe("Role-Based Invitation and Revocation Workflow", () => {
       });
 
       const response = await inviteRoutePost(request, {
-        params: Promise.resolve({ employeeId }),
+        params: { employeeId },
       });
       const body = await response.json();
 
@@ -218,7 +218,7 @@ describe("Role-Based Invitation and Revocation Workflow", () => {
       });
 
       const response = await inviteRoutePost(request, {
-        params: Promise.resolve({ employeeId }),
+        params: { employeeId },
       });
       const body = await response.json();
 
@@ -240,7 +240,7 @@ describe("Role-Based Invitation and Revocation Workflow", () => {
       });
 
       const response = await inviteRoutePost(request, {
-        params: Promise.resolve({ employeeId }),
+        params: { employeeId },
       });
       const body = await response.json();
 
@@ -263,7 +263,7 @@ describe("Role-Based Invitation and Revocation Workflow", () => {
       });
 
       const response = await inviteRoutePost(request, {
-        params: Promise.resolve({ employeeId }),
+        params: { employeeId },
       });
       const body = await response.json();
 
@@ -285,7 +285,7 @@ describe("Role-Based Invitation and Revocation Workflow", () => {
       });
 
       const response = await inviteRoutePost(request, {
-        params: Promise.resolve({ employeeId }),
+        params: { employeeId },
       });
       const body = await response.json();
 
@@ -307,7 +307,7 @@ describe("Role-Based Invitation and Revocation Workflow", () => {
       });
 
       const response = await inviteRoutePost(request, {
-        params: Promise.resolve({ employeeId }),
+        params: { employeeId },
       });
       const body = await response.json();
 
@@ -329,7 +329,7 @@ describe("Role-Based Invitation and Revocation Workflow", () => {
       });
 
       const response = await inviteRoutePost(request, {
-        params: Promise.resolve({ employeeId }),
+        params: { employeeId },
       });
       const body = await response.json();
 
@@ -368,7 +368,7 @@ describe("Role-Based Invitation and Revocation Workflow", () => {
       );
 
       const response = await revokeRoutePost(request, {
-        params: Promise.resolve({ employeeId }),
+        params: { employeeId },
       });
       const body = await response.json();
 
@@ -400,7 +400,7 @@ describe("Role-Based Invitation and Revocation Workflow", () => {
       );
 
       const response = await revokeRoutePost(request, {
-        params: Promise.resolve({ employeeId }),
+        params: { employeeId },
       });
       const body = await response.json();
 
@@ -424,7 +424,7 @@ describe("Role-Based Invitation and Revocation Workflow", () => {
       );
 
       const response = await revokeRoutePost(request, {
-        params: Promise.resolve({ employeeId }),
+        params: { employeeId },
       });
       const body = await response.json();
 

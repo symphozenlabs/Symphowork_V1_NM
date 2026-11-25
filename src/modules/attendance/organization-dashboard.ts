@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, gte, inArray, lte } from "drizzle-orm";
-import { db } from "@/db/client";
+import { db, type DbTransaction } from "@/db/client";
 import {
   attendancePunches,
   attendanceRecords,
@@ -148,7 +148,10 @@ export function formatTimeInTimezone(
   }
 }
 
-export async function getOrganizationAttendanceDashboard(input: GetOrganizationAttendanceInput) {
+export async function getOrganizationAttendanceDashboard(
+  input: GetOrganizationAttendanceInput,
+  client: DbTransaction | typeof db = db
+) {
   // 1. Verify caller privilege: ORGANIZATION_OWNER, HR_ADMIN, or HR_EXECUTIVE
   const privilegedRoles = new Set(["ORGANIZATION_OWNER", "HR_ADMIN", "HR_EXECUTIVE"]);
   if (input.actorRoleKey && !privilegedRoles.has(input.actorRoleKey)) {
@@ -160,7 +163,7 @@ export async function getOrganizationAttendanceDashboard(input: GetOrganizationA
   }
 
   // 2. Fetch organization configuration
-  const [organization] = await db
+  const [organization] = await client
     .select()
     .from(organizations)
     .where(eq(organizations.id, input.organizationId));
@@ -174,9 +177,19 @@ export async function getOrganizationAttendanceDashboard(input: GetOrganizationA
 
   // 3. Fetch Master Data: shifts, departments, designations
   const [allShifts, allDepartments, allDesignations] = await Promise.all([
-    db.select().from(shifts).where(eq(shifts.organizationId, input.organizationId)),
-    db.select().from(departments).where(eq(departments.organizationId, input.organizationId)),
-    db.select().from(designations).where(eq(designations.organizationId, input.organizationId)),
+    client.select({
+      id: shifts.id,
+      organizationId: shifts.organizationId,
+      name: shifts.name,
+      code: shifts.code,
+      startTime: shifts.startTime,
+      endTime: shifts.endTime,
+      overnight: shifts.overnight,
+      breakMinutes: shifts.breakMinutes,
+      graceMinutes: shifts.graceMinutes,
+    }).from(shifts).where(eq(shifts.organizationId, input.organizationId)),
+    client.select().from(departments).where(eq(departments.organizationId, input.organizationId)),
+    client.select().from(designations).where(eq(designations.organizationId, input.organizationId)),
   ]);
 
   const shiftById = new Map(allShifts.map((s) => [s.id, s]));
@@ -185,14 +198,14 @@ export async function getOrganizationAttendanceDashboard(input: GetOrganizationA
 
   // 4. Check Calendar: Working days & Holidays for targetDate
   const dayOfWeek = new Date(`${targetDate}T00:00:00Z`).getUTCDay();
-  const workingDayRows = await db
+  const workingDayRows = await client
     .select()
     .from(workingDays)
     .where(eq(workingDays.organizationId, input.organizationId));
   const workingDayMap = new Map(workingDayRows.map((r) => [r.dayOfWeek, r.isWorkingDay]));
   const isWorkingDay = workingDayMap.size > 0 ? (workingDayMap.get(dayOfWeek) ?? true) : true;
 
-  const holidayRows = await db
+  const holidayRows = await client
     .select()
     .from(holidays)
     .where(
@@ -206,7 +219,7 @@ export async function getOrganizationAttendanceDashboard(input: GetOrganizationA
   const holidayName = isHoliday ? holidayRows[0].name : undefined;
 
   // 5. Fetch Active Employees
-  const activeEmployees = await db
+  const activeEmployees = await client
     .select()
     .from(employees)
     .where(
@@ -218,7 +231,7 @@ export async function getOrganizationAttendanceDashboard(input: GetOrganizationA
     .orderBy(asc(employees.displayName));
 
   // 6. Fetch approved leaves for targetDate
-  const approvedLeaves = await db
+  const approvedLeaves = await client
     .select()
     .from(leaveApplications)
     .where(
@@ -232,8 +245,20 @@ export async function getOrganizationAttendanceDashboard(input: GetOrganizationA
   const leaveByEmployeeId = new Map(approvedLeaves.map((l) => [l.employeeId, l]));
 
   // 7. Fetch attendance records for targetDate
-  const records = await db
-    .select()
+  const records = await client
+    .select({
+      id: attendanceRecords.id,
+      employeeId: attendanceRecords.employeeId,
+      scheduledStart: attendanceRecords.scheduledStart,
+      scheduledEnd: attendanceRecords.scheduledEnd,
+      actualFirstIn: attendanceRecords.actualFirstIn,
+      actualLastOut: attendanceRecords.actualLastOut,
+      totalWorkMinutes: attendanceRecords.totalWorkMinutes,
+      netWorkMinutes: attendanceRecords.netWorkMinutes,
+      lateMinutes: attendanceRecords.lateMinutes,
+      earlyDepartureMinutes: attendanceRecords.earlyDepartureMinutes,
+      status: attendanceRecords.status,
+    })
     .from(attendanceRecords)
     .where(
       and(
@@ -247,7 +272,7 @@ export async function getOrganizationAttendanceDashboard(input: GetOrganizationA
   const recordIds = records.map((r) => r.id);
   const punches =
     recordIds.length > 0
-      ? await db
+      ? await client
           .select()
           .from(attendancePunches)
           .where(
@@ -269,7 +294,7 @@ export async function getOrganizationAttendanceDashboard(input: GetOrganizationA
   // 9. Fetch regularization requests for these records
   const regularizations =
     recordIds.length > 0
-      ? await db
+      ? await client
           .select()
           .from(attendanceRegularizationRequests)
           .where(
@@ -464,7 +489,6 @@ export async function getOrganizationAttendanceDashboard(input: GetOrganizationA
     if (row.breakStatus === "on_break") {
       onBreakCount++;
     }
-
     switch (row.status) {
       case "present":
       case "early_departure":

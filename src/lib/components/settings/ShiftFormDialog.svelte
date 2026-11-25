@@ -231,14 +231,14 @@ const handleSubmit = async (e: SubmitEvent) => {
                 <label class="text-xs font-semibold text-slate-800" for="shift-name">
                   Shift Name <span class="text-rose-500">*</span>
                 </label>
-                <Input id="shift-name" value={name} onchange={(e) => setName(e.currentTarget.value)} placeholder="e.g. Regular Day Shift" required disabled={isLoading} />
+                <Input id="shift-name" value={name} oninput={(e) => setName(e.currentTarget.value)} placeholder="e.g. Regular Day Shift" required disabled={isLoading} />
               </div>
 
               <div class="space-y-1.5">
                 <label class="text-xs font-semibold text-slate-800" for="shift-code">
                   Shift Code <span class="text-rose-500">*</span>
                 </label>
-                <Input id="shift-code" value={code} onchange={(e) => setCode(e.currentTarget.value.toUpperCase())} placeholder="e.g. DAY-01, NIGHT" required disabled={isLoading} />
+                <Input id="shift-code" value={code} oninput={(e) => setCode(e.currentTarget.value.toUpperCase())} placeholder="e.g. DAY-01, NIGHT" required disabled={isLoading} />
               </div>
             </div>
 
@@ -247,14 +247,14 @@ const handleSubmit = async (e: SubmitEvent) => {
                 <label class="text-xs font-semibold text-slate-800" for="shift-start">
                   Start Time <span class="text-rose-500">*</span>
                 </label>
-                <Input id="shift-start" type="time" value={startTime} onchange={(e) => setStartTime(e.currentTarget.value)} required disabled={isLoading} />
+                <Input id="shift-start" type="time" value={startTime} oninput={(e) => setStartTime(e.currentTarget.value)} required disabled={isLoading} />
               </div>
 
               <div class="space-y-1.5">
                 <label class="text-xs font-semibold text-slate-800" for="shift-end">
                   End Time <span class="text-rose-500">*</span>
                 </label>
-                <Input id="shift-end" type="time" value={endTime} onchange={(e) => setEndTime(e.currentTarget.value)} required disabled={isLoading} />
+                <Input id="shift-end" type="time" value={endTime} oninput={(e) => setEndTime(e.currentTarget.value)} required disabled={isLoading} />
               </div>
             </div>
 
@@ -277,7 +277,7 @@ const handleSubmit = async (e: SubmitEvent) => {
                 <label class="text-xs font-semibold text-slate-800" for="shift-break">
                   Break Duration (Minutes)
                 </label>
-                <Input id="shift-break" type="number" min="0" max="480" step="5" value={breakMinutes} onchange={(e) => setBreakMinutes(e.currentTarget.value)} disabled={isLoading} />
+                <Input id="shift-break" type="number" min="0" max="480" step="5" value={breakMinutes} oninput={(e) => setBreakMinutes(e.currentTarget.value)} disabled={isLoading} />
                 <p class="text-[10px] text-slate-500">Scheduled unpaid/paid break deduction.</p>
               </div>
 
@@ -285,7 +285,7 @@ const handleSubmit = async (e: SubmitEvent) => {
                 <label class="text-xs font-semibold text-slate-800" for="shift-grace">
                   Grace Period (Minutes)
                 </label>
-                <Input id="shift-grace" type="number" min="0" max="120" step="1" value={graceMinutes} onchange={(e) => setGraceMinutes(e.currentTarget.value)} disabled={isLoading} />
+                <Input id="shift-grace" type="number" min="0" max="120" step="1" value={graceMinutes} oninput={(e) => setGraceMinutes(e.currentTarget.value)} disabled={isLoading} />
                 <p class="text-[10px] text-slate-500">Allowed late arrival window before penalty.</p>
               </div>
             </div>

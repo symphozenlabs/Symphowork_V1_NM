@@ -1,5 +1,4 @@
 import { and, desc, eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
 import { approvalTasks, workflowInstances, workflowSteps } from "@/db/schema";
 import { db } from "@/db/client";
 import { errorResponse, AppError } from "@/lib/errors";
@@ -36,7 +35,7 @@ export async function GET() {
         )
       )
       .orderBy(desc(approvalTasks.assignedAt));
-    return NextResponse.json({ success: true, tasks });
+    return Response.json({ success: true, tasks });
   } catch (error) {
     return errorResponse(error);
   }

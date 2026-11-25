@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import {
@@ -9,7 +8,7 @@ import { departmentTeamInputSchema } from "@/modules/departments/validation";
 
 export async function GET(
   _request: Request,
-  context: { params: Promise<{ departmentId: string }> }
+  context: { params: { departmentId: string } }
 ) {
   try {
     const tenant = await resolveTenantContext();
@@ -17,14 +16,14 @@ export async function GET(
       throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     }
 
-    const { departmentId } = await context.params;
+    const { departmentId } = context.params;
     const teams = await listDepartmentTeams(
       tenant.organization.id,
       tenant.user.id,
       departmentId
     );
 
-    return NextResponse.json({ success: true, teams });
+    return Response.json({ success: true, teams });
   } catch (error) {
     return errorResponse(error);
   }
@@ -32,7 +31,7 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  context: { params: Promise<{ departmentId: string }> }
+  context: { params: { departmentId: string } }
 ) {
   try {
     const tenant = await resolveTenantContext();
@@ -40,7 +39,7 @@ export async function POST(
       throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     }
 
-    const { departmentId } = await context.params;
+    const { departmentId } = context.params;
     const body = await request.json();
     const validatedInput = departmentTeamInputSchema.parse(body);
 
@@ -51,7 +50,7 @@ export async function POST(
       validatedInput as import("@/modules/departments/types").DepartmentTeamInput
     );
 
-    return NextResponse.json({ success: true, team }, { status: 201 });
+    return Response.json({ success: true, team }, { status: 201 });
   } catch (error) {
     return errorResponse(error);
   }

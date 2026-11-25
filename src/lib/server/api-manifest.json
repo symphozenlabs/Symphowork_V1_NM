@@ -469,6 +469,14 @@
     "review": "Not a GET handler; mutation ownership required"
   },
   {
+    "route": "/api/app/employees/[employeeId]/offboard",
+    "methods": [
+      "POST"
+    ],
+    "source": "src/routes/api/app/employees/[employeeId]/offboard/+server.ts",
+    "review": "Not a GET handler; Organization Owner offboarding mutation"
+  },
+  {
     "route": "/api/app/employees/[employeeId]/onboarding",
     "methods": [
       "GET",

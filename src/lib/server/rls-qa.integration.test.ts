@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import postgres from 'postgres';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { isRuntimeDatabaseUrlAllowed } from '../../db/runtime-role';
 
 /*
  * QA-only, opt-in integration checks for the proposed protected RLS context.
@@ -19,6 +20,8 @@ let fixture: {
   orgB: string;
   employeeA: string;
   employeeB: string;
+  departmentA: string;
+  departmentB: string;
   sessionA: string;
   sessionB: string;
 };
@@ -43,13 +46,15 @@ async function rollbackOnly(work: (tx: any) => Promise<void>): Promise<void> {
   throw new Error('Rollback sentinel did not abort the transaction.');
 }
 
-async function beginContext(tx: any, tokenHash: string): Promise<void> {
-  await tx`select app_private.begin_request_context(${tokenHash})`;
+async function beginContext(tx: any, token: string): Promise<void> {
+  await tx`select app_private.begin_request_context(${token})`;
 }
 
 qaSuite('PostgreSQL tenant RLS acceptance (isolated QA only)', () => {
   beforeAll(async () => {
-    const url = new URL(required('RLS_QA_DATABASE_URL'));
+    const connection = required('RLS_QA_DATABASE_URL');
+    if (!isRuntimeDatabaseUrlAllowed(connection)) throw new Error('RLS QA requires a direct runtime-role URL.');
+    const url = new URL(connection);
     if (url.hostname !== expectedHost) throw new Error('RLS QA endpoint does not match the approved isolated endpoint.');
 
     fixture = {
@@ -57,14 +62,23 @@ qaSuite('PostgreSQL tenant RLS acceptance (isolated QA only)', () => {
       orgB: required('RLS_QA_ORGANIZATION_B_ID'),
       employeeA: required('RLS_QA_EMPLOYEE_A_ID'),
       employeeB: required('RLS_QA_EMPLOYEE_B_ID'),
-      sessionA: required('RLS_QA_SESSION_HASH_A'),
-      sessionB: required('RLS_QA_SESSION_HASH_B')
+      departmentA: required('RLS_QA_DEPARTMENT_A_ID'),
+      departmentB: required('RLS_QA_DEPARTMENT_B_ID'),
+      sessionA: required('RLS_QA_SESSION_TOKEN_A'),
+      sessionB: required('RLS_QA_SESSION_TOKEN_B')
     };
-    if (fixture.orgA === fixture.orgB) throw new Error('Two distinct approved QA organizations are required.');
+    if (fixture.orgA === fixture.orgB || fixture.employeeA === fixture.employeeB ||
+        fixture.departmentA === fixture.departmentB || fixture.sessionA === fixture.sessionB) {
+      throw new Error('Two distinct approved QA fixture sets are required.');
+    }
 
     sql = postgres(url.toString(), { max: 1, prepare: false, connect_timeout: 8, idle_timeout: 1 });
-    const [identity] = await sql`select current_database() as database, current_user as role`;
-    if (identity?.database !== 'neondb' || identity?.role !== 'sympowork_app') {
+    const [identity] = await sql`
+      select current_database() as database, current_user as role, session_user as login,
+             rolsuper as superuser, rolbypassrls as bypass_rls
+      from pg_roles where rolname = current_user`;
+    if (identity?.database !== 'neondb' || identity.role !== 'sympowork_app' ||
+        identity.login !== identity.role || identity.superuser || identity.bypass_rls) {
       await sql.end({ timeout: 2 });
       sql = undefined;
       throw new Error('RLS QA tests require database neondb and role sympowork_app.');
@@ -185,12 +199,40 @@ qaSuite('PostgreSQL tenant RLS acceptance (isolated QA only)', () => {
     });
   });
 
-  it('rejects expired and revoked session hashes', async () => {
-    const expired = required('RLS_QA_EXPIRED_SESSION_HASH');
-    const revoked = required('RLS_QA_REVOKED_SESSION_HASH');
-    for (const tokenHash of [expired, revoked]) {
+  it('rejects expired, revoked, inactive-user and inactive-membership sessions', async () => {
+    const fixtureKeys = [
+      'RLS_QA_EXPIRED_SESSION_TOKEN',
+      'RLS_QA_REVOKED_SESSION_TOKEN',
+      'RLS_QA_INACTIVE_USER_SESSION_TOKEN',
+      'RLS_QA_INACTIVE_MEMBERSHIP_SESSION_TOKEN'
+    ];
+    for (const key of fixtureKeys) {
+      await expect(rollbackOnly((tx) => beginContext(tx, required(key))))
+        .rejects.toMatchObject({ code: '28000' });
+    }
+  });
+
+  it('clears verified context after rollback on a reused connection', async () => {
+    await rollbackOnly(async (tx) => {
+      await beginContext(tx, fixture.sessionA);
+      const [context] = await tx`select app_private.current_organization_id()::text as organization_id`;
+      expect(context.organization_id).toBe(fixture.orgA);
+    });
+    const [context] = await sql!`select app_private.current_organization_id()::text as organization_id`;
+    expect(context.organization_id).toBeNull();
+  });
+
+  it('allows each tenant to read its department and hides the other tenant department', async () => {
+    for (const [token, own, foreign] of [
+      [fixture.sessionA, fixture.departmentA, fixture.departmentB],
+      [fixture.sessionB, fixture.departmentB, fixture.departmentA]
+    ]) {
       await rollbackOnly(async (tx) => {
-        await expect(beginContext(tx, tokenHash)).rejects.toBeTruthy();
+        await beginContext(tx, token);
+        const ownRows = await tx`select id from public.departments where id = ${own}::uuid`;
+        const foreignRows = await tx`select id from public.departments where id = ${foreign}::uuid`;
+        expect(ownRows).toHaveLength(1);
+        expect(foreignRows).toHaveLength(0);
       });
     }
   });

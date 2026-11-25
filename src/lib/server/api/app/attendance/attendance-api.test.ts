@@ -3,7 +3,7 @@ import { attendancePunches, attendanceRecords, employees, shifts } from "@/db/sc
 
 const mockTenantContext = vi.fn();
 const mockAuthorize = vi.fn();
-const mockGetOrEnsureEmployeeForUser = vi.fn();
+const mockRequireLinkedEmployee = vi.fn();
 
 type MockEmployee = {
   id: string;
@@ -41,11 +41,11 @@ vi.mock("@/modules/tenancy/authorization", () => ({
 }));
 
 vi.mock("@/modules/employees/service", () => ({
-  getOrEnsureEmployeeForUser: (...args: unknown[]) => mockGetOrEnsureEmployeeForUser(...args),
+  requireLinkedEmployee: (...args: unknown[]) => mockRequireLinkedEmployee(...args),
 }));
 
-vi.mock("@/db/client", () => ({
-  db: {
+vi.mock("@/db/client", () => {
+  const db = {
     select: vi.fn(() => ({
       from: vi.fn((table: unknown) => ({
         where: vi.fn().mockImplementation(() => {
@@ -71,8 +71,12 @@ vi.mock("@/db/client", () => ({
         }),
       })),
     })),
-  },
-}));
+  };
+  return {
+    db,
+    withTenantTransaction: async (_organizationId: string, run: (tx: typeof db) => Promise<unknown>) => run(db),
+  };
+});
 
 import { GET } from "./route";
 
@@ -103,7 +107,7 @@ describe("Attendance API - Shift Loading and Multi-Employee Auditing", () => {
       shiftId: null, // Admin has no shift
     };
 
-    mockGetOrEnsureEmployeeForUser.mockResolvedValue(mockCallerEmployee);
+    mockRequireLinkedEmployee.mockResolvedValue(mockCallerEmployee);
   });
 
   describe("Personal Attendance Loading (no employeeId query param)", () => {
@@ -153,6 +157,7 @@ describe("Attendance API - Shift Loading and Multi-Employee Auditing", () => {
         breakMinutes: 60,
         graceMinutes: 15,
       });
+      expect(data.breakSummary).toBeDefined();
       expect(data.employee.isSelf).toBe(true);
     });
   });
@@ -196,6 +201,7 @@ describe("Attendance API - Shift Loading and Multi-Employee Auditing", () => {
       expect(data.shift).toBeDefined();
       expect(data.shift.name).toBe("General Day Shift");
       expect(data.shift.breakMinutes).toBe(60);
+      expect(data.breakSummary).toBeDefined();
       expect(data.shift.graceMinutes).toBe(15);
       expect(data.employee.id).toBe(arjunEmployeeId);
       expect(data.employee.displayName).toBe("Arjun Kumar");

@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { and, eq, or } from "drizzle-orm";
 import { db } from "@/db/client";
 import { employees } from "@/db/schema";
@@ -65,7 +64,7 @@ export async function POST(request: Request) {
       employeeId: callerEmployee.id,
     });
 
-    return NextResponse.json({ success: true, record });
+    return Response.json({ success: true, record });
   } catch (error) {
     return errorResponse(error);
   }

@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { listChatRecipients } from "@/modules/collaboration/service";
@@ -16,7 +15,7 @@ export async function GET(request: Request) {
       search: search?.trim() || undefined,
     });
 
-    return NextResponse.json({ success: true, recipients });
+    return Response.json({ success: true, recipients });
   } catch (error) {
     return errorResponse(error);
   }

@@ -20,12 +20,12 @@ Svelte workspace:
 - Get-ChildItem -Force (names only)
 - rg --files src docs; docs did not exist initially (that rg command reported missing path; no file overwrite)
 - Get-Content package.json, README.md, src/routes/+page.svelte, +layout.svelte, +error.svelte, src/lib/NavigationStatus.svelte, src/app.css, src/app.html, vite.config.ts, vitest.config.ts, svelte.config.js, .gitignore
-- Get-FileHash pnpm-lock.yaml -Algorithm SHA256 -> 27F9453B3ECED2C8C8938118D46E4DBF6D40E3DF85068BE36F15CF1EB6F1572F
-- pnpm list --depth 0 -> exit 0, 12 declared/installed direct dev dependencies matched the report
+- A historical dependency-lock fingerprint was recorded before the npm migration; the current lock is package-lock.json.
+- The previous inventory recorded 12 direct development dependencies; verify the current npm tree with `npm ls --depth=0`.
 - Ancestor AGENTS.md checks returned no applicable files
 - Inline Python generator: pathlib.read_text/read_bytes for approved code/manifests/lock/journal; regular expressions for imports, exported HTTP methods, API literals and interaction cues; recursive local UI-import closure; csv/json output; documentation files opened in exclusive-create mode; before/after SHA256 rollups compared
 - Final Python validation: CSV row counts, all 52 unique source routes and 131 unique API routes present, API/method inventories and report references checked; no original or Svelte source/config/lock mismatch
-- No current-task pnpm check/test/build/audit/dev/start; prior successful foundation-check output is explicitly labelled prior-session evidence in the report.
+- The historical inventory did not run application checks. Current npm verification is reported separately.
 
 Documentation commands actually executed:
     python docs/generate-inventory.py
@@ -44,8 +44,8 @@ Reproducible inspection commands (PowerShell):
     rg --files src/app/api -g route.ts
     rg -n 'getOrEnsureEmployeeForUser|checkAndEnsureAttendanceReminder' src -g '*.ts' -g '*.tsx' -g '!*.test.ts'
     Set-Location 'C:/Users/nares/Symphowork_Svelte_V1'
-    pnpm list --depth 0
-    Get-FileHash pnpm-lock.yaml -Algorithm SHA256
+    npm ls --depth=0
+    Get-FileHash package-lock.json -Algorithm SHA256
 
 Do not run original tests/build/browser config as a supposedly read-only check: tsc/build/test tools may create output, load environment/configuration, start services or contact configured infrastructure. Current task does not authorize database/provider calls or UI mutation requests.
 

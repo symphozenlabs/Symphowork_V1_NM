@@ -1,11 +1,10 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { assertIsOrganizationOwner, checkDepartmentDeletionSafety } from "@/modules/departments/service";
 
 export async function GET(
   _request: Request,
-  context: { params: Promise<{ departmentId: string }> }
+  context: { params: { departmentId: string } }
 ) {
   try {
     const tenant = await resolveTenantContext();
@@ -14,10 +13,10 @@ export async function GET(
     }
 
     await assertIsOrganizationOwner(tenant.organization.id, tenant.user.id);
-    const { departmentId } = await context.params;
+    const { departmentId } = context.params;
 
     const safety = await checkDepartmentDeletionSafety(tenant.organization.id, departmentId);
-    return NextResponse.json({ success: true, ...safety });
+    return Response.json({ success: true, ...safety });
   } catch (error) {
     return errorResponse(error);
   }

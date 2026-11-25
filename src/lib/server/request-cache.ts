@@ -1,14 +1,13 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
+import { getRequestEvent } from '$app/server';
 
 export interface RequestCacheStore {
   fnCache: Map<Function, Map<string, any>>;
   sharedData: Map<string, any>;
 }
 
-export const requestCacheStorage = new AsyncLocalStorage<RequestCacheStore>();
-
 export function getRequestCacheStore(): RequestCacheStore | undefined {
-  return requestCacheStorage.getStore();
+  // Non-request tasks have no shared identity or permission cache.
+  try { return getRequestEvent().locals.requestCache; } catch { return undefined; }
 }
 
 export function createRequestCacheStore(): RequestCacheStore {
@@ -18,9 +17,9 @@ export function createRequestCacheStore(): RequestCacheStore {
   };
 }
 
-export function cache<T extends (...args: any[]) => any>(fn: T): T {
+export function memoizeRequest<T extends (...args: any[]) => any>(fn: T): T {
   return function (this: any, ...args: any[]) {
-    const store = requestCacheStorage.getStore();
+    const store = getRequestCacheStore();
     if (!store) {
       return fn.apply(this, args);
     }

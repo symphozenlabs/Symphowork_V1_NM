@@ -77,7 +77,7 @@ describe("Approvals API Authorization Protection", () => {
   it("GET /api/app/approvals/[taskId] rejects unauthorized users with 403", async () => {
     mockAuthorizeAnyShouldThrow = true;
     const request = new Request("http://localhost/api/app/approvals/task-1");
-    const response = await getTask(request, { params: Promise.resolve({ taskId: "task-1" }) });
+    const response = await getTask(request, { params: { taskId: "task-1" } });
     const body = await response.json();
 
     expect(response.status).toBe(403);
@@ -92,7 +92,7 @@ describe("Approvals API Authorization Protection", () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ action: "approve" }),
     });
-    const response = await postTask(request, { params: Promise.resolve({ taskId: "task-1" }) });
+    const response = await postTask(request, { params: { taskId: "task-1" } });
     const body = await response.json();
 
     expect(response.status).toBe(403);

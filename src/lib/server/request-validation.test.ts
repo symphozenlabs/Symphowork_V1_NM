@@ -1,5 +1,5 @@
 import {describe,it,expect,vi} from 'vitest';
-import {relay} from './legacy';
+import {relay} from '../../../tests/fixtures/historical/legacy';
 function request(path:string,method:string,body?:unknown){return new Request('https://app.invalid'+path,{method,headers:{origin:'https://app.invalid','content-type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});}
 describe('relay validation without business mutations',()=>{
  it.each([['/api/app/departments','POST',{}],['/api/app/departments','POST',{name:'Engineering',code:'ENG',status:['active']}],['/api/app/employees/not-a-uuid','PATCH',{}],['/api/app/departments/not-a-uuid','DELETE',undefined]])('rejects invalid %s %s before transport',async(path,method,body)=>{

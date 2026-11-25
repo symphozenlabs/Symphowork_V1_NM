@@ -182,8 +182,8 @@ The default parallel full unit run timed out in two tests while another browser 
  D next.config.ts
  M package.json
  M playwright.config.ts
- M pnpm-lock.yaml
- M pnpm-workspace.yaml
+ M dependency lockfile
+ M package-manager settings
  D postcss.config.mjs
  D prettier.config.mjs
  D public/enterprise-journey-landscape.jpg

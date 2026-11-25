@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db/client";
 import { employees } from "@/db/schema";
@@ -27,7 +26,7 @@ export async function GET() {
       )
       .orderBy(asc(employees.displayName));
 
-    return NextResponse.json({ success: true, employees: rows });
+    return Response.json({ success: true, employees: rows });
   } catch (error) {
     return errorResponse(error);
   }

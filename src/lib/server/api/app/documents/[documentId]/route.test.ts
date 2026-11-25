@@ -21,7 +21,7 @@ describe('private employee document download route', () => {
 
   it.each([{ status: 'arbitrary' }, { status: 'verified', comment: 42 }, null, {}])('rejects invalid review input before mutation: %j', async body => {
     mocks.resolveTenantContext.mockResolvedValue({ organization: { id: 'org-qa' }, user: { id: 'user-qa' } });
-    const response = await PATCH(new Request('http://localhost/api/app/documents/doc-qa', { method: 'PATCH', body: JSON.stringify(body) }), { params: Promise.resolve({ documentId: 'doc-qa' }) });
+    const response = await PATCH(new Request('http://localhost/api/app/documents/doc-qa', { method: 'PATCH', body: JSON.stringify(body) }), { params: { documentId: 'doc-qa' } });
     expect(response.status).toBe(400);
     expect(mocks.updateDocumentStatus).not.toHaveBeenCalled();
   });
@@ -29,7 +29,7 @@ describe('private employee document download route', () => {
   it('forwards an accepted review with server-resolved organization and actor', async () => {
     mocks.resolveTenantContext.mockResolvedValue({ organization: { id: 'org-qa' }, user: { id: 'user-qa' } });
     mocks.updateDocumentStatus.mockResolvedValue({ id: 'doc-qa', status: 'verified' });
-    const response = await PATCH(new Request('http://localhost/api/app/documents/doc-qa', { method: 'PATCH', body: JSON.stringify({ status: 'verified', comment: 'Reviewed' }) }), { params: Promise.resolve({ documentId: 'doc-qa' }) });
+    const response = await PATCH(new Request('http://localhost/api/app/documents/doc-qa', { method: 'PATCH', body: JSON.stringify({ status: 'verified', comment: 'Reviewed' }) }), { params: { documentId: 'doc-qa' } });
     expect(response.status).toBe(200);
     expect(mocks.updateDocumentStatus).toHaveBeenCalledWith({ organizationId: 'org-qa', actorUserId: 'user-qa', documentId: 'doc-qa', status: 'verified', comment: 'Reviewed' });
   });
@@ -38,7 +38,7 @@ describe('private employee document download route', () => {
     mocks.resolveTenantContext.mockResolvedValue({ organization: null, user: { id: 'user-qa' } });
 
     const response = await GET(new Request('http://localhost/api/app/documents/doc-qa'), {
-      params: Promise.resolve({ documentId: 'doc-qa' })
+      params: { documentId: 'doc-qa' }
     });
 
     expect(response.status).toBe(403);
@@ -50,7 +50,7 @@ describe('private employee document download route', () => {
     mocks.getDocumentDownload.mockResolvedValue({ url: 'https://storage.invalid/signed' });
 
     const response = await GET(new Request('http://localhost/api/app/documents/doc-qa'), {
-      params: Promise.resolve({ documentId: 'doc-qa' })
+      params: { documentId: 'doc-qa' }
     });
 
     expect(response.status).toBe(200);

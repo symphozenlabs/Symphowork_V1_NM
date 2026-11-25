@@ -588,9 +588,11 @@ export async function listEligibleTeamLeads(
 export async function listDepartmentsWithMetrics(
   organizationId: string,
   actorUserId: string,
-  dateParam?: string
+  dateParam?: string,
+  tx?: DbTransaction | typeof db
 ): Promise<{ items: DepartmentListItem[]; dateContext: DepartmentDateContext; totalCount: number }> {
   await authorize({ organizationId, permission: "department.read" });
+  const client = tx ?? db;
 
   let timezone: string | undefined;
   let cachedContext: Awaited<ReturnType<typeof getCachedTenantContext>> = null;
@@ -602,7 +604,7 @@ export async function listDepartmentsWithMetrics(
   }
 
   if (!timezone) {
-    const [org] = await db
+    const [org] = await client
       .select({ timezone: organizations.timezone })
       .from(organizations)
       .where(eq(organizations.id, organizationId))
@@ -614,32 +616,25 @@ export async function listDepartmentsWithMetrics(
   // - Organization Owner and HR Admin (department.manage): see all departments in the organization.
   // - Assigned Department Manager: sees ONLY their assigned active department(s).
   // - Other roles: do not see departments by default.
-  const isPrivileged =
-    cachedContext?.user?.platformRole === "PLATFORM_OWNER" ||
-    cachedContext?.role?.key === "ORGANIZATION_OWNER"
-      ? true
-      : await isActorPrivilegedForOwnerRecord(organizationId, actorUserId);
-
+  const actorContext = cachedContext?.user.id === actorUserId ? cachedContext : null;
   const canManageAll =
-    isPrivileged ||
-    (cachedContext?.role?.key === "HR_ADMIN" ||
-    (cachedContext?.permissions &&
-      (Array.isArray(cachedContext.permissions)
-        ? cachedContext.permissions.includes("department.manage")
-        : (cachedContext.permissions as Set<string>).has?.("department.manage")))
-      ? true
-      : await can({ userId: actorUserId, organizationId, permission: "department.manage" }));
+    actorContext?.user.platformRole === "PLATFORM_OWNER" ||
+    actorContext?.role?.key === "ORGANIZATION_OWNER" ||
+    actorContext?.role?.key === "HR_ADMIN" ||
+    actorContext?.permissions.includes("department.manage") ||
+    await isActorPrivilegedForOwnerRecord(organizationId, actorUserId, tx) ||
+    await can({ userId: actorUserId, organizationId, permission: "department.manage" });
 
   // Run date context resolution and department query concurrently
   const [dateContext, deptRows] = await Promise.all([
-    resolveDateContext(organizationId, timezone, dateParam),
+    resolveDateContext(organizationId, timezone, dateParam, tx),
     canManageAll
-      ? db
+      ? client
           .select()
           .from(departments)
           .where(eq(departments.organizationId, organizationId))
           .orderBy(departments.name)
-      : getManagedDepartmentsForUser(organizationId, actorUserId),
+      : getManagedDepartmentsForUser(organizationId, actorUserId, tx),
   ]);
 
   if (deptRows.length === 0) {
@@ -654,12 +649,12 @@ export async function listDepartmentsWithMetrics(
 
   const [managerRows, teamCounts, departmentEmployees] = await Promise.all([
     headIds.length > 0
-      ? db
+      ? client
           .select()
           .from(employees)
           .where(and(eq(employees.organizationId, organizationId), inArray(employees.id, headIds)))
       : Promise.resolve([]),
-    db
+    client
       .select({
         departmentId: teams.departmentId,
         count: sql<number>`count(*)::int`,
@@ -667,7 +662,7 @@ export async function listDepartmentsWithMetrics(
       .from(teams)
       .where(and(eq(teams.organizationId, organizationId), inArray(teams.departmentId, deptIds)))
       .groupBy(teams.departmentId),
-    db
+    client
       .select({
         id: employees.id,
         departmentId: employees.departmentId,
@@ -686,7 +681,7 @@ export async function listDepartmentsWithMetrics(
 
   const managerMap = new Map<string, DepartmentManagerSummary>();
   if (managerRows.length > 0) {
-    const enrichedManagers = await enrichEmployeesWithRoles(organizationId, managerRows);
+    const enrichedManagers = await enrichEmployeesWithRoles(organizationId, managerRows, tx);
     for (const m of enrichedManagers) {
       managerMap.set(m.id, {
         id: m.id,
@@ -721,7 +716,7 @@ export async function listDepartmentsWithMetrics(
 
   if (employeeIds.length > 0) {
     const [punchRecords, leaves] = await Promise.all([
-      db
+      client
         .select()
         .from(attendanceRecords)
         .where(
@@ -731,7 +726,7 @@ export async function listDepartmentsWithMetrics(
             inArray(attendanceRecords.employeeId, employeeIds)
           )
         ),
-      db
+      client
         .select({ employeeId: leaveApplications.employeeId })
         .from(leaveApplications)
         .where(
@@ -822,9 +817,11 @@ export async function getDepartmentDetails(
   organizationId: string,
   actorUserId: string,
   departmentId: string,
-  dateParam?: string
+  dateParam?: string,
+  tx?: DbTransaction | typeof db
 ): Promise<DepartmentDetails> {
   await authorize({ organizationId, permission: "department.read" });
+  const client = tx ?? db;
 
   let timezone: string | undefined;
   let cachedContext: Awaited<ReturnType<typeof getCachedTenantContext>> = null;
@@ -836,7 +833,7 @@ export async function getDepartmentDetails(
   }
 
   if (!timezone) {
-    const [org] = await db
+    const [org] = await client
       .select({ timezone: organizations.timezone })
       .from(organizations)
       .where(eq(organizations.id, organizationId))
@@ -845,8 +842,8 @@ export async function getDepartmentDetails(
   }
 
   const [dateContext, [dept]] = await Promise.all([
-    resolveDateContext(organizationId, timezone, dateParam),
-    db
+    resolveDateContext(organizationId, timezone, dateParam, tx),
+    client
       .select()
       .from(departments)
       .where(and(eq(departments.id, departmentId), eq(departments.organizationId, organizationId)))
@@ -861,23 +858,23 @@ export async function getDepartmentDetails(
   // Organization Owner can access all departments.
   // Assigned department manager can access only their assigned active department.
   // Other users or managers attempting to access another department are rejected with 403 Forbidden.
-  await assertCanAccessDepartment(organizationId, actorUserId, departmentId);
+  await assertCanAccessDepartment(organizationId, actorUserId, departmentId, tx);
 
   // Manager details, assigned sub-teams, and department employee roster: run concurrently
   const [mgrEmpRow, teamRows, rawEmployees] = await Promise.all([
     dept.headEmployeeId
-      ? db
+      ? client
           .select()
           .from(employees)
           .where(and(eq(employees.id, dept.headEmployeeId), eq(employees.organizationId, organizationId)))
           .then((r) => r[0] || null)
       : Promise.resolve(null),
-    db
+    client
       .select()
       .from(teams)
       .where(and(eq(teams.departmentId, dept.id), eq(teams.organizationId, organizationId)))
       .orderBy(teams.name),
-    db
+    client
       .select()
       .from(employees)
       .where(and(eq(employees.departmentId, dept.id), eq(employees.organizationId, organizationId)))
@@ -886,7 +883,7 @@ export async function getDepartmentDetails(
 
   let manager: DepartmentManagerSummary | null = null;
   if (mgrEmpRow) {
-    const [enrichedMgr] = await enrichEmployeesWithRoles(organizationId, [mgrEmpRow]);
+    const [enrichedMgr] = await enrichEmployeesWithRoles(organizationId, [mgrEmpRow], tx);
     manager = {
       id: enrichedMgr.id,
       displayName: enrichedMgr.displayName,
@@ -902,12 +899,12 @@ export async function getDepartmentDetails(
   const teamLeadIds = teamRows.map((t) => t.teamLeadEmployeeId).filter((id): id is string => Boolean(id));
   const [leads, enrichedEmployees] = await Promise.all([
     teamLeadIds.length > 0
-      ? db
+      ? client
           .select({ id: employees.id, displayName: employees.displayName })
           .from(employees)
           .where(and(eq(employees.organizationId, organizationId), inArray(employees.id, teamLeadIds)))
       : Promise.resolve([]),
-    enrichEmployeesWithRoles(organizationId, rawEmployees),
+    enrichEmployeesWithRoles(organizationId, rawEmployees, tx),
   ]);
 
   const leadNameMap = new Map<string, string>();
@@ -933,7 +930,7 @@ export async function getDepartmentDetails(
 
   if (employeeIds.length > 0) {
     const [records, leaves] = await Promise.all([
-      db
+      client
         .select()
         .from(attendanceRecords)
         .where(
@@ -943,7 +940,7 @@ export async function getDepartmentDetails(
             inArray(attendanceRecords.employeeId, employeeIds)
           )
         ),
-      db
+      client
         .select({ employeeId: leaveApplications.employeeId })
         .from(leaveApplications)
         .where(
@@ -1414,54 +1411,57 @@ export async function createDepartmentTeam(
 ): Promise<typeof teams.$inferSelect> {
   await assertCanManageDepartmentTeams(organizationId, actorUserId, departmentId);
 
-  const [dept] = await db
-    .select({ id: departments.id, name: departments.name })
-    .from(departments)
-    .where(and(eq(departments.id, departmentId), eq(departments.organizationId, organizationId)))
-    .limit(1);
+  const created = await withTenantTransaction(organizationId, async (tx) => {
+    const [dept] = await tx
+      .select({ id: departments.id, name: departments.name })
+      .from(departments)
+      .where(and(eq(departments.id, departmentId), eq(departments.organizationId, organizationId)))
+      .limit(1);
 
-  if (!dept) {
-    throw new AppError("NOT_FOUND", "Department was not found in this organization.", 404);
-  }
+    if (!dept) {
+      throw new AppError("NOT_FOUND", "Department was not found in this organization.", 404);
+    }
 
-  const cleanName = input.name.trim();
-  const cleanCode = input.code.trim().toUpperCase();
+    const cleanName = input.name.trim();
+    const cleanCode = input.code.trim().toUpperCase();
 
-  const [existingCode] = await db
-    .select({ id: teams.id })
-    .from(teams)
-    .where(
-      and(
-        eq(teams.organizationId, organizationId),
-        sql`upper(${teams.code}) = ${cleanCode}`
+    const [existingCode] = await tx
+      .select({ id: teams.id })
+      .from(teams)
+      .where(
+        and(
+          eq(teams.organizationId, organizationId),
+          sql`upper(${teams.code}) = ${cleanCode}`
+        )
       )
-    )
-    .limit(1);
+      .limit(1);
 
-  if (existingCode) {
-    throw new AppError(
-      "VALIDATION_ERROR",
-      `A team with code "${cleanCode}" already exists in this organization.`,
-      409
-    );
-  }
+    if (existingCode) {
+      throw new AppError(
+        "VALIDATION_ERROR",
+        `A team with code "${cleanCode}" already exists in this organization.`,
+        409
+      );
+    }
 
-  if (input.teamLeadEmployeeId) {
-    await validateTeamLeadEmployee(organizationId, input.teamLeadEmployeeId, db);
-  }
+    if (input.teamLeadEmployeeId) {
+      await validateTeamLeadEmployee(organizationId, input.teamLeadEmployeeId, tx);
+    }
 
-  const [created] = await db
-    .insert(teams)
-    .values({
-      organizationId,
-      departmentId,
-      name: cleanName,
-      code: cleanCode,
-      description: input.description?.trim() || null,
-      teamLeadEmployeeId: input.teamLeadEmployeeId || null,
-      status: input.status || "active",
-    })
-    .returning();
+    const [team] = await tx
+      .insert(teams)
+      .values({
+        organizationId,
+        departmentId,
+        name: cleanName,
+        code: cleanCode,
+        description: input.description?.trim() || null,
+        teamLeadEmployeeId: input.teamLeadEmployeeId || null,
+        status: input.status || "active",
+      })
+      .returning();
+    return team;
+  });
 
   await recordAudit({
     actorUserId,

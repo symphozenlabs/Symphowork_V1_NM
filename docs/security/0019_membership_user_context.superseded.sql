@@ -1,3 +1,5 @@
+-- Historical, unjournaled proposal. Superseded by verified request context.
+-- Keep for drift reconciliation only. Do not execute this file.
 ALTER POLICY "memberships_tenant_isolation" ON "memberships"
   USING (
     organization_id::text = current_setting('app.current_organization_id', true)

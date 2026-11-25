@@ -26,8 +26,8 @@
     "node scripts/check-integration.mjs",
     "npm run check",
     "npm run test",
-    "pnpm.cmd exec playwright test --config playwright.workflows.config.ts",
-    "pnpm.cmd exec playwright test --config playwright.workflows.config.ts invitation-contract.spec.ts",
+    "npm exec -- playwright test --config playwright.workflows.config.ts",
+    "npm exec -- playwright test --config playwright.workflows.config.ts invitation-contract.spec.ts",
     "python docs/audit-current.py",
     "npm run build",
     "npm run test:e2e"

@@ -1,4 +1,5 @@
-import type{BreakStatus}from'./calculator';
+import type { BreakStatus } from './calculator';
+
 export interface OrganizationAttendanceRow {
   employee: {
     id: string;
@@ -92,4 +93,3 @@ export interface OrganizationAttendanceSummary {
   isHoliday: boolean;
   holidayName?: string;
 }
-

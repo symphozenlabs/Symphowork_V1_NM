@@ -243,12 +243,12 @@ function handleOpenCreateShift() {
                             [endpoint]: { ...draft, second: e.currentTarget.value },
                           })} class="h-9 text-xs" />
                     {:else}
-                      <Input aria-label={`${label} ${firstLabel}`} placeholder={firstLabel} value={draft.first} onchange={(e) =>
+                      <Input aria-label={`${label} ${firstLabel}`} placeholder={firstLabel} value={draft.first} oninput={(e) =>
                           setDrafts({
                             ...drafts,
                             [endpoint]: { ...draft, first: e.currentTarget.value },
                           })} class="h-9 text-xs" />
-                      <Input aria-label={`${label} ${secondLabel}`} placeholder={secondLabel} value={draft.second} onchange={(e) =>
+                      <Input aria-label={`${label} ${secondLabel}`} placeholder={secondLabel} value={draft.second} oninput={(e) =>
                           setDrafts({
                             ...drafts,
                             [endpoint]: {

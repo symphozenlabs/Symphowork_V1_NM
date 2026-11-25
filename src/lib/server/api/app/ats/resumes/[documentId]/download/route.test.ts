@@ -21,7 +21,7 @@ describe('private candidate resume download route', () => {
     mocks.resolveTenantContext.mockResolvedValue({ organization: null, user: { id: 'user-qa' } });
 
     const response = await GET(new Request('http://localhost/api/app/ats/resumes/doc-qa/download'), {
-      params: Promise.resolve({ documentId: 'doc-qa' })
+      params: { documentId: 'doc-qa' }
     });
 
     expect(response.status).toBe(403);
@@ -36,7 +36,7 @@ describe('private candidate resume download route', () => {
     });
 
     const response = await GET(new Request('http://localhost/api/app/ats/resumes/doc-qa/download'), {
-      params: Promise.resolve({ documentId: 'doc-qa' })
+      params: { documentId: 'doc-qa' }
     });
 
     expect(response.status).toBe(200);

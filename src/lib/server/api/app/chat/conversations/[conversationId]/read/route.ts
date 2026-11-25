@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { markConversationAsRead } from "@/modules/collaboration/service";
@@ -6,14 +5,14 @@ import { conversationIdParamSchema } from "@/modules/collaboration/validation";
 
 export async function POST(
   _request: Request,
-  context: { params: Promise<{ conversationId: string }> }
+  context: { params: { conversationId: string } }
 ) {
   try {
     const tenant = await resolveTenantContext();
     if (!tenant.organization) {
       throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     }
-    const { conversationId: rawId } = await context.params;
+    const { conversationId: rawId } = context.params;
     const conversationId = conversationIdParamSchema.parse(rawId);
 
     const result = await markConversationAsRead({
@@ -22,7 +21,7 @@ export async function POST(
       conversationId,
     });
 
-    return NextResponse.json({
+    return Response.json({
       success: true,
       lastReadAt: result.lastReadAt,
     });

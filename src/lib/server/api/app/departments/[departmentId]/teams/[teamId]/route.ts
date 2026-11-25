@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import {
@@ -9,7 +8,7 @@ import { departmentTeamUpdateSchema } from "@/modules/departments/validation";
 
 export async function PATCH(
   request: Request,
-  context: { params: Promise<{ departmentId: string; teamId: string }> }
+  context: { params: { departmentId: string; teamId: string } }
 ) {
   try {
     const tenant = await resolveTenantContext();
@@ -17,7 +16,7 @@ export async function PATCH(
       throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     }
 
-    const { departmentId, teamId } = await context.params;
+    const { departmentId, teamId } = context.params;
     const body = await request.json();
     const validatedInput = departmentTeamUpdateSchema.parse(body);
 
@@ -29,7 +28,7 @@ export async function PATCH(
       validatedInput
     );
 
-    return NextResponse.json({ success: true, team });
+    return Response.json({ success: true, team });
   } catch (error) {
     return errorResponse(error);
   }
@@ -37,7 +36,7 @@ export async function PATCH(
 
 export async function DELETE(
   _request: Request,
-  context: { params: Promise<{ departmentId: string; teamId: string }> }
+  context: { params: { departmentId: string; teamId: string } }
 ) {
   try {
     const tenant = await resolveTenantContext();
@@ -45,7 +44,7 @@ export async function DELETE(
       throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     }
 
-    const { departmentId, teamId } = await context.params;
+    const { departmentId, teamId } = context.params;
 
     const result = await deleteDepartmentTeam(
       tenant.organization.id,
@@ -54,7 +53,7 @@ export async function DELETE(
       teamId
     );
 
-    return NextResponse.json({ ...result });
+    return Response.json({ ...result });
   } catch (error) {
     return errorResponse(error);
   }

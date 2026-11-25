@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { resolveTenantContext } from "@/modules/tenancy/context";
@@ -27,7 +26,7 @@ export async function GET(request: Request) {
       limit: parsed.limit,
     });
 
-    return NextResponse.json({
+    return Response.json({
       success: true,
       query: parsed.query,
       results,

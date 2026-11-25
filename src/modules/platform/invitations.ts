@@ -1,4 +1,4 @@
-import { and, eq, gt, sql } from "drizzle-orm";
+import { and, eq, gt, isNull, ne } from "drizzle-orm";
 import { withInvitationTokenTransaction, type DbTransaction } from "@/db/client";
 import { auditLogs, employees, invitations, memberships, onboarding, organizations, roles, users } from "@/db/schema";
 import { hashPassword, hashToken, verifyPassword } from "@/lib/crypto";
@@ -41,7 +41,7 @@ export async function getInvitationPreview(token: string) {
     // 1. If invitation is linked to an employee record, check employee display name
     if (invitation.employeeId && query.employees?.findFirst) {
       const emp = await query.employees.findFirst({
-        where: eq(employees.id, invitation.employeeId),
+        where: and(eq(employees.id, invitation.employeeId), eq(employees.organizationId, invitation.organizationId)),
       });
       if (emp?.displayName?.trim()) {
         fullName = emp.displayName.trim();
@@ -95,7 +95,6 @@ export async function acceptInvitation(input: { token: string; fullName?: string
     if (organization.status !== "active") {
       throw new AppError("FORBIDDEN", "This organization has not been activated yet. Please contact the platform administrator.", 403);
     }
-    await tx.execute(sql`select set_config('app.current_organization_id', ${invitation.organizationId}, true)`);
     let user = await tx.query.users.findFirst({ where: eq(users.email, normalizeEmail(invitation.invitedEmail)) });
     if (input.currentUser && (!user || user.id !== input.currentUser.id || normalizeEmail(input.currentUser.email) !== normalizeEmail(invitation.invitedEmail))) throw new AppError("INVITATION_EMAIL_MISMATCH", "This invitation belongs to a different email address.", 403);
     if (user) {
@@ -114,8 +113,14 @@ export async function acceptInvitation(input: { token: string; fullName?: string
     if (!role) throw new AppError("PROVISIONING_FAILED", "The invitation role is no longer available.", 500);
     const [membership] = await tx.insert(memberships).values({ userId: user.id, organizationId: invitation.organizationId, roleId: role.id, status: "active" }).returning();
     if (invitation.employeeId) {
-      await tx.update(employees).set({ userId: user.id, status: "onboarding", updatedAt: new Date() }).where(eq(employees.id, invitation.employeeId));
-      await tx.update(onboarding).set({ status: "in_progress", startedAt: new Date(), updatedAt: new Date() }).where(eq(onboarding.employeeId, invitation.employeeId));
+      const [linked] = await tx.update(employees)
+        .set({ userId: user.id, status: "onboarding", updatedAt: new Date() })
+        .where(and(eq(employees.id, invitation.employeeId),
+          eq(employees.organizationId, invitation.organizationId), isNull(employees.userId), ne(employees.status, "exited")))
+        .returning({ id: employees.id });
+      if (!linked) throw new AppError("INVITATION_INVALID", "The invited employee is unavailable.", 409);
+      await tx.update(onboarding).set({ status: "in_progress", startedAt: new Date(), updatedAt: new Date() })
+        .where(and(eq(onboarding.employeeId, linked.id), eq(onboarding.organizationId, invitation.organizationId)));
     } else {
       await getOrEnsureEmployeeForUser(invitation.organizationId, user.id, tx, { user, roleKey: role.key, membership });
     }

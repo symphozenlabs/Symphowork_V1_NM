@@ -14,8 +14,19 @@ describe("buildInvitationUrl", () => {
     expect(buildInvitationUrl("opaque token?/value")).toBe("https://symphowork.example/invitations/accept?token=opaque%20token%3F%2Fvalue");
   });
 
+  it("uses the request origin supplied by the local development route", () => {
+    delete process.env.APP_URL;
+    expect(buildInvitationUrl("local-token", "http://127.0.0.1:5173/"))
+      .toBe("http://127.0.0.1:5173/invitations/accept?token=local-token");
+  });
+
   it("rejects missing public URL configuration", () => {
     delete process.env.APP_URL;
     expect(() => buildInvitationUrl("opaque-token")).toThrow("public application URL");
+  });
+
+  it("rejects unsafe invitation URL schemes", () => {
+    expect(() => buildInvitationUrl("opaque-token", "javascript:alert(1)"))
+      .toThrow("public application URL");
   });
 });

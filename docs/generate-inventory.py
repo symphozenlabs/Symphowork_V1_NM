@@ -144,9 +144,9 @@ def fingerprint(root,paths):
  for p in sorted(paths):
   h.update(p.relative_to(root).as_posix().encode());h.update(p.read_bytes())
  return h.hexdigest()
-oldpaths=list(src)+[old/'package.json',old/'pnpm-lock.yaml',old/'playwright.config.ts',old/'vitest.config.ts']+list((old/'public').rglob('*'))
+oldpaths=list(src)+[old/'package.json',old/'playwright.config.ts',old/'vitest.config.ts']+list((old/'public').rglob('*'))
 oldpaths=[p for p in oldpaths if p.is_file()]
-newpaths=[p for p in (new/'src').rglob('*') if p.is_file()]+[new/n for n in ['package.json','pnpm-lock.yaml','svelte.config.js','vite.config.ts','vitest.config.ts','pnpm-workspace.yaml','tsconfig.json','README.md','.gitignore']]
+newpaths=[p for p in (new/'src').rglob('*') if p.is_file()]+[new/n for n in ['package.json','svelte.config.js','vite.config.ts','vitest.config.ts','tsconfig.json','README.md','.gitignore']]
 oldhash=fingerprint(old,oldpaths);newhash=fingerprint(new,newpaths)
 stamp=datetime.datetime.now(datetime.timezone.utc).isoformat()
 report="""# SymphoWork V1: migration baseline and UI inventory
@@ -207,13 +207,13 @@ The Svelte starter app.html already sets data-sveltekit-preload-data=hover. It i
 
 Only / exists, with +page.svelte identifying the migration workspace. +layout.svelte imports Tailwind-only app.css and NavigationStatus; +error.svelte provides a generic error page/home link. NavigationStatus uses $app/state navigating to show a progress bar/live status. There is no business shell, auth hook, session validation, API handler, database integration or business-module migration. src/app.html is the document template; adapter-node produces build/index.js. No src/**/*.test.ts files exist.
 
-package.json is ESM (type=module). Current installed direct versions were confirmed with pnpm list --depth 0: Kit 2.70.3, Svelte 5.57.2, Vite 7.3.7, plugin 6.2.4, adapter-node 5.5.7, Tailwind/plugin 4.3.3, TypeScript 5.9.3, svelte-check 4.7.7, Vitest 4.1.12, esbuild 0.28.2 and @types/node 24.10.0. Node/pnpm declarations are 24.16.x/11.19.x. No dependencies were added/changed here.
+package.json is ESM (type=module). The historical inventory recorded these direct dependency versions; verify the npm dependency tree with `npm ls --depth=0`: Kit 2.70.3, Svelte 5.57.2, Vite 7.3.7, plugin 6.2.4, adapter-node 5.5.7, Tailwind/plugin 4.3.3, TypeScript 5.9.3, svelte-check 4.7.7, Vitest 4.1.12, esbuild 0.28.2 and @types/node 24.10.0. Current runtime declarations are Node 24.16.x and npm 10 or 11. No dependencies were added/changed here.
 
-Prior turn in this same session VERIFIED: svelte-kit sync exit 0 without output; pnpm check exit 0 with 0 errors/0 warnings; pnpm test exit 0 because no tests were found and --passWithNoTests is enabled; pnpm build exit 0 and adapter-node completed. These are prior-command results, NOT rerun in this inventory task and NOT application regression or browser coverage. Existing build/index.js was produced then. Svelte source/config/manifest and lock are unchanged in this task. Last verified lock SHA256: 27F9453B3ECED2C8C8938118D46E4DBF6D40E3DF85068BE36F15CF1EB6F1572F.
+Historical check/test/build results are not current npm verification or application regression/browser coverage. The current npm lock and verification results are tracked separately.
 
-Prior security-remediation task VERIFIED 0 critical/high/moderate and 1 low cookie advisory from Kit 2's cookie 0.6 dependency. Audit was not refreshed here. No override was added. pnpm-workspace.yaml still has the unresolved esbuild allowBuilds placeholder; no scripts were approved. Optional Windows esbuild binary worked in prior task. Do not infer clean-install/other-platform behavior.
+Prior security-remediation task VERIFIED 0 critical/high/moderate and 1 low cookie advisory from Kit 2's cookie 0.6 dependency. Audit was not refreshed here. No override was added. The former manager-specific workspace file had an install-script policy. npm install behavior is verified in the current package-manager migration. Optional Windows esbuild binary worked in prior task. Do not infer clean-install/other-platform behavior.
 
-Original app: 99 unit-test files and two Playwright specs were inventoried, not executed. Some UI tests inspect source text; file counts are not coverage. Original Playwright config starts pnpm dev on port 3000 and can reuse an existing server; do not run it blindly against an unknown environment. The original app build, lint, typecheck, provider connectivity, database isolation and all browser flows remain NOT VERIFIED.
+Original app: 99 unit-test files and two Playwright specs were inventoried, not executed. Some UI tests inspect source text; file counts are not coverage. The original Playwright configuration starts a separate development server and can reuse an existing server; do not run it blindly against an unknown environment. The original app build, lint, typecheck, provider connectivity, database isolation and all browser flows remain NOT VERIFIED.
 
 ## Pilot recommendation
 
@@ -243,7 +243,7 @@ plan="""# Comparable screenshot and performance baseline plan
 Status: proposed procedure; no captures, browser sessions, requests or benchmarks were executed in this task. See capture-plan.csv for all 52 route plans and role requirements.
 
 ## Entry gate and environment manifest
-Approve a dedicated isolated non-production reference database and synthetic fixtures before any original app execution. Supply organization A/B, all organization and platform role identities, inactive membership, expired session, assigned department-manager and object-owner/non-owner cases. Include realistic empty/small/paginated datasets, long names, missing optional fields, attachment scan states and concurrent mutations. Record fixture schema/version, commit, package-lock hashes, OS, Node/pnpm, production versus dev build, machine resources, browser revision, viewport/DPR, locale/timezone, deterministic clock, network/CPU profile and server latency conditions.
+Approve a dedicated isolated non-production reference database and synthetic fixtures before any original app execution. Supply organization A/B, all organization and platform role identities, inactive membership, expired session, assigned department-manager and object-owner/non-owner cases. Include realistic empty/small/paginated datasets, long names, missing optional fields, attachment scan states and concurrent mutations. Record fixture schema/version, commit, package-lock hashes, OS, Node/npm, production versus dev build, machine resources, browser revision, viewport/DPR, locale/timezone, deterministic clock, network/CPU profile and server latency conditions.
 Do not put credentials, storageState, cookies, tokens, signed download links, response bodies containing PII, HAR headers or environment values into docs or version control. Existing real local cookie/credential files are excluded. Create test accounts/fixtures only under separately authorized procedures.
 Use separate origins/ports and explicit server identity checks; never let reuseExistingServer silently point at production or an unrelated local service. Source app must remain unchanged. Do not start it against inherited environment configuration.
 
@@ -324,12 +324,12 @@ Svelte workspace:
 - Get-ChildItem -Force (names only)
 - rg --files src docs; docs did not exist initially (that rg command reported missing path; no file overwrite)
 - Get-Content package.json, README.md, src/routes/+page.svelte, +layout.svelte, +error.svelte, src/lib/NavigationStatus.svelte, src/app.css, src/app.html, vite.config.ts, vitest.config.ts, svelte.config.js, .gitignore
-- Get-FileHash pnpm-lock.yaml -Algorithm SHA256 -> 27F9453B3ECED2C8C8938118D46E4DBF6D40E3DF85068BE36F15CF1EB6F1572F
-- pnpm list --depth 0 -> exit 0, 12 declared/installed direct dev dependencies matched the report
+- Get-FileHash package-lock.json -Algorithm SHA256 -> 27F9453B3ECED2C8C8938118D46E4DBF6D40E3DF85068BE36F15CF1EB6F1572F
+- npm ls --depth=0 -> exit 0, 12 declared/installed direct dev dependencies matched the report
 - Ancestor AGENTS.md checks returned no applicable files
 - Inline Python generator: pathlib.read_text/read_bytes for approved code/manifests/lock/journal; regular expressions for imports, exported HTTP methods, API literals and interaction cues; recursive local UI-import closure; csv/json output; documentation files opened in exclusive-create mode; before/after SHA256 rollups compared
 - Final Python validation: CSV row counts, all 52 unique source routes and 131 unique API routes present, API/method inventories and report references checked; no original or Svelte source/config/lock mismatch
-- No current-task pnpm check/test/build/audit/dev/start; prior successful foundation-check output is explicitly labelled prior-session evidence in the report.
+- No application checks were run during the historical inventory; current npm verification is reported separately.
 
 Some broad Get-Content/rg outputs were truncated by tool output limits; focused Python/regex summaries and full static inventory extraction were used to cover counts and files. An initial GET-summary scanner failed with TypeError (list-minus-set) after printing page inventory; later scanner/generator corrected it. This was an inspection-tool error and did not execute application code or modify either app.
 
@@ -341,8 +341,8 @@ Reproducible inspection commands (PowerShell):
     rg --files src/app/api -g route.ts
     rg -n 'getOrEnsureEmployeeForUser|checkAndEnsureAttendanceReminder' src -g '*.ts' -g '*.tsx' -g '!*.test.ts'
     Set-Location 'C:/Users/nares/Symphowork_Svelte_V1'
-    pnpm list --depth 0
-    Get-FileHash pnpm-lock.yaml -Algorithm SHA256
+    npm ls --depth=0
+    Get-FileHash package-lock.json -Algorithm SHA256
 
 Do not run original tests/build/browser config as a supposedly read-only check: tsc/build/test tools may create output, load environment/configuration, start services or contact configured infrastructure. Current task does not authorize database/provider calls or UI mutation requests.
 
@@ -358,7 +358,7 @@ csvs={
 'routes.csv':routerows,'api-routes.csv':apirows,'api-call-sites.csv':callrows,
 'components.csv':comprows,'design-tokens.csv':tokens,'assets.csv':assets,
 'roles.csv':roles,'capture-plan.csv':capturerows,'get-risk-register.csv':getrows}
-metadata={'generated_at_utc':stamp,'scope':'static inspection; no runtime services, tests, audit or browser executed in this task','counts':counts,'original_git_status':git_start,'original_latest_commit':commit,'original_package_manifest':oldpkg,'svelte_package_manifest':newpkg,'original_inspected_files_sha256_rollup':oldhash,'svelte_application_files_sha256_rollup':newhash,'svelte_lockfile_sha256':hashlib.sha256((new/'pnpm-lock.yaml').read_bytes()).hexdigest(),'source_verification':'before/after fingerprints must match; documentation files excluded','algorithm':'regex-based imports/methods/literals plus recursive local UI imports; unknowns labelled; not AST/runtime proof','migration_ownership':'proposed route/component maps only; retain original API authority'}
+metadata={'generated_at_utc':stamp,'scope':'static inspection; no runtime services, tests, audit or browser executed in this task','counts':counts,'original_git_status':git_start,'original_latest_commit':commit,'original_package_manifest':oldpkg,'svelte_package_manifest':newpkg,'original_inspected_files_sha256_rollup':oldhash,'svelte_application_files_sha256_rollup':newhash,'source_verification':'before/after fingerprints must match; documentation files excluded','algorithm':'regex-based imports/methods/literals plus recursive local UI imports; unknowns labelled; not AST/runtime proof','migration_ownership':'proposed route/component maps only; retain original API authority'}
 names=list(outputs)+list(csvs)+['inventory-metadata.json']
 metadata['documentation_files']=names+['generate-inventory.py']
 if docs.exists() and any((docs/n).exists() for n in names):raise RuntimeError('Documentation filename exists; no overwrites permitted')

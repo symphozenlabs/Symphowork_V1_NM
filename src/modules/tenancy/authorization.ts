@@ -1,4 +1,4 @@
-import { cache } from "react";
+import { memoizeRequest, getRequestCacheStore } from '@/lib/server/request-cache';
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { memberships, permissions, rolePermissions, roles } from "@/db/schema";
@@ -7,7 +7,7 @@ import { getSessionUser, requireSession } from "@/modules/identity/auth";
 import { ALL_PERMISSION_KEYS, type Permission, ROLE_PERMISSIONS } from "@/modules/rbac/permissions";
 import { getCachedTenantContext } from "@/modules/tenancy/context";
 
-export const getRolePermissionSet = cache(async (roleId: string, knownRoleKey?: string): Promise<Set<string>> => {
+export const getRolePermissionSet = memoizeRequest(async (roleId: string, knownRoleKey?: string): Promise<Set<string>> => {
   if (knownRoleKey === "ORGANIZATION_OWNER") {
     return new Set(ALL_PERMISSION_KEYS);
   }

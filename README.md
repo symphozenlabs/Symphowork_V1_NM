@@ -4,14 +4,14 @@ The canonical frontend and application API runtime in this workspace use Svelte 
 
 ## Local development
 
-Requirements: Node.js 24.16.x and the dependency graph in `pnpm-lock.yaml`.
+Requirements: Node.js 24.16.x and npm 10 or 11. `package-lock.json` is the canonical dependency lockfile.
 
 ```powershell
-pnpm install --frozen-lockfile
+npm ci
 npm run dev
 ```
 
-Open `http://localhost:5173`. The dev script binds to loopback port 5173; it does not launch a Next.js server or require port 3000. Do not run `npm install` to update the dependency graph. Stop the owned dev server with Ctrl+C.
+Open `http://localhost:5173`. The dev script binds to loopback port 5173; it does not launch a Next.js server or require port 3000. Use `npm install` when intentionally changing dependencies and commit the resulting `package-lock.json`. Stop the owned dev server with Ctrl+C.
 
 Useful checks:
 
@@ -27,7 +27,7 @@ The workflow browser suite uses synthetic fixtures and intercepted API responses
 
 ## Configuration and data
 
-Database-backed routes require `DATABASE_URL` for an already provisioned, authorized PostgreSQL database compatible with `src/db/schema.ts`. Supply it through the local secret manager/process environment or an ignored target `.env.local`; never copy the original `.env.local` or commit populated environment files. Without database configuration, public pages remain available and database-backed endpoints fail with a sanitized 503. The DB client does not fall back to a localhost database.
+Database-backed routes require `DATABASE_URL` for an already provisioned, authorized PostgreSQL database compatible with `src/db/schema.ts`. Supply it through the local secret manager/process environment or an ignored target `.env.local`; never copy the original `.env.local` or commit populated environment files. Without database configuration, public pages remain available and database-backed endpoints fail with a sanitized 503. The DB client does not fall back to a localhost database. Tenant and platform database transactions establish context using transaction-local PostgreSQL `set_config(..., ..., true)` GUCs (`app.current_user_id`, `app.current_organization_id`, `app.current_invitation_token_hash`, `app.is_platform_owner`).
 
 `APP_URL` supplies public links for invitation, verification, and recovery flows. Email, malware scanning, object storage, AI, billing, realtime, and queue capabilities require their own authorized provider setup. A variable being present does not prove the provider is bootstrapped or reachable. See [auth and environment setup](docs/auth-environment.md).
 

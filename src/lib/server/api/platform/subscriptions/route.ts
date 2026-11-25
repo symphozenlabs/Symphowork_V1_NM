@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse } from "@/lib/errors";
 import { requireSession } from "@/modules/identity/auth";
 import { listSubscriptions, updateSubscription } from "@/modules/platform/commercial";
@@ -12,7 +11,7 @@ export async function GET(request: Request) {
       page: Number(url.searchParams.get("page") ?? "1"),
       pageSize: Number(url.searchParams.get("pageSize") ?? "10"),
     });
-    return NextResponse.json({
+    return Response.json({
       success: true,
       ...result,
       subscriptions: result.rows,
@@ -21,4 +20,4 @@ export async function GET(request: Request) {
     return errorResponse(error);
   }
 }
-export async function POST(request: Request) { try { const user = await requireSession(); return NextResponse.json({ success: true, subscription: await updateSubscription(await request.json(), user.id) }, { status: 201 }); } catch (error) { return errorResponse(error); } }
+export async function POST(request: Request) { try { const user = await requireSession(); return Response.json({ success: true, subscription: await updateSubscription(await request.json(), user.id) }, { status: 201 }); } catch (error) { return errorResponse(error); } }

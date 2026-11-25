@@ -1,5 +1,5 @@
 import { and, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
-import { db } from "@/db/client";
+import { db, withTenantTransaction } from "@/db/client";
 import { approvalTasks, attendanceRecords, employeePayrollProfiles, employeeSalaryAssignments, employees, holidays, leaveApplications, leaveTypes, payrollAdjustments, payrollCalculationSnapshots, payrollLineItems, payrollPayslips, payrollPeriods, payrollRunEmployees, payrollRuns, payrollStatutoryConfigurations, payrollTaxConfigurations, salaryComponents, salaryStructureComponents, salaryStructures, workingDays } from "@/db/schema";
 import { recordAudit } from "@/lib/audit";
 import { AppError } from "@/lib/errors";
@@ -7,7 +7,7 @@ import { authorize, authorizeAny } from "@/modules/tenancy/authorization";
 import { calculatePayroll, PAYROLL_CALCULATION_VERSION, type PayrollAdjustment, type PayrollComponent, type StatutoryInputs } from "./calculator";
 import { createWorkflowInstance, ensureDefaultWorkflow } from "@/modules/workflows/service";
 import { notifyUsers } from "@/modules/notifications/service";
-import { getOrEnsureEmployeeForUser } from "@/modules/employees/service";
+import { getOrEnsureEmployeeForUser, requireLinkedEmployee } from "@/modules/employees/service";
 
 function periodDates(month: number, year: number) {
   if (!Number.isInteger(month) || month < 1 || month > 12 || !Number.isInteger(year) || year < 2000 || year > 2200) throw new AppError("VALIDATION_ERROR", "A valid payroll month and year are required.", 400);
@@ -209,52 +209,54 @@ export async function finalizePayrollRun(input: { organizationId: string; userId
 
 export async function listEmployeePayslips(input: { organizationId: string; userId: string }) {
   await authorize({ organizationId: input.organizationId, permission: "payslip.view" });
-  const employee = await getOrEnsureEmployeeForUser(input.organizationId, input.userId);
-  const rows = await db
-    .select({
-      payslip: payrollPayslips,
-      run: payrollRuns,
-      period: payrollPeriods,
-      snapshot: payrollCalculationSnapshots,
-    })
-    .from(payrollPayslips)
-    .innerJoin(payrollRunEmployees, eq(payrollPayslips.runEmployeeId, payrollRunEmployees.id))
-    .innerJoin(payrollRuns, eq(payrollRunEmployees.runId, payrollRuns.id))
-    .innerJoin(payrollPeriods, eq(payrollRuns.periodId, payrollPeriods.id))
-    .innerJoin(payrollCalculationSnapshots, eq(payrollPayslips.snapshotId, payrollCalculationSnapshots.id))
-    .where(
-      and(
-        eq(payrollPayslips.organizationId, input.organizationId),
-        eq(payrollPayslips.employeeId, employee.id),
-        inArray(payrollRuns.status, ["finalized", "locked"])
+  return withTenantTransaction(input.organizationId, async (tx) => {
+    const employee = await requireLinkedEmployee(input.organizationId, input.userId, tx);
+    const rows = await tx
+      .select({
+        payslip: payrollPayslips,
+        run: payrollRuns,
+        period: payrollPeriods,
+        snapshot: payrollCalculationSnapshots,
+      })
+      .from(payrollPayslips)
+      .innerJoin(payrollRunEmployees, eq(payrollPayslips.runEmployeeId, payrollRunEmployees.id))
+      .innerJoin(payrollRuns, eq(payrollRunEmployees.runId, payrollRuns.id))
+      .innerJoin(payrollPeriods, eq(payrollRuns.periodId, payrollPeriods.id))
+      .innerJoin(payrollCalculationSnapshots, eq(payrollPayslips.snapshotId, payrollCalculationSnapshots.id))
+      .where(
+        and(
+          eq(payrollPayslips.organizationId, input.organizationId),
+          eq(payrollPayslips.employeeId, employee.id),
+          inArray(payrollRuns.status, ["finalized", "locked"])
+        )
       )
-    )
-    .orderBy(desc(payrollPayslips.generatedAt));
+      .orderBy(desc(payrollPayslips.generatedAt));
 
-  const snapshotIds = rows.map((r) => r.snapshot.id);
-  const lineItems =
-    snapshotIds.length > 0
-      ? await db
-          .select()
-          .from(payrollLineItems)
-          .where(inArray(payrollLineItems.snapshotId, snapshotIds))
-      : [];
+    const snapshotIds = rows.map((r) => r.snapshot.id);
+    const lineItems =
+      snapshotIds.length > 0
+        ? await tx
+            .select()
+            .from(payrollLineItems)
+            .where(inArray(payrollLineItems.snapshotId, snapshotIds))
+        : [];
 
-  const lineItemsBySnapshot = new Map<string, typeof lineItems>();
-  for (const item of lineItems) {
-    const list = lineItemsBySnapshot.get(item.snapshotId) ?? [];
-    list.push(item);
-    lineItemsBySnapshot.set(item.snapshotId, list);
-  }
+    const lineItemsBySnapshot = new Map<string, typeof lineItems>();
+    for (const item of lineItems) {
+      const list = lineItemsBySnapshot.get(item.snapshotId) ?? [];
+      list.push(item);
+      lineItemsBySnapshot.set(item.snapshotId, list);
+    }
 
-  return rows.map((row) => ({
-    ...row,
-    employee: {
-      displayName: employee.displayName,
-      employeeId: employee.employeeId,
-    },
-    lineItems: lineItemsBySnapshot.get(row.snapshot.id) ?? [],
-  }));
+    return rows.map((row) => ({
+      ...row,
+      employee: {
+        displayName: employee.displayName,
+        employeeId: employee.employeeId,
+      },
+      lineItems: lineItemsBySnapshot.get(row.snapshot.id) ?? [],
+    }));
+  });
 }
 
 export async function markPayrollRunPaid(input: {

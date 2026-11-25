@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { getChatAttachment } from "@/modules/collaboration/service";
@@ -6,13 +5,13 @@ import { attachmentIdParamSchema, conversationIdParamSchema } from "@/modules/co
 
 export async function GET(
   _request: Request,
-  context: { params: Promise<{ conversationId: string; attachmentId: string }> }
+  context: { params: { conversationId: string; attachmentId: string } }
 ) {
   try {
     const tenant = await resolveTenantContext();
     if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
 
-    const { conversationId: rawConvId, attachmentId: rawAttId } = await context.params;
+    const { conversationId: rawConvId, attachmentId: rawAttId } = context.params;
     const conversationId = conversationIdParamSchema.parse(rawConvId);
     const attachmentId = attachmentIdParamSchema.parse(rawAttId);
 
@@ -31,7 +30,7 @@ export async function GET(
     const disposition = isImage || isAudio || isPdf ? "inline" : "attachment";
     const encodedFileName = encodeURIComponent(attachment.fileName);
 
-    return new NextResponse(Buffer.from(buffer), {
+    return new Response(Buffer.from(buffer), {
       status: 200,
       headers: {
         "Content-Type": attachment.mimeType,

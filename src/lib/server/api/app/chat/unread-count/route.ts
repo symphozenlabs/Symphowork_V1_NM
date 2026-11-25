@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { getUnreadConversationCount } from "@/modules/collaboration/service";
@@ -15,7 +14,7 @@ export async function GET() {
       userId: tenant.user.id,
     });
 
-    return NextResponse.json({ success: true, count });
+    return Response.json({ success: true, count });
   } catch (error) {
     return errorResponse(error);
   }

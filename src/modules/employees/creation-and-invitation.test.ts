@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { employees, invitations, onboarding, organizations } from "@/db/schema";
 import { AppError } from "@/lib/errors";
 
@@ -95,6 +95,7 @@ const tx = {
     })),
   })),
   query: {
+    memberships: { findFirst: vi.fn().mockResolvedValue(null) },
     roles: {
       findFirst: vi.fn().mockResolvedValue({ id: "role-emp", key: "EMPLOYEE" }),
     },
@@ -156,9 +157,10 @@ const db = {
   },
 };
 
+let inviteTestExecutor: typeof tx | undefined;
 vi.mock("@/db/client", () => ({
   db,
-  withTenantTransaction: vi.fn((_orgId: string, cb: (nestedTx: typeof tx) => Promise<unknown>) => cb(tx)),
+  withTenantTransaction: vi.fn((_orgId: string, cb: (nestedTx: typeof tx) => Promise<unknown>) => cb(inviteTestExecutor ?? tx)),
 }));
 vi.mock("@/modules/tenancy/authorization", () => ({ authorize }));
 vi.mock("@/modules/tenancy/context", () => ({ resolveTenantContext }));
@@ -176,6 +178,19 @@ describe("Employee creation duplicate prevention", () => {
     existingEmployeeToReturn = null;
     orgCounters = { "org-1": 1, "org-2": 1 };
     authorize.mockResolvedValue({ id: "user-actor" });
+  });
+
+  it("checks role delegation in the tenant transaction before creating a profile", async () => {
+    tx.query.memberships.findFirst.mockResolvedValueOnce({ roleId: "role-employee" });
+    tx.query.roles.findFirst.mockResolvedValueOnce({ key: "EMPLOYEE" });
+
+    await expect(createEmployee("org-1", "user-actor", {
+      firstName: "Fixture",
+      lastName: "Employee",
+      status: "invited",
+      targetRole: "ORGANIZATION_OWNER",
+    })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(tx.insert).not.toHaveBeenCalled();
   });
 
   it("creating a new employee succeeds", async () => {
@@ -335,15 +350,62 @@ describe("Employee invitation resend flow", () => {
     ];
 
     sendInvitationEmail.mockResolvedValue("not_configured");
+    inviteTestExecutor = {
+      ...tx,
+      select: vi.fn(() => ({
+        from: vi.fn((table: unknown) => ({
+          where: vi.fn(() => {
+            const rows = table === employees ? mockEmployees : [];
+            return Object.assign(Promise.resolve(rows), { for: vi.fn().mockResolvedValue(rows) });
+          }),
+        })),
+      })),
+      update: db.update as unknown as typeof tx.update,
+      insert: db.insert as unknown as typeof tx.insert,
+      query: { ...tx.query, invitations: db.query.invitations },
+    } as typeof tx;
     buildInvitationUrl.mockReturnValue(
       "https://app.symphowork.example/invitations/accept?token=mocked-opaque-token"
     );
+  });
 
-    db.select = vi.fn(() => ({
-      from: vi.fn(() => ({
-        where: vi.fn().mockResolvedValue([mockEmployees[0]]),
-      })),
-    }));
+  afterEach(() => { inviteTestExecutor = undefined; });
+
+  const resend = () => inviteRoutePost(new Request("http://localhost/api/app/employees/emp-001/invite", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ resend: true }),
+  }), { params: { employeeId } });
+
+  it("keeps the same pending invitation and profile when delivery fails after commit", async () => {
+    sendInvitationEmail.mockRejectedValueOnce(new Error("Email provider unavailable"));
+    const response = await resend();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      invitation: { id: "inv-001", status: "pending", delivery: "failed" },
+      invitationUrl: expect.any(String),
+    });
+    expect((await resend()).status).toBe(200);
+    expect(mockEmployees).toHaveLength(1);
+    expect(mockInvitations).toHaveLength(1);
+  });
+
+  it("does not send an invitation when the scoped transaction fails", async () => {
+    const { withTenantTransaction } = await import("@/db/client");
+    vi.mocked(withTenantTransaction).mockRejectedValueOnce(new Error("Transaction rolled back"));
+    const response = await resend();
+    expect(response.status).toBe(500);
+    expect(withTenantTransaction).toHaveBeenCalledWith(organizationId, expect.any(Function));
+    expect(sendInvitationEmail).not.toHaveBeenCalled();
+    expect(mockInvitations[0].tokenHash).toBe("existing-hash");
+  });
+
+  it("does not modify or send an invitation for an employee outside the scoped lookup", async () => {
+    mockEmployees = [];
+    const response = await resend();
+    expect(response.status).toBe(404);
+    expect(mockInvitations[0].tokenHash).toBe("existing-hash");
+    expect(sendInvitationEmail).not.toHaveBeenCalled();
   });
 
   it("resend invitation succeeds and generates invitation URL", async () => {
@@ -354,7 +416,7 @@ describe("Employee invitation resend flow", () => {
     });
 
     const response = await inviteRoutePost(request, {
-      params: Promise.resolve({ employeeId }),
+      params: { employeeId },
     });
     const body = await response.json();
 
@@ -385,7 +447,7 @@ describe("Employee invitation resend flow", () => {
     });
 
     const response = await inviteRoutePost(request, {
-      params: Promise.resolve({ employeeId }),
+      params: { employeeId },
     });
     const body = await response.json();
 
@@ -408,7 +470,7 @@ describe("Employee invitation resend flow", () => {
     });
 
     const response = await inviteRoutePost(request, {
-      params: Promise.resolve({ employeeId }),
+      params: { employeeId },
     });
     const body = await response.json();
 

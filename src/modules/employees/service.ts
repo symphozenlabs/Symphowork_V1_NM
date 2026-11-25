@@ -27,27 +27,25 @@ export async function createEmployee(organizationId: string, actorUserId: string
   assertNoSelfReporting("new", input.reportingManagerId);
 
   const targetRole = input.targetRole || "EMPLOYEE";
-  const actorMembership = await db.query.memberships?.findFirst?.({
-    where: and(
-      eq(memberships.userId, actorUserId),
-      eq(memberships.organizationId, organizationId),
-      eq(memberships.status, "active")
-    ),
-  });
-  if (actorMembership) {
-    const actorRole = await db.query.roles?.findFirst?.({
-      where: eq(roles.id, actorMembership.roleId),
-    });
-    if (actorRole?.key && !canAssignRole(actorRole.key, targetRole)) {
-      throw new AppError("FORBIDDEN", `You are not authorized to create employees with role ${targetRole}.`, 403);
-    }
-  }
-
   const isDeptRequired = input.targetRole
     ? isDepartmentRequiredForRole(input.targetRole)
     : false;
 
-  const result = await db.transaction(async (tx) => {
+  const result = await withTenantTransaction(organizationId, async (tx) => {
+    const actorMembership = await tx.query.memberships?.findFirst({
+      where: and(
+        eq(memberships.userId, actorUserId),
+        eq(memberships.organizationId, organizationId),
+        eq(memberships.status, "active")
+      ),
+    });
+    if (actorMembership) {
+      const actorRole = await tx.query.roles.findFirst({ where: eq(roles.id, actorMembership.roleId) });
+      if (!actorRole || !canAssignRole(actorRole.key, targetRole)) {
+        throw new AppError("FORBIDDEN", `You are not authorized to create employees with role ${targetRole}.`, 403);
+      }
+    }
+
     if (input.personalEmail && input.personalEmail.trim() !== "") {
       const emailToMatch = input.personalEmail.trim().toLowerCase();
       const [existing] = await tx
@@ -380,20 +378,23 @@ export async function listEmployees(
       filters.push(or(...searchConditions)!);
     }
 
-    const countResult = await client
-      .select({ count: sql<number>`count(*)::int` })
-      .from(employees)
-      .where(and(...filters));
-
-    const total = Number(countResult[0]?.count ?? 0);
-
-    const rawRows = await client
-      .select()
+    const pageRows = await client
+      .select({ employee: employees, total: sql<number>`count(*) over()::int` })
       .from(employees)
       .where(and(...filters))
       .orderBy(desc(employees.createdAt))
       .limit(pageSize)
       .offset((page - 1) * pageSize);
+
+    // The window count shares the filtered page query. For an empty page, retain
+    // the exact total via a count query because a window has no row to carry it.
+    const total = pageRows[0]
+      ? Number(pageRows[0].total)
+      : Number((await client
+        .select({ count: sql<number>`count(*)::int` })
+        .from(employees)
+        .where(and(...filters)))[0]?.count ?? 0);
+    const rawRows = pageRows.map((row) => row.employee);
 
     const rows = await enrichEmployeesWithRoles(organizationId, rawRows, client);
 
@@ -469,7 +470,10 @@ export async function getEmployeeDetails(
   employeeId: string,
   executor?: DbTransaction | typeof db
 ): Promise<EmployeeDetails | null> {
-  const client = executor ?? db;
+  if (!executor) {
+    return withTenantTransaction(organizationId, (tx) => getEmployeeDetails(organizationId, employeeId, tx));
+  }
+  const client = executor;
 
   const [employee] =
     (await client
@@ -907,15 +911,21 @@ export async function isActorPrivilegedForOwnerRecord(
   return false;
 }
 
-export async function updateEmployee(organizationId: string, actorUserId: string, employeeId: string, changes: Partial<EmployeeInput>) {
+export async function updateEmployee(organizationId: string, actorUserId: string, employeeId: string, changes: Partial<EmployeeInput>, executor?: DbTransaction | typeof db) {
+  if (!executor) {
+    return withTenantTransaction(organizationId, (tx) =>
+      updateEmployee(organizationId, actorUserId, employeeId, changes, tx)
+    );
+  }
   await authorize({ organizationId, permission: "employee.update" });
-  const [current] = await db.select().from(employees).where(and(eq(employees.id, employeeId), eq(employees.organizationId, organizationId)));
+  const client = executor ?? db;
+  const [current] = await client.select().from(employees).where(and(eq(employees.id, employeeId), eq(employees.organizationId, organizationId)));
   if (!current) throw new AppError("NOT_FOUND", "Employee was not found.", 404);
 
   // Protect Organization Owner employee record from modification by other tenant roles
-  const isTargetOwner = await isOrganizationOwnerEmployee(organizationId, employeeId);
+  const isTargetOwner = await isOrganizationOwnerEmployee(organizationId, employeeId, client);
   if (isTargetOwner) {
-    const isActorPrivileged = await isActorPrivilegedForOwnerRecord(organizationId, actorUserId);
+    const isActorPrivileged = await isActorPrivilegedForOwnerRecord(organizationId, actorUserId, client);
     if (!isActorPrivileged) {
       throw new AppError(
         "FORBIDDEN",
@@ -956,7 +966,7 @@ export async function updateEmployee(organizationId: string, actorUserId: string
 
     if (!actorRoleKey) {
       try {
-        const actorMem = await db.query.memberships?.findFirst?.({
+        const actorMem = await client.query.memberships?.findFirst?.({
           where: and(
             eq(memberships.userId, actorUserId),
             eq(memberships.organizationId, organizationId),
@@ -964,12 +974,12 @@ export async function updateEmployee(organizationId: string, actorUserId: string
           ),
         });
         if (actorMem) {
-          const actorRole = await db.query.roles?.findFirst?.({
+          const actorRole = await client.query.roles?.findFirst?.({
             where: eq(roles.id, actorMem.roleId),
           });
           actorRoleKey = actorRole?.key ?? null;
         } else {
-          const user = await db.query.users?.findFirst?.({ where: eq(users.id, actorUserId) });
+          const user = await client.query.users?.findFirst?.({ where: eq(users.id, actorUserId) });
           if (user?.platformRole === "PLATFORM_OWNER") {
             actorRoleKey = "ORGANIZATION_OWNER";
           }
@@ -992,7 +1002,7 @@ export async function updateEmployee(organizationId: string, actorUserId: string
   let effectiveRole = changes.targetRole;
   if (!effectiveRole && current.userId) {
     try {
-      const fromQuery = db.select({ roleKey: roles.key }).from(memberships);
+      const fromQuery = client.select({ roleKey: roles.key }).from(memberships);
       if (typeof fromQuery?.innerJoin === "function") {
         const [empRole] = await fromQuery
           .innerJoin(roles, eq(roles.id, memberships.roleId))
@@ -1022,7 +1032,7 @@ export async function updateEmployee(organizationId: string, actorUserId: string
     const targetDeptId = changes.departmentId !== undefined ? changes.departmentId : current.departmentId;
     if (targetDeptId) {
       try {
-        const orgDepts = await db
+        const orgDepts = await client
           .select({ id: departments.id, code: departments.code, name: departments.name, status: departments.status })
           .from(departments)
           .where(and(eq(departments.organizationId, organizationId), eq(departments.status, "active")));
@@ -1045,7 +1055,7 @@ export async function updateEmployee(organizationId: string, actorUserId: string
       [changes.shiftId, shifts, "Shift"],
     ] as const) {
       if (id) {
-        const query = db.select({ id: table.id }).from(table);
+        const query = client.select({ id: table.id }).from(table);
         if (typeof query?.where === "function") {
           const [row] = await query.where(and(eq(table.id, id), eq(table.organizationId, organizationId)));
           if (!row) {
@@ -1058,12 +1068,12 @@ export async function updateEmployee(organizationId: string, actorUserId: string
     if (err instanceof AppError) throw err;
   }
 
-  if (changes.reportingManagerId !== undefined) { assertNoSelfReporting(employeeId, changes.reportingManagerId); if (changes.reportingManagerId) { const [manager] = await db.select({ id: employees.id }).from(employees).where(and(eq(employees.id, changes.reportingManagerId), eq(employees.organizationId, organizationId))); if (!manager) throw new AppError("VALIDATION_ERROR", "Reporting manager does not belong to this organization.", 400); } }
+  if (changes.reportingManagerId !== undefined) { assertNoSelfReporting(employeeId, changes.reportingManagerId); if (changes.reportingManagerId) { const [manager] = await client.select({ id: employees.id }).from(employees).where(and(eq(employees.id, changes.reportingManagerId), eq(employees.organizationId, organizationId))); if (!manager) throw new AppError("VALIDATION_ERROR", "Reporting manager does not belong to this organization.", 400); } }
   if (changes.status && changes.status !== current.status) assertEmployeeStatusTransition(current.status, changes.status);
 
   const targetDeptId = changes.departmentId !== undefined ? changes.departmentId : current.departmentId;
   if (changes.teamId) {
-    const [team] = await db
+    const [team] = await client
       .select({ id: teams.id, departmentId: teams.departmentId, status: teams.status })
       .from(teams)
       .where(and(eq(teams.id, changes.teamId), eq(teams.organizationId, organizationId)));
@@ -1077,7 +1087,7 @@ export async function updateEmployee(organizationId: string, actorUserId: string
       throw new AppError("VALIDATION_ERROR", "Selected team does not belong to the selected department.", 400);
     }
   } else if (changes.departmentId !== undefined && changes.departmentId !== current.departmentId && changes.teamId === undefined && current.teamId) {
-    const [currTeam] = await db
+    const [currTeam] = await client
       .select({ departmentId: teams.departmentId })
       .from(teams)
       .where(and(eq(teams.id, current.teamId), eq(teams.organizationId, organizationId)));
@@ -1088,26 +1098,26 @@ export async function updateEmployee(organizationId: string, actorUserId: string
 
   if (changes.targetRole) {
     try {
-      const [targetRoleRow] = await db
+      const [targetRoleRow] = await client
         .select({ id: roles.id })
         .from(roles)
         .where(and(eq(roles.key, changes.targetRole), eq(roles.organizationId, organizationId)));
       if (targetRoleRow) {
         if (current.userId) {
-          await db
+          await client
             .update(memberships)
             .set({ roleId: targetRoleRow.id, updatedAt: new Date() })
             .where(and(eq(memberships.userId, current.userId), eq(memberships.organizationId, organizationId)));
         }
         try {
-          await db
+          await client
             .update(invitations)
             .set({ intendedRole: changes.targetRole, updatedAt: new Date() })
             .where(and(eq(invitations.employeeId, employeeId), eq(invitations.organizationId, organizationId)));
         } catch {
           // Invitations may not exist
         }
-        await db.insert(employeeHistory).values({
+        await client.insert(employeeHistory).values({
           organizationId,
           employeeId,
           eventType: "role_changed",
@@ -1123,10 +1133,22 @@ export async function updateEmployee(organizationId: string, actorUserId: string
   const cleanChanges = { ...changes };
   delete cleanChanges.targetRole;
   const displayName = changes.firstName || changes.middleName || changes.lastName ? [changes.firstName ?? current.firstName, changes.middleName ?? current.middleName, changes.lastName ?? current.lastName].filter(Boolean).join(" ") : current.displayName;
-  const [updated] = await db.update(employees).set({ ...cleanChanges, displayName, updatedAt: new Date() }).where(eq(employees.id, employeeId)).returning();
-  await db.insert(employeeHistory).values({ organizationId, employeeId, eventType: "employee_updated", previousValue: JSON.stringify(current), newValue: JSON.stringify(updated), actorUserId });
+  const [updated] = await client.update(employees).set({ ...cleanChanges, displayName, updatedAt: new Date() }).where(and(eq(employees.id, employeeId), eq(employees.organizationId, organizationId))).returning();
+  await client.insert(employeeHistory).values({ organizationId, employeeId, eventType: "employee_updated", previousValue: JSON.stringify(current), newValue: JSON.stringify(updated), actorUserId });
   await recordAudit({ actorUserId, organizationId, action: "employee_updated", resource: "employee", resourceId: employeeId });
   return updated;
+}
+
+export async function requireLinkedEmployee(
+  organizationId: string,
+  userId: string,
+  tx: DbTransaction
+) {
+  const [employee] = await tx.select().from(employees)
+    .where(and(eq(employees.organizationId, organizationId), eq(employees.userId, userId)))
+    .limit(1);
+  if (!employee) throw new AppError("NOT_FOUND", "Your employee profile is not linked.", 404);
+  return employee;
 }
 
 export async function getOrEnsureEmployeeForUser(

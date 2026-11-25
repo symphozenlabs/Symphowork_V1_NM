@@ -13,6 +13,7 @@ let mockEmployees: Array<Record<string, unknown>> = [];
 let insertedEmployees: Array<Record<string, unknown>> = [];
 
 const tx = {
+  query: { memberships: { findFirst: vi.fn().mockResolvedValue(null) } },
   select: vi.fn(() => ({
     from: vi.fn((table: unknown) => ({
       where: vi.fn().mockImplementation(() => {
@@ -53,6 +54,7 @@ const tx = {
 };
 
 vi.mock("@/db/client", () => ({
+  withTenantTransaction: vi.fn(async (_orgId: string, run: (transaction: typeof tx) => Promise<unknown>) => run(tx)),
   db: {
     transaction: vi.fn(async (cb: (nestedTx: typeof tx) => Promise<unknown>) => cb(tx)),
     select: vi.fn(() => ({

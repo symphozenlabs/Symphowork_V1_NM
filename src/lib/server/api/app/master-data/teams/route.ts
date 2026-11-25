@@ -1,6 +1,5 @@
-import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
-import { db } from "@/db/client";
+import { db, withTenantTransaction } from "@/db/client";
 import { departments, teams } from "@/db/schema";
 import { errorResponse } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
@@ -17,7 +16,7 @@ const schema = z.object({
 export async function GET(request: Request) {
   try {
     const tenant = await resolveTenantContext();
-    if (!tenant.organization) return NextResponse.json({ success: true, items: [] });
+    if (!tenant.organization) return Response.json({ success: true, items: [] });
     await authorize({ organizationId: tenant.organization.id, permission: "team.read" });
 
     let departmentId: string | null = null;
@@ -35,49 +34,52 @@ export async function GET(request: Request) {
       }
     }
 
-    const conditions = [eq(teams.organizationId, tenant.organization.id)];
+    const organizationId = tenant.organization.id;
+    return await withTenantTransaction(organizationId, async (tx) => {
+      const conditions = [eq(teams.organizationId, organizationId)];
 
-    if (departmentId) {
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(departmentId);
-      if (!isUuid) {
-        return NextResponse.json({ success: true, items: [] });
-      }
+      if (departmentId) {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(departmentId);
+        if (!isUuid) {
+          return Response.json({ success: true, items: [] });
+        }
 
-      // Enforce organization/tenant isolation on department
-      const [dept] = await db
-        .select({ id: departments.id })
-        .from(departments)
-        .where(
-          and(
-            eq(departments.id, departmentId),
-            eq(departments.organizationId, tenant.organization.id)
+        // Enforce organization/tenant isolation on department
+        const [dept] = await tx
+          .select({ id: departments.id })
+          .from(departments)
+          .where(
+            and(
+              eq(departments.id, departmentId),
+              eq(departments.organizationId, organizationId)
+            )
           )
-        )
-        .limit(1);
+          .limit(1);
 
-      if (!dept) {
-        return NextResponse.json({ success: true, items: [] });
-      }
+        if (!dept) {
+          return Response.json({ success: true, items: [] });
+        }
 
-      conditions.push(eq(teams.departmentId, departmentId));
+        conditions.push(eq(teams.departmentId, departmentId));
 
-      // When filtering by department, default to active teams unless an explicit status filter is requested
-      if (statusParam === "active" || statusParam === "inactive") {
+        // When filtering by department, default to active teams unless an explicit status filter is requested
+        if (statusParam === "active" || statusParam === "inactive") {
+          conditions.push(eq(teams.status, statusParam));
+        } else if (!statusParam) {
+          conditions.push(eq(teams.status, "active"));
+        }
+      } else if (statusParam === "active" || statusParam === "inactive") {
         conditions.push(eq(teams.status, statusParam));
-      } else if (!statusParam) {
-        conditions.push(eq(teams.status, "active"));
       }
-    } else if (statusParam === "active" || statusParam === "inactive") {
-      conditions.push(eq(teams.status, statusParam));
-    }
 
-    const items = await db
-      .select()
-      .from(teams)
-      .where(and(...conditions))
-      .orderBy(teams.name);
+      const items = await tx
+        .select()
+        .from(teams)
+        .where(and(...conditions))
+        .orderBy(teams.name);
 
-    return NextResponse.json({ success: true, items });
+      return Response.json({ success: true, items });
+    });
   } catch (error) {
     return errorResponse(error);
   }
@@ -103,7 +105,7 @@ export async function POST(request: Request) {
         .limit(1);
 
       if (!dept) {
-        return NextResponse.json(
+        return Response.json(
           {
             success: false,
             error: {
@@ -120,7 +122,7 @@ export async function POST(request: Request) {
       .insert(teams)
       .values({ organizationId: tenant.organization.id, ...parsed })
       .returning();
-    return NextResponse.json({ success: true, item }, { status: 201 });
+    return Response.json({ success: true, item }, { status: 201 });
   } catch (error) {
     return errorResponse(error);
   }

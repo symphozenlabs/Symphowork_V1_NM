@@ -1,5 +1,4 @@
 import { and, eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
 import { db } from "@/db/client";
 import {
   employeePayrollProfiles,
@@ -27,7 +26,7 @@ export async function GET() {
       db.select().from(employeePayrollProfiles).where(eq(employeePayrollProfiles.organizationId, tenant.organization.id)),
     ]);
 
-    return NextResponse.json({ success: true, structures, components, statutory, tax, profiles });
+    return Response.json({ success: true, structures, components, statutory, tax, profiles });
   } catch (error) {
     return errorResponse(error);
   }
@@ -85,7 +84,7 @@ export async function POST(request: Request) {
           status: "draft",
         })
         .returning();
-      return NextResponse.json({ success: true, structure }, { status: 201 });
+      return Response.json({ success: true, structure }, { status: 201 });
     }
 
     if (body.action === "activate_structure") {
@@ -107,7 +106,7 @@ export async function POST(request: Request) {
         .set({ status: "active", updatedAt: new Date() })
         .where(eq(salaryStructures.id, structure.id))
         .returning();
-      return NextResponse.json({ success: true, structure: updated });
+      return Response.json({ success: true, structure: updated });
     }
 
     if (body.action === "component") {
@@ -127,7 +126,7 @@ export async function POST(request: Request) {
           proratable: body.proratable ?? true,
         })
         .returning();
-      return NextResponse.json({ success: true, component }, { status: 201 });
+      return Response.json({ success: true, component }, { status: 201 });
     }
 
     if (body.action === "link_component") {
@@ -156,7 +155,7 @@ export async function POST(request: Request) {
           displayOrder: body.displayOrder ?? 0,
         })
         .returning();
-      return NextResponse.json({ success: true, link }, { status: 201 });
+      return Response.json({ success: true, link }, { status: 201 });
     }
 
     if (body.action === "statutory") {
@@ -176,7 +175,7 @@ export async function POST(request: Request) {
           active: true,
         })
         .returning();
-      return NextResponse.json({ success: true, statutory: row }, { status: 201 });
+      return Response.json({ success: true, statutory: row }, { status: 201 });
     }
 
     if (body.action === "tax") {
@@ -195,7 +194,7 @@ export async function POST(request: Request) {
           active: true,
         })
         .returning();
-      return NextResponse.json({ success: true, tax: row }, { status: 201 });
+      return Response.json({ success: true, tax: row }, { status: 201 });
     }
 
     throw new AppError("VALIDATION_ERROR", "Unsupported payroll configuration action.", 400);

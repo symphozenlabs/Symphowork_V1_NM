@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/db/client";
 import {
@@ -18,94 +17,85 @@ import { recordAudit } from "@/lib/audit";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { authorize } from "@/modules/tenancy/authorization";
 import { isOrganizationOwnerEmployee, isActorPrivilegedForOwnerRecord } from "@/modules/employees/service";
+import { tenantApiRead } from "@/lib/server/tenant-api-read";
+import { tenantApiWrite } from "@/lib/server/tenant-api-write";
 
-export async function GET(_request: Request, context: { params: Promise<{ employeeId: string }> }) {
+export async function GET(_request: Request, context: { params: { employeeId: string } }) {
   try {
     const tenant = await resolveTenantContext();
     if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     await authorize({ organizationId: tenant.organization.id, permission: "employee.onboard" });
-    const { employeeId } = await context.params;
-    const [record] = await db
-      .select()
-      .from(onboarding)
-      .where(and(eq(onboarding.employeeId, employeeId), eq(onboarding.organizationId, tenant.organization.id)));
-    if (!record) throw new AppError("NOT_FOUND", "Onboarding record was not found.", 404);
-    const items = await db
-      .select()
-      .from(onboardingChecklistItems)
-      .where(and(eq(onboardingChecklistItems.onboardingId, record.id), eq(onboardingChecklistItems.organizationId, tenant.organization.id)));
-    return NextResponse.json({ success: true, onboarding: record, items });
+    const { employeeId } = context.params;
+    const result = await tenantApiRead(tenant, async (tx) => {
+      const client = tx ?? db;
+      const [record] = await client
+        .select()
+        .from(onboarding)
+        .where(and(eq(onboarding.employeeId, employeeId), eq(onboarding.organizationId, tenant.organization!.id)));
+      if (!record) throw new AppError("NOT_FOUND", "Onboarding record was not found.", 404);
+      const items = await client
+        .select()
+        .from(onboardingChecklistItems)
+        .where(and(eq(onboardingChecklistItems.onboardingId, record.id), eq(onboardingChecklistItems.organizationId, tenant.organization!.id)));
+      return { onboarding: record, items };
+    });
+    return Response.json({ success: true, ...result });
   } catch (error) {
     return errorResponse(error);
   }
 }
 
-export async function PATCH(request: Request, context: { params: Promise<{ employeeId: string }> }) {
+export async function PATCH(request: Request, context: { params: { employeeId: string } }) {
   try {
     const tenant = await resolveTenantContext();
     if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     await authorize({ organizationId: tenant.organization.id, permission: "employee.onboard" });
-    const { employeeId } = await context.params;
-    const [employee] = await db
-      .select({ id: employees.id })
-      .from(employees)
-      .where(and(eq(employees.id, employeeId), eq(employees.organizationId, tenant.organization.id)));
-    if (!employee) throw new AppError("NOT_FOUND", "Employee was not found.", 404);
-
-    const isOwner = await isOrganizationOwnerEmployee(tenant.organization.id, employee.id);
-    if (isOwner) {
-      const isPrivileged = await isActorPrivilegedForOwnerRecord(tenant.organization.id, tenant.user.id);
-      if (!isPrivileged) {
-        throw new AppError(
-          "FORBIDDEN",
-          "The Organization Owner onboarding records are protected from modification by other tenant roles.",
-          403
-        );
-      }
-    }
-
-    const [record] = await db
-      .select()
-      .from(onboarding)
-      .where(and(eq(onboarding.employeeId, employeeId), eq(onboarding.organizationId, tenant.organization.id)));
-    if (!record) throw new AppError("NOT_FOUND", "Onboarding record was not found.", 404);
-    if (record.status === "completed") {
-      throw new AppError("VALIDATION_ERROR", "Checklist items cannot be modified after onboarding is completed.", 400);
-    }
-
     const body = (await request.json()) as { itemId?: string; status?: "pending" | "completed" | "blocked" };
     if (!body.itemId || !body.status) throw new AppError("VALIDATION_ERROR", "Checklist item and status are required.", 400);
-    const [item] = await db
-      .update(onboardingChecklistItems)
-      .set({
-        status: body.status,
-        completedAt: body.status === "completed" ? new Date() : null,
-        completedByUserId: body.status === "completed" ? tenant.user.id : null,
-      })
-      .where(and(eq(onboardingChecklistItems.id, body.itemId), eq(onboardingChecklistItems.organizationId, tenant.organization.id)))
-      .returning();
-    if (!item) throw new AppError("NOT_FOUND", "Checklist item was not found.", 404);
-    return NextResponse.json({ success: true, item });
+    const { employeeId } = context.params;
+    const item = await tenantApiWrite(tenant, async (tx) => {
+      const client = tx ?? db;
+      const [employee] = await client.select({ id: employees.id }).from(employees)
+        .where(and(eq(employees.id, employeeId), eq(employees.organizationId, tenant.organization!.id)));
+      if (!employee) throw new AppError("NOT_FOUND", "Employee was not found.", 404);
+      const isOwner = await isOrganizationOwnerEmployee(tenant.organization!.id, employee.id, tx ?? db);
+      if (isOwner && !(await isActorPrivilegedForOwnerRecord(tenant.organization!.id, tenant.user.id, tx ?? db))) {
+        throw new AppError("FORBIDDEN", "The Organization Owner onboarding records are protected from modification by other tenant roles.", 403);
+      }
+      const [record] = await client.select().from(onboarding)
+        .where(and(eq(onboarding.employeeId, employeeId), eq(onboarding.organizationId, tenant.organization!.id)));
+      if (!record) throw new AppError("NOT_FOUND", "Onboarding record was not found.", 404);
+      if (record.status === "completed") throw new AppError("VALIDATION_ERROR", "Checklist items cannot be modified after onboarding is completed.", 400);
+      const [updatedItem] = await client.update(onboardingChecklistItems)
+        .set({ status: body.status!, completedAt: body.status === "completed" ? new Date() : null, completedByUserId: body.status === "completed" ? tenant.user.id : null })
+        .where(and(eq(onboardingChecklistItems.id, body.itemId!), eq(onboardingChecklistItems.organizationId, tenant.organization!.id)))
+        .returning();
+      if (!updatedItem) throw new AppError("NOT_FOUND", "Checklist item was not found.", 404);
+      return updatedItem;
+    });
+    return Response.json({ success: true, item });
   } catch (error) {
     return errorResponse(error);
   }
 }
 
-export async function POST(_request: Request, context: { params: Promise<{ employeeId: string }> }) {
+export async function POST(_request: Request, context: { params: { employeeId: string } }) {
   try {
     const tenant = await resolveTenantContext();
     if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     await authorize({ organizationId: tenant.organization.id, permission: "employee.onboard" });
-    const { employeeId } = await context.params;
-    const [employee] = await db
+    const { employeeId } = context.params;
+    const completed = await tenantApiWrite(tenant, async (tx) => {
+    const client = tx ?? db;
+    const [employee] = await client
       .select()
       .from(employees)
       .where(and(eq(employees.id, employeeId), eq(employees.organizationId, tenant.organization.id)));
     if (!employee) throw new AppError("NOT_FOUND", "Employee was not found.", 404);
 
-    const isOwner = await isOrganizationOwnerEmployee(tenant.organization.id, employee.id);
+    const isOwner = await isOrganizationOwnerEmployee(tenant.organization.id, employee.id, tx ?? db);
     if (isOwner) {
-      const isPrivileged = await isActorPrivilegedForOwnerRecord(tenant.organization.id, tenant.user.id);
+      const isPrivileged = await isActorPrivilegedForOwnerRecord(tenant.organization.id, tenant.user.id, tx ?? db);
       if (!isPrivileged) {
         throw new AppError(
           "FORBIDDEN",
@@ -114,17 +104,17 @@ export async function POST(_request: Request, context: { params: Promise<{ emplo
         );
       }
     }
-    const [record] = await db
+    const [record] = await client
       .select()
       .from(onboarding)
       .where(and(eq(onboarding.employeeId, employeeId), eq(onboarding.organizationId, tenant.organization.id)));
     if (!record) throw new AppError("NOT_FOUND", "Onboarding record was not found.", 404);
 
     if (record.status === "completed") {
-      return NextResponse.json({ success: true, onboarding: record });
+      return record;
     }
 
-    const pending = await db
+    const pending = await client
       .select()
       .from(onboardingChecklistItems)
       .where(and(eq(onboardingChecklistItems.onboardingId, record.id), ne(onboardingChecklistItems.status, "completed")));
@@ -139,7 +129,7 @@ export async function POST(_request: Request, context: { params: Promise<{ emplo
     let employeeRole: string | null = null;
     if (employee.userId) {
       try {
-        const [mem] = await db
+        const [mem] = await client
           .select({ roleKey: roles.key })
           .from(memberships)
           .innerJoin(roles, eq(roles.id, memberships.roleId))
@@ -156,7 +146,7 @@ export async function POST(_request: Request, context: { params: Promise<{ emplo
     }
     if (!employeeRole) {
       try {
-        const [inv] = await db
+        const [inv] = await client
           .select({ intendedRole: invitations.intendedRole })
           .from(invitations)
           .where(
@@ -171,7 +161,7 @@ export async function POST(_request: Request, context: { params: Promise<{ emplo
     }
     if (!employeeRole) {
       try {
-        const historyEvents = await db
+        const historyEvents = await client
           .select({ newValue: employeeHistory.newValue })
           .from(employeeHistory)
           .where(
@@ -199,7 +189,7 @@ export async function POST(_request: Request, context: { params: Promise<{ emplo
     }
 
     if (employee.departmentId) {
-      const [dept] = await db
+      const [dept] = await client
         .select()
         .from(departments)
         .where(
@@ -218,7 +208,7 @@ export async function POST(_request: Request, context: { params: Promise<{ emplo
 
     // Shift validation (must belong to same organization and be active)
     if (employee.shiftId) {
-      const [shift] = await db
+      const [shift] = await client
         .select()
         .from(shifts)
         .where(
@@ -237,7 +227,7 @@ export async function POST(_request: Request, context: { params: Promise<{ emplo
 
     // Team validation (must belong to same organization, be active, and belong to assigned department)
     if (employee.teamId) {
-      const [team] = await db
+      const [team] = await client
         .select()
         .from(teams)
         .where(
@@ -257,19 +247,21 @@ export async function POST(_request: Request, context: { params: Promise<{ emplo
       }
     }
 
-    const [updated] = await db
+    const [updated] = await client
       .update(onboarding)
       .set({ status: "completed", completedAt: new Date(), updatedAt: new Date() })
       .where(eq(onboarding.id, record.id))
       .returning();
-    await db.update(employees).set({ status: "active", updatedAt: new Date() }).where(eq(employees.id, employeeId));
-    await db.insert(employeeHistory).values({
+    await client.update(employees).set({ status: "active", updatedAt: new Date() }).where(eq(employees.id, employeeId));
+    await client.insert(employeeHistory).values({
       organizationId: tenant.organization.id,
       employeeId,
       eventType: "onboarding_completed",
       previousValue: employee.status,
       newValue: "active",
       actorUserId: tenant.user.id,
+    });
+    return updated;
     });
     await recordAudit({
       actorUserId: tenant.user.id,
@@ -278,7 +270,7 @@ export async function POST(_request: Request, context: { params: Promise<{ emplo
       resource: "employee",
       resourceId: employeeId,
     });
-    return NextResponse.json({ success: true, onboarding: updated });
+    return Response.json({ success: true, onboarding: completed });
   } catch (error) {
     return errorResponse(error);
   }

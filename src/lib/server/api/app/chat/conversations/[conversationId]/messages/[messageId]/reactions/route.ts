@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { resolveTenantContext } from "@/modules/tenancy/context";
@@ -12,14 +11,14 @@ import {
 
 export async function POST(
   request: Request,
-  context: { params: Promise<{ conversationId: string; messageId: string }> }
+  context: { params: { conversationId: string; messageId: string } }
 ) {
   try {
     const tenant = await resolveTenantContext();
     if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     enforceRateLimit(`chat:react:${tenant.organization.id}:${tenant.user.id}`, 120, 60000);
 
-    const { conversationId: rawConvId, messageId: rawMsgId } = await context.params;
+    const { conversationId: rawConvId, messageId: rawMsgId } = context.params;
     conversationIdParamSchema.parse(rawConvId);
     const messageId = messageIdParamSchema.parse(rawMsgId);
 
@@ -32,7 +31,7 @@ export async function POST(
       emoji: body.emoji,
     });
 
-    return NextResponse.json({
+    return Response.json({
       success: true,
       ...result,
     });

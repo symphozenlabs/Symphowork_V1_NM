@@ -98,7 +98,7 @@
       "npm run test — passed; 16 files, 243 tests",
       "npm run build — passed; adapter-node done",
       "npm run test:e2e — passed; 20 tests",
-      "pnpm.cmd exec playwright test --config playwright.workflows.config.ts — passed; 49 tests"
+      "Historical synthetic workflow suite passed; 49 tests. Current command: npm exec -- playwright test --config playwright.workflows.config.ts"
     ],
     "checks_final": "Superseded for this batch: full isolated component suite passed 37 tests. See synthetic_workflows.",
     "latest_implementation_batch": {
@@ -238,7 +238,7 @@
       "NEXT_TELEMETRY_DISABLED"
     ],
     "configuration_diagnostic": "Both owned listeners confirmed from startup and OS state: backend 3000, frontend 5173. Backend read-only SELECT-1 health: HTTP 200, database OK. No secret values recorded.",
-    "synthetic_workflows": "Full pnpm.cmd exec playwright test --config playwright.workflows.config.ts passed: 49 tests across 11 spec files, approximately 1.4 minutes. Includes real components with intercepted API fixtures.",
+    "synthetic_workflows": "Historical synthetic workflow suite passed: 49 tests across 11 spec files, approximately 1.4 minutes. Current command: npm exec -- playwright test --config playwright.workflows.config.ts. Includes real components with intercepted API fixtures.",
     "batch_manifest": "Current batch_files_changed records this review setup; docs/backend-integration-batch.json describes the earlier batch.",
     "current_batch_fixes": [
       "Explicit opt-in session database configuration with sanitized failures and names-only diagnostic/example",

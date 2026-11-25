@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { updatePresence, getPresenceForEmployees } from "@/modules/collaboration/service";
@@ -18,7 +17,7 @@ export async function POST(request: Request) {
       status: body.status,
     });
 
-    return NextResponse.json({
+    return Response.json({
       success: true,
       presence,
     });
@@ -45,7 +44,7 @@ export async function GET(request: Request) {
       employeeIds,
     });
 
-    return NextResponse.json({
+    return Response.json({
       success: true,
       presence,
     });

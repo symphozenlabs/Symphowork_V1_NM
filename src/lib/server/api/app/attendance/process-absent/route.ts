@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { processDailyAttendanceAbsences } from "@/modules/attendance/service";
@@ -22,7 +21,7 @@ export async function POST(request: Request) {
       targetDate: date,
     });
 
-    return NextResponse.json(result);
+    return Response.json(result);
   } catch (error) {
     return errorResponse(error);
   }

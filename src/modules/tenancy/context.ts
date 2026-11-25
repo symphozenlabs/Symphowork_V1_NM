@@ -1,5 +1,5 @@
-import { cookies } from "next/headers";
-import { cache, getRequestCacheStore } from "react";
+import { getRequestEvent } from "$app/server";
+import { memoizeRequest, getRequestCacheStore } from '@/lib/server/request-cache';
 import { and, eq } from "drizzle-orm";
 import { db, withPlatformTransaction, withTenantTransaction, withUserTransaction } from "@/db/client";
 import { memberships, organizations, roles } from "@/db/schema";
@@ -23,7 +23,7 @@ export type TenantContext =
       permissions: string[];
     };
 
-// Request-scoped WeakMap cache keyed on the immutable ReadonlyRequestCookies object
+// Request-scoped WeakMap cache keyed on the immutable RequestEvent cookies object
 const requestContextCache = new WeakMap<object, TenantContext>();
 
 export async function getCachedTenantContext(organizationId?: string): Promise<TenantContext | null> {
@@ -45,7 +45,7 @@ export async function getCachedTenantContext(organizationId?: string): Promise<T
           return {
             user: svelteContext.user,
             organization: svelteContext.organization,
-            membership: svelteContext.membership,
+            membership: { ...svelteContext.membership, roleId: svelteContext.role.id },
             role: svelteContext.role,
             permissions: svelteContext.permissions ?? [],
           } as TenantContext;
@@ -62,7 +62,7 @@ export async function getCachedTenantContext(organizationId?: string): Promise<T
   }
 
   try {
-    const cookieStore = await cookies();
+    const cookieStore = getRequestEvent().cookies;
     if (!cookieStore || typeof cookieStore !== "object") return null;
     const cached = requestContextCache.get(cookieStore);
     if (!cached) return null;
@@ -94,7 +94,7 @@ export function clearCachedTenantContext(cookieStore: object): void {
   requestContextCache.delete(cookieStore);
 }
 
-export const resolveTenantContext = cache(async (organizationId?: string) => {
+export const resolveTenantContext = memoizeRequest(async (organizationId?: string) => {
   // Check request-scoped cache first if available for the requested organization
   const cached = await getCachedTenantContext(organizationId);
   if (cached) {
@@ -111,7 +111,7 @@ export const resolveTenantContext = cache(async (organizationId?: string) => {
       permissions: [] as string[],
     };
     try {
-      const cookieStore = await cookies();
+      const cookieStore = getRequestEvent().cookies;
       if (cookieStore && typeof cookieStore === "object") {
         setCachedTenantContext(cookieStore, platformResult);
       }
@@ -198,7 +198,7 @@ export const resolveTenantContext = cache(async (organizationId?: string) => {
 
   // Store in request-scoped cache for subsequent authorize() calls in the same request
   try {
-    const cookieStore = await cookies();
+    const cookieStore = getRequestEvent().cookies;
     if (cookieStore && typeof cookieStore === "object") {
       setCachedTenantContext(cookieStore, result);
     }

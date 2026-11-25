@@ -202,10 +202,8 @@ export async function recordPunch(input: {
         throw new AppError("VALIDATION_ERROR", "There is no active break.", 400);
       }
 
-      // Validation 5: Prevent clocking out while an active break is ongoing
-      if (input.type === "clock_out" && activeBreak) {
-        throw new AppError("VALIDATION_ERROR", "End active break before clocking out.", 400);
-      }
+      // When a user clocks out during a legacy active break, close it with a new
+      // event at the same timestamp. Existing break punches remain untouched.
 
       // Timing validation for non-clock_in actions against shift window
       const effectiveWindowStart = record?.scheduledStart ?? shiftTiming.window.start;
@@ -247,6 +245,20 @@ export async function recordPunch(input: {
         .returning();
     }
 
+    const punchesForCalculation: Array<{ punchType: PunchType; punchedAt: Date }> = punches.map(
+      ({ punchType, punchedAt }) => ({ punchType, punchedAt })
+    );
+    if (input.type === "clock_out" && activeBreak) {
+      await tx.insert(attendancePunches).values({
+        organizationId: input.organizationId,
+        employeeId: employee.id,
+        attendanceId: record.id,
+        punchType: "break_end",
+        punchedAt: now,
+      });
+      punchesForCalculation.push({ punchType: "break_end", punchedAt: now });
+    }
+
     await tx.insert(attendancePunches).values({
       organizationId: input.organizationId,
       employeeId: employee.id,
@@ -256,7 +268,7 @@ export async function recordPunch(input: {
     });
 
     const allPunches = [
-      ...punches,
+      ...punchesForCalculation,
       { punchType: input.type, punchedAt: now },
     ].map((p) => ({
       type: p.punchType as PunchType,

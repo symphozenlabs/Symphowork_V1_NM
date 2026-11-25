@@ -1,8 +1,25 @@
-import { NextResponse } from "next/server";
 import { errorResponse } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { createEmployee, listEmployees } from "@/modules/employees/service";
 import { employeeInputSchema } from "@/modules/employees/validation";
+import { tenantApiRead } from "@/lib/server/tenant-api-read";
 
-export async function GET(request: Request) { try { const context = await resolveTenantContext(); if (!context.organization) return NextResponse.json({ success: true, employees: [] }); const url = new URL(request.url); const pageSize = Number(url.searchParams.get("pageSize") ?? url.searchParams.get("limit") ?? "25"); const result = await listEmployees(context.organization.id, { search: url.searchParams.get("search") ?? undefined, status: url.searchParams.get("status") ?? undefined, page: Number(url.searchParams.get("page") ?? "1"), pageSize }); return NextResponse.json({ success: true, ...result }); } catch (error) { return errorResponse(error); } }
-export async function POST(request: Request) { try { const context = await resolveTenantContext(); if (!context.organization) return NextResponse.json({ success: false, error: { code: "FORBIDDEN", message: "Organization context is required." } }, { status: 403 }); const result = await createEmployee(context.organization.id, context.user.id, employeeInputSchema.parse(await request.json())); return NextResponse.json({ success: true, employee: result.employee, onboarding: result.onboarding, targetRole: result.targetRole }, { status: 201 }); } catch (error) { return errorResponse(error); } }
+export async function GET(request: Request) {
+  try {
+    const context = await resolveTenantContext();
+    const org = context.organization;
+    if (!org) return Response.json({ success: true, employees: [] });
+    const url = new URL(request.url);
+    const pageSize = Number(url.searchParams.get("pageSize") ?? url.searchParams.get("limit") ?? "25");
+    const result = await tenantApiRead(context, (tx) => listEmployees(org.id, {
+      search: url.searchParams.get("search") ?? undefined,
+      status: url.searchParams.get("status") ?? undefined,
+      page: Number(url.searchParams.get("page") ?? "1"),
+      pageSize
+    }, tx));
+    return Response.json({ success: true, ...result });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
+export async function POST(request: Request) { try { const context = await resolveTenantContext(); if (!context.organization) return Response.json({ success: false, error: { code: "FORBIDDEN", message: "Organization context is required." } }, { status: 403 }); const result = await createEmployee(context.organization.id, context.user.id, employeeInputSchema.parse(await request.json())); return Response.json({ success: true, employee: result.employee, onboarding: result.onboarding, targetRole: result.targetRole }, { status: 201 }); } catch (error) { return errorResponse(error); } }

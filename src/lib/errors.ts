@@ -1,3 +1,5 @@
+import { isHttpError } from "@sveltejs/kit";
+
 export type ErrorCode = "VALIDATION_ERROR" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "AUTH_INVALID_CREDENTIALS" | "AUTH_EMAIL_NOT_VERIFIED" | "AUTH_SESSION_EXPIRED" | "ORG_NOT_FOUND" | "ORG_ACCESS_DENIED" | "ORG_ALREADY_EXISTS" | "MEMBERSHIP_ALREADY_EXISTS" | "INVITATION_INVALID" | "INVITATION_EXPIRED" | "INVITATION_ALREADY_ACCEPTED" | "INVITATION_REVOKED" | "INVITATION_EMAIL_MISMATCH" | "USER_ALREADY_IN_ORGANIZATION" | "PROVISIONING_FAILED" | "INVALID_STATUS_TRANSITION" | "LAST_PLATFORM_OWNER" | "RATE_LIMITED";
 
 export class AppError extends Error {
@@ -34,6 +36,30 @@ export function errorResponse(error: unknown) {
     return Response.json(
       { success: false, error: { code: error.code, message: error.message } },
       { status: error.status, headers: Object.keys(headers).length > 0 ? headers : undefined }
+    );
+  }
+
+  // SvelteKit HttpErrors are control-flow errors, not unexpected exceptions.
+  // Preserve their status while returning only stable, non-sensitive messages.
+  if (isHttpError(error)) {
+    const status = error.status;
+    const response = status === 400
+      ? { code: "VALIDATION_ERROR" as const, message: "Request could not be processed." }
+      : status === 401
+        ? { code: "UNAUTHORIZED" as const, message: "Please sign in." }
+        : status === 403
+          ? { code: "FORBIDDEN" as const, message: "You are not authorized to access this resource." }
+          : status === 404
+            ? { code: "NOT_FOUND" as const, message: "The requested resource was not found." }
+            : status === 429
+              ? { code: "RATE_LIMITED" as const, message: "Too many requests." }
+              : status === 503
+                ? { code: "SERVICE_UNAVAILABLE" as const, message: "Verified tenant context is unavailable." }
+                : { code: "INTERNAL_ERROR" as const, message: "Something went wrong." };
+
+    return Response.json(
+      { success: false, error: response },
+      { status }
     );
   }
 

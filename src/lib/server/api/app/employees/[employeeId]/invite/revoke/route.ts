@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { employeeHistory, employees, invitations } from "@/db/schema";
@@ -11,7 +10,7 @@ import { isOrganizationOwnerEmployee, isActorPrivilegedForOwnerRecord } from "@/
 
 export async function POST(
   _request: Request,
-  context: { params: Promise<{ employeeId: string }> }
+  context: { params: { employeeId: string } }
 ) {
   try {
     const tenant = await resolveTenantContext();
@@ -23,7 +22,7 @@ export async function POST(
       permission: "employee.invite",
     });
 
-    const { employeeId } = await context.params;
+    const { employeeId } = context.params;
 
     const [employee] = await db
       .select()
@@ -73,7 +72,7 @@ export async function POST(
     }
 
     if (invitation.status === "revoked") {
-      return NextResponse.json({
+      return Response.json({
         success: true,
         message: "Invitation has already been revoked.",
         invitation: { id: invitation.id, status: "revoked" },
@@ -119,7 +118,7 @@ export async function POST(
       },
     });
 
-    return NextResponse.json({
+    return Response.json({
       success: true,
       message: "Invitation has been revoked successfully.",
       invitation: {

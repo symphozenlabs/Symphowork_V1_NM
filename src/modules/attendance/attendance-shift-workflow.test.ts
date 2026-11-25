@@ -446,7 +446,7 @@ describe("Attendance & Shift Lifecycle Integration", () => {
       ).rejects.toThrow("There is no active break.");
     });
 
-    it("rejects clocking out while an active break is ongoing", async () => {
+    it("closes an active break while recording clock-out without changing prior punches", async () => {
       mockRecords = [
         {
           id: "rec-today-1",
@@ -462,9 +462,15 @@ describe("Attendance & Shift Lifecycle Integration", () => {
         { id: "p2", attendanceId: "rec-today-1", punchType: "break_start", punchedAt: new Date(Date.now() - 1800000) },
       ];
 
-      await expect(
-        recordPunch({ organizationId, userId, type: "clock_out" })
-      ).rejects.toThrow("End active break before clocking out.");
+      const originalPunches = mockPunches.map((punch) => ({ ...punch }));
+      const clockOutAt = new Date();
+      const result = await recordPunch({ organizationId, userId, type: "clock_out", punchTime: clockOutAt });
+
+      expect(result.actualLastOut).toEqual(clockOutAt);
+      expect(mockPunches.slice(0, originalPunches.length)).toEqual(originalPunches);
+      expect(insertedPunches.map((punch) => punch.punchType)).toEqual(["break_end", "clock_out"]);
+      expect(insertedPunches[0].punchedAt).toEqual(clockOutAt);
+      expect(insertedPunches[1].punchedAt).toEqual(clockOutAt);
     });
 
     it("rejects punches after shift is already completed (clocked out)", async () => {

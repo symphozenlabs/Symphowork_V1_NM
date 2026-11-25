@@ -1,15 +1,14 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { listMessages, sendMessage } from "@/modules/collaboration/service";
 import { conversationIdParamSchema, parseBody, sendMessageSchema } from "@/modules/collaboration/validation";
 
-export async function GET(request: Request, context: { params: Promise<{ conversationId: string }> }) {
+export async function GET(request: Request, context: { params: { conversationId: string } }) {
   try {
     const tenant = await resolveTenantContext();
     if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
-    const { conversationId: rawId } = await context.params;
+    const { conversationId: rawId } = context.params;
     const conversationId = conversationIdParamSchema.parse(rawId);
     const url = new URL(request.url);
     const limitParam = Number(url.searchParams.get("limit") ?? 50);
@@ -30,7 +29,7 @@ export async function GET(request: Request, context: { params: Promise<{ convers
       markRead,
     });
 
-    return NextResponse.json({
+    return Response.json({
       success: true,
       messages: result.messages,
       typers: result.typers,
@@ -44,16 +43,16 @@ export async function GET(request: Request, context: { params: Promise<{ convers
   }
 }
 
-export async function POST(request: Request, context: { params: Promise<{ conversationId: string }> }) {
+export async function POST(request: Request, context: { params: { conversationId: string } }) {
   try {
     const tenant = await resolveTenantContext();
     if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     enforceRateLimit(`chat:msg:${tenant.organization.id}:${tenant.user.id}`, 60, 60000);
-    const { conversationId: rawId } = await context.params;
+    const { conversationId: rawId } = context.params;
     const conversationId = conversationIdParamSchema.parse(rawId);
     const body = parseBody(sendMessageSchema, await request.json());
 
-    return NextResponse.json(
+    return Response.json(
       {
         success: true,
         message: await sendMessage({

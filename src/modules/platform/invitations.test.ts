@@ -120,6 +120,15 @@ describe("invitation acceptance transaction behavior", () => {
     vi.clearAllMocks();
   });
 
+  it("leaves the invitation available when initial password setup fails validation", async () => {
+    const fixture = createFixture();
+    await expect(acceptInvitation({ token, fullName: "Fixture User", password: "weak" }))
+      .rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+    expect(fixture.state.rolledBack).toBe(true);
+    expect(fixture.state.inserted).toHaveLength(0);
+    expect(recordAuditInTransaction).not.toHaveBeenCalled();
+  });
+
   it("creates a verified user, membership, consumes the invitation, and audits in one transaction", async () => {
     const fixture = createFixture();
     const result = await acceptInvitation({ token, fullName: "Owner", password: "SecurePassword123" });
@@ -141,6 +150,16 @@ describe("invitation acceptance transaction behavior", () => {
     expect(fixture.state.committed).toBe(false);
     expect(fixture.state.rolledBack).toBe(true);
     expect(fixture.state.inserted).toHaveLength(0);
+  });
+
+  it("rolls back membership creation if the invited employee cannot be linked", async () => {
+    const fixture = createFixture({ employeeId: "unavailable" });
+    await expect(acceptInvitation({ token, fullName: "Owner", password: "SecurePassword123" }))
+      .rejects.toMatchObject({ code: "INVITATION_INVALID" });
+    expect(fixture.state.rolledBack).toBe(true);
+    expect(fixture.state.inserted).toHaveLength(0);
+    expect(fixture.tx.update).not.toHaveBeenCalledWith(onboarding);
+    expect(recordAuditInTransaction).not.toHaveBeenCalled();
   });
 
   it("rejects a replayed invitation before creating another membership", async () => {

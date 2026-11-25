@@ -17,8 +17,9 @@ let loading=$state(untrack(()=>(true)));
 const setLoading=(next:typeof loading|((previous:typeof loading)=>typeof loading))=>{loading=typeof next==="function"?(next as (previous:typeof loading)=>typeof loading)(loading):next;};
 let error=$state<string | null>(untrack(()=>(null)));
 const setError=(next:typeof error|((previous:typeof error)=>typeof error))=>{error=typeof next==="function"?(next as (previous:typeof error)=>typeof error)(error):next;};
-let date=$state<string>(untrack(()=>("")));
-const setDate=(next:typeof date|((previous:typeof date)=>typeof date))=>{date=typeof next==="function"?(next as (previous:typeof date)=>typeof date)(date):next;};
+let selectedDate = $state("");
+let defaultDate = $state("");
+const date = $derived(selectedDate || defaultDate);
 let search=$state<string>(untrack(()=>("")));
 const setSearch=(next:typeof search|((previous:typeof search)=>typeof search))=>{search=typeof next==="function"?(next as (previous:typeof search)=>typeof search)(search):next;};
 let departmentId=$state<string>(untrack(()=>("all")));
@@ -74,12 +75,12 @@ let processingAbsences=$state(untrack(()=>(false)));
 const setProcessingAbsences=(next:typeof processingAbsences|((previous:typeof processingAbsences)=>typeof processingAbsences))=>{processingAbsences=typeof next==="function"?(next as (previous:typeof processingAbsences)=>typeof processingAbsences)(processingAbsences):next;};
 let exportingCsv=$state(untrack(()=>(false)));
 const setExportingCsv=(next:typeof exportingCsv|((previous:typeof exportingCsv)=>typeof exportingCsv))=>{exportingCsv=typeof next==="function"?(next as (previous:typeof exportingCsv)=>typeof exportingCsv)(exportingCsv):next;};
-const fetchData=$derived.by(()=>{date;search;departmentId;shiftId;statusFilter;page;showToast;return async (overrideDate?: string) => {
+const fetchData=$derived.by(()=>{selectedDate;search;departmentId;shiftId;statusFilter;page;showToast;return async (overrideDate?: string) => {
       setLoading(true);
       setError(null);
       try {
         const params = new URLSearchParams();
-        const targetDate = overrideDate !== undefined ? overrideDate : date;
+        const targetDate = overrideDate !== undefined ? overrideDate : selectedDate;
         if (targetDate) params.set("date", targetDate);
         if (search.trim()) params.set("search", search.trim());
         if (departmentId && departmentId !== "all") params.set("departmentId", departmentId);
@@ -101,8 +102,9 @@ const fetchData=$derived.by(()=>{date;search;departmentId;shiftId;statusFilter;p
         setDepartments(data.departments || []);
         setPagination(data.pagination);
         setTimezone(data.timezone || "UTC");
-        if (data.date && !date) {
-          setDate(data.date);
+        // Receiving the server's default date must not trigger another request.
+        if (data.date && !targetDate) {
+          defaultDate = data.date;
         }
         if (data.userPermissions) {
           setUserPermissions(data.userPermissions);
@@ -455,6 +457,7 @@ const formatDuration = (minutes: number) => {
         </div>
 
         
+        
         <div role="button" tabindex={0} onclick={() => handleQuickFilter("missing_punch")} onkeydown={(e) => e.key === "Enter" && handleQuickFilter("missing_punch")} class={`group rounded-2xl border p-4.5 transition-all shadow-2xs cursor-pointer ${
             statusFilter === "missing_punch"
               ? "border-purple-600 bg-purple-600 text-white ring-2 ring-purple-600/20"
@@ -556,7 +559,7 @@ const formatDuration = (minutes: number) => {
           <div class="flex items-center gap-2 shrink-0">
             <div class="relative">
               <input id="dashboard-date" type="date" value={date} onchange={(e) => {
-                  setDate(e.currentTarget.value);
+                  selectedDate = e.currentTarget.value;
                   setPage(1);
                 }} class="h-10 rounded-xl border border-slate-200 bg-slate-50/50 px-3 text-xs sm:text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" />
             </div>

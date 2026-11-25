@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import {
@@ -14,7 +13,7 @@ export async function GET() {
       organizationId: tenant.organization.id,
       userId: tenant.user.id,
     });
-    return NextResponse.json({ success: true, profiles });
+    return Response.json({ success: true, profiles });
   } catch (error) {
     return errorResponse(error);
   }
@@ -60,7 +59,7 @@ export async function POST(request: Request) {
       taxRegime: body.taxRegime,
     });
 
-    return NextResponse.json({ success: true, profile }, { status: 201 });
+    return Response.json({ success: true, profile }, { status: 201 });
   } catch (error) {
     return errorResponse(error);
   }

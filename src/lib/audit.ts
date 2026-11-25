@@ -8,7 +8,8 @@ export async function recordAudit(input: { actorUserId?: string; organizationId?
     if (platform) await withPlatformTransaction((tx) => tx.insert(auditLogs).values({ ...values, metadata: input.metadata ? JSON.stringify(input.metadata) : undefined }));
     else await db.insert(auditLogs).values({ ...values, metadata: input.metadata ? JSON.stringify(input.metadata) : undefined });
   } catch (error) {
-    logger.error("audit_log_write_failed", { action: input.action, resource: input.resource, error: error instanceof Error ? error.message : "unknown" });
+    // Driver errors can include SQL text and parameter values; keep audit failure logs sanitized.
+    logger.error("audit_log_write_failed", { action: input.action, resource: input.resource });
   }
 }
 

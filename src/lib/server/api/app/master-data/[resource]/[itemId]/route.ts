@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { errorResponse, AppError } from "@/lib/errors";
@@ -18,17 +17,17 @@ const definitions = {
   workingDays: { table: "working_days", permission: "organization.settings.update", fields: ["day_of_week", "is_working_day"] },
 } as const;
 
-export async function PATCH(request: Request, context: { params: Promise<{ resource: string; itemId: string }> }) {
+export async function PATCH(request: Request, context: { params: { resource: string; itemId: string } }) {
   try {
     const tenant = await resolveTenantContext();
     if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
-    const { resource, itemId } = await context.params;
+    const { resource, itemId } = context.params;
 
     if (resource === "departments") {
       const rawInput = await request.json();
       const validatedInput = departmentUpdateSchema.parse(rawInput);
       const updated = await updateDepartment(tenant.organization.id, tenant.user.id, itemId, validatedInput);
-      return NextResponse.json({ success: true, item: updated });
+      return Response.json({ success: true, item: updated });
     }
 
     const definition = definitions[resource as keyof typeof definitions];
@@ -96,20 +95,20 @@ export async function PATCH(request: Request, context: { params: Promise<{ resou
     const assignments = entries.map(([key, value]) => sql`${sql.raw(key)} = ${value}`);
     const [row] = await db.execute(sql`UPDATE ${sql.raw(definition.table)} SET ${sql.join(assignments, sql`, `)}, updated_at = now() WHERE id = ${itemId} AND organization_id = ${tenant.organization.id} RETURNING *`);
     if (!row) throw new AppError("NOT_FOUND", "Master-data item was not found.", 404);
-    return NextResponse.json({ success: true, item: row });
+    return Response.json({ success: true, item: row });
   } catch (error) { return errorResponse(error); }
 }
 
-export async function DELETE(_request: Request, context: { params: Promise<{ resource: string; itemId: string }> }) {
+export async function DELETE(_request: Request, context: { params: { resource: string; itemId: string } }) {
   try {
     const tenant = await resolveTenantContext();
     if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
-    const { resource, itemId } = await context.params;
+    const { resource, itemId } = context.params;
 
     if (resource === "departments") {
       // Safely deactivate via department service ensuring owner-only authorization
       await deleteDepartment(tenant.organization.id, tenant.user.id, itemId, true);
-      return NextResponse.json({ success: true });
+      return Response.json({ success: true });
     }
 
     const definition = definitions[resource as keyof typeof definitions];
@@ -120,6 +119,6 @@ export async function DELETE(_request: Request, context: { params: Promise<{ res
       : sql`UPDATE ${sql.raw(definition.table)} SET status = 'inactive', updated_at = now() WHERE id = ${itemId} AND organization_id = ${tenant.organization.id} RETURNING id`;
     const [row] = await db.execute(statement);
     if (!row) throw new AppError("NOT_FOUND", "Master-data item was not found.", 404);
-    return NextResponse.json({ success: true });
+    return Response.json({ success: true });
   } catch (error) { return errorResponse(error); }
 }

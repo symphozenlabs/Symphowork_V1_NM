@@ -5,6 +5,10 @@ const mockTenantContext = vi.fn();
 const mockAuthorize = vi.fn();
 const mockGetDashboard = vi.fn();
 
+vi.mock("@/db/client", () => ({
+  withTenantTransaction: async (_organizationId: string, run: (tx: object) => Promise<unknown>) => run({}),
+}));
+
 vi.mock("@/modules/tenancy/context", () => ({
   resolveTenantContext: () => mockTenantContext(),
 }));
@@ -26,7 +30,7 @@ describe("GET /api/app/attendance/organization API Route", () => {
     mockAuthorize.mockResolvedValue(undefined);
     mockGetDashboard.mockResolvedValue({
       success: true,
-      summary: { totalActive: 10, present: 5, late: 1, absent: 2, onLeave: 1, onBreak: 1, missingPunch: 0, unassignedShift: 0 },
+      summary: { totalActive: 10, present: 5, late: 1, absent: 2, onLeave: 1, missingPunch: 0, unassignedShift: 0 },
       employees: [],
       shifts: [],
       departments: [],

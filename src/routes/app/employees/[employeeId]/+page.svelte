@@ -17,6 +17,39 @@ import EditEmployeeDialog from "$lib/components/employees/EditEmployeeDialog.sve
 import LinkButton from "$lib/components/ui/LinkButton.svelte";
 import EmployeeInvitationActions from "$lib/components/employees/EmployeeInvitationActions.svelte";
 import OnboardingChecklist from "$lib/components/employees/OnboardingChecklist.svelte";
+import { invalidateAll } from "$app/navigation";
+
+const offboarded = $derived(history.some(event => event.eventType === "employee_offboarded"));
+const canOffboard = $derived(tenant.role?.key === "ORGANIZATION_OWNER" &&
+  user.platformRole === "NONE" && !isOwnerRecord && employee.userId !== user.id && !offboarded);
+let confirmOffboard = $state(false);
+let offboarding = $state(false);
+let offboardMessage = $state("");
+let offboardDone = $state(false);
+
+async function submitOffboarding() {
+  if (!confirmOffboard || offboarding || offboardDone) return;
+  offboarding = true;
+  offboardMessage = "";
+  try {
+    const response = await fetch(`/api/app/employees/${encodeURIComponent(employee.id)}/offboard`, { method: "POST" });
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+      offboardMessage = result.error?.message ?? "Unable to offboard this employee.";
+      return;
+    }
+    confirmOffboard = false;
+    offboardDone = true;
+    offboardMessage = "Employee offboarded. Tenant access has been revoked.";
+    await invalidateAll();
+  } catch {
+    offboardMessage = offboardDone
+      ? "Employee offboarded. Refresh to see the updated record."
+      : "Could not confirm offboarding. Refresh the record before retrying.";
+  } finally {
+    offboarding = false;
+  }
+}
 
 </script>
 <div class="w-full space-y-5">
@@ -29,7 +62,10 @@ import OnboardingChecklist from "$lib/components/employees/OnboardingChecklist.s
 
         
         <div class="flex items-center gap-2 flex-wrap shrink-0">
-          {#if canUpdate}<EditEmployeeDialog employee={employee} currentUserRole={tenant.role?.key} currentUserId={user.id} isOwnerViewer={isOwnerViewer} />{/if}
+          {#if canUpdate && !offboarded && !offboardDone}<EditEmployeeDialog employee={employee} currentUserRole={tenant.role?.key} currentUserId={user.id} isOwnerViewer={isOwnerViewer} />{/if}
+          {#if canOffboard && !offboardDone}
+            <button type="button" class="rounded-md border border-rose-300 px-3 py-2 text-sm text-rose-800" onclick={() => confirmOffboard = true}>Offboard employee</button>
+          {/if}
 
           {#if canReadAttendance}<LinkButton variant="outline" size="sm" class="h-9 gap-1.5 font-semibold text-xs border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-2xs" href={`/app/attendance?employeeId=${employee.id}`}>
                 <SvgIcon name="Clock" class="h-3.5 w-3.5 text-primary" />
@@ -39,9 +75,20 @@ import OnboardingChecklist from "$lib/components/employees/OnboardingChecklist.s
           {#if isOwnerRecord && !isOwnerViewer}<span class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-emerald-200/90 bg-emerald-50 px-3 text-xs font-semibold text-emerald-800 shadow-2xs">
               <SvgIcon name="ShieldCheck" class="h-3.5 w-3.5 text-emerald-600" />
               Protected Organization Owner
-            </span>{:else}{#if canInvite && employee.status !== "active"}<EmployeeInvitationActions employeeId={employee.id} email={employee.personalEmail ?? employee.workEmail} status={employee.status} />{/if}{/if}
+            </span>{:else}{#if canInvite && !offboarded && !offboardDone && employee.status !== "active"}<EmployeeInvitationActions employeeId={employee.id} email={employee.personalEmail ?? employee.workEmail} status={employee.status} />{/if}{/if}
         </div>
       </div>
+      {#if confirmOffboard}
+        <section aria-labelledby="offboard-title" class="space-y-3 rounded-lg border border-rose-300 bg-rose-50 p-4">
+          <h2 id="offboard-title" class="font-semibold">Offboard {employee.displayName}?</h2>
+          <p>This revokes organization access, active sessions, and pending invitations for this employee. The employee record and audit history are retained.</p>
+          <div class="flex gap-3">
+            <button type="button" disabled={offboarding} onclick={() => confirmOffboard = false}>Cancel</button>
+            <button type="button" disabled={offboarding} class="rounded-md bg-rose-700 px-3 py-2 text-white" onclick={submitOffboarding}>Confirm offboarding</button>
+          </div>
+        </section>
+      {/if}
+      {#if offboardMessage}<p role="status">{offboardMessage}</p>{/if}
 
       
       <div class="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs">

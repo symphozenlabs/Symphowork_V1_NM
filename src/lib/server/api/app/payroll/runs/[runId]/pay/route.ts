@@ -1,16 +1,15 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { markPayrollRunPaid } from "@/modules/payroll/service";
 
 export async function POST(
   request: Request,
-  context: { params: Promise<{ runId: string }> }
+  context: { params: { runId: string } }
 ) {
   try {
     const tenant = await resolveTenantContext();
     if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
-    const { runId } = await context.params;
+    const { runId } = context.params;
     const body = (await request.json()) as {
       paymentReference?: string;
       paymentDate?: string;
@@ -30,7 +29,7 @@ export async function POST(
       notes: body.notes,
     });
 
-    return NextResponse.json({ success: true, run });
+    return Response.json({ success: true, run });
   } catch (error) {
     return errorResponse(error);
   }

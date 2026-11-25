@@ -109,7 +109,6 @@ const isDev = process.env.NODE_ENV !== "production";
  *   No credentials, SQL parameters, tenant IDs, user IDs, or personal data are ever logged.
  */
 export async function withUserTransaction<T>(userId: string, callback: (transaction: DbTransaction) => Promise<T>) {
-
   const acquireStart = isDev ? performance.now() : 0;
   return db.transaction(async (transaction) => {
     const acquireMs = isDev ? performance.now() - acquireStart : 0;
@@ -126,7 +125,7 @@ export async function withUserTransaction<T>(userId: string, callback: (transact
   });
 }
 
-export async function withInvitationTokenTransaction<T>(tokenHash: string, callback: (transaction: DbTransaction) => Promise<T>) {
+export async function withInvitationTokenTransaction<T>(tokenHash: string, callback: (transaction: DbTransaction) => Promise<T>): Promise<T> {
   const acquireStart = isDev ? performance.now() : 0;
   return db.transaction(async (transaction) => {
     const acquireMs = isDev ? performance.now() - acquireStart : 0;

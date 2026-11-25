@@ -11,7 +11,7 @@ const { getSessionUser, requireSession, db, mockCookies, cookies } = vi.hoisted(
         store = s;
       },
     },
-    cookies: vi.fn(async () => {
+    cookies: vi.fn(() => {
       if (store === null) throw new Error("cookies() called outside request scope");
       return store;
     }),
@@ -29,8 +29,12 @@ const { getSessionUser, requireSession, db, mockCookies, cookies } = vi.hoisted(
   };
 });
 
-vi.mock("next/headers", () => ({
-  cookies,
+vi.mock("$app/server", () => ({
+  getRequestEvent: () => ({ cookies: cookies() }),
+}));
+vi.mock("@/lib/server/request-cache", () => ({
+  memoizeRequest: (fn: (...args: unknown[]) => unknown) => fn,
+  getRequestCacheStore: () => undefined,
 }));
 
 vi.mock("@/modules/identity/auth", () => ({

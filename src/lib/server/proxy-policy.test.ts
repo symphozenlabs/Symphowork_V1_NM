@@ -1,7 +1,7 @@
 import {describe,it,expect,vi} from 'vitest';
 import manifest from './api-manifest.json';
 import {allowsRequest,upstreamOrigin,sameOriginMutation,sessionCookie} from './proxy-policy';
-import {relay} from './legacy';
+import {relay} from '../../../tests/fixtures/historical/legacy';
 describe('Legacy API inventory coverage',()=>{
  for(const endpoint of manifest)it(endpoint.route,()=>{
   const sample=endpoint.route.replace(/\[[^\]]+\]/g,'fixture-id');

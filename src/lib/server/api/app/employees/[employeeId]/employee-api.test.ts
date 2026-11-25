@@ -10,10 +10,14 @@ const { getEmployeeDetails, updateEmployee } = vi.hoisted(() => ({
   getEmployeeDetails: vi.fn(),
   updateEmployee: vi.fn(),
 }));
+const tenantApiWrite = vi.hoisted(() => vi.fn(async (_tenant: unknown, write: (tx?: unknown) => Promise<unknown>) => write()));
+const tenantApiRead = vi.hoisted(() => vi.fn(async (_tenant: unknown, read: (tx?: unknown) => Promise<unknown>) => read()));
 
 vi.mock("@/modules/tenancy/context", () => ({ resolveTenantContext }));
 vi.mock("@/modules/tenancy/authorization", () => ({ authorize }));
 vi.mock("@/modules/employees/service", () => ({ getEmployeeDetails, updateEmployee }));
+vi.mock("@/lib/server/tenant-api-write", () => ({ tenantApiWrite }));
+vi.mock("@/lib/server/tenant-api-read", () => ({ tenantApiRead }));
 
 import { GET, PATCH } from "./route";
 
@@ -93,7 +97,7 @@ describe("Employee Detail API Route (GET & PATCH /api/app/employees/[employeeId]
     getEmployeeDetails.mockResolvedValueOnce(mockDetails);
 
     const req = new Request(`http://localhost/api/app/employees/${employeeId}`);
-    const res = await GET(req, { params: Promise.resolve({ employeeId }) });
+    const res = await GET(req, { params: { employeeId } });
     const json = await res.json();
 
     expect(res.status).toBe(200);
@@ -118,14 +122,14 @@ describe("Employee Detail API Route (GET & PATCH /api/app/employees/[employeeId]
       organizationId,
       permission: "employee.read",
     });
-    expect(getEmployeeDetails).toHaveBeenCalledWith(organizationId, employeeId);
+    expect(getEmployeeDetails).toHaveBeenCalledWith(organizationId, employeeId, undefined);
   });
 
   it("returns 404 NOT_FOUND when employee does not exist or belongs to another organization (tenant isolation)", async () => {
     getEmployeeDetails.mockResolvedValueOnce(null);
 
     const req = new Request(`http://localhost/api/app/employees/emp-nonexistent`);
-    const res = await GET(req, { params: Promise.resolve({ employeeId: "emp-nonexistent" }) });
+    const res = await GET(req, { params: { employeeId: "emp-nonexistent" } });
     const json = await res.json();
 
     expect(res.status).toBe(404);
@@ -140,7 +144,7 @@ describe("Employee Detail API Route (GET & PATCH /api/app/employees/[employeeId]
     );
 
     const req = new Request(`http://localhost/api/app/employees/${employeeId}`);
-    const res = await GET(req, { params: Promise.resolve({ employeeId }) });
+    const res = await GET(req, { params: { employeeId } });
     const json = await res.json();
 
     expect(res.status).toBe(403);
@@ -156,7 +160,7 @@ describe("Employee Detail API Route (GET & PATCH /api/app/employees/[employeeId]
     });
 
     const req = new Request(`http://localhost/api/app/employees/${employeeId}`);
-    const res = await GET(req, { params: Promise.resolve({ employeeId }) });
+    const res = await GET(req, { params: { employeeId } });
     const json = await res.json();
 
     expect(res.status).toBe(403);
@@ -177,7 +181,7 @@ describe("Employee Detail API Route (GET & PATCH /api/app/employees/[employeeId]
       body: JSON.stringify({ phone: "+91 99999 88888" }),
     });
 
-    const res = await PATCH(req, { params: Promise.resolve({ employeeId }) });
+    const res = await PATCH(req, { params: { employeeId } });
     const json = await res.json();
 
     expect(res.status).toBe(200);
@@ -187,7 +191,8 @@ describe("Employee Detail API Route (GET & PATCH /api/app/employees/[employeeId]
       organizationId,
       userId,
       employeeId,
-      expect.objectContaining({ phone: "+91 99999 88888" })
+      expect.objectContaining({ phone: "+91 99999 88888" }),
+      undefined
     );
   });
 });

@@ -72,7 +72,8 @@ vi.mock("@/db/client", () => ({
         }),
         where: () => {
           if (table === employees) {
-            return Promise.resolve(mockEmployeeToReturn ? [mockEmployeeToReturn] : []);
+            const rows = mockEmployeeToReturn ? [mockEmployeeToReturn] : [];
+            return Object.assign(Promise.resolve(rows), { for: () => Promise.resolve(rows) });
           }
           if (table === roles) {
             return Promise.resolve([{ id: "role-target", key: "RECRUITER" }]);
@@ -169,22 +170,10 @@ vi.mock("@/db/client", () => ({
       },
     },
   },
-  withTenantTransaction: vi.fn((_orgId, fn) =>
-    fn({
-      query: {
-        roles: {
-          findFirst: vi.fn(() =>
-            Promise.resolve({
-              id: "role-owner",
-              key: "ORGANIZATION_OWNER",
-              name: "Organization Owner",
-            })
-          ),
-        },
-      },
-    })
-  ),
+  withTenantTransaction: vi.fn(async (_orgId, fn) => fn((await import("@/db/client")).db)),
 }));
+vi.mock("@/lib/server/tenant-api-read", () => ({ tenantApiRead: (_tenant, read) => read() }));
+vi.mock("@/lib/server/tenant-api-write", () => ({ tenantApiWrite: (_tenant, write) => write() }));
 
 describe("Organization Owner Employee Protection — Regression Tests", () => {
   beforeEach(() => {
@@ -447,7 +436,7 @@ describe("Organization Owner Employee Protection — Regression Tests", () => {
       });
 
       const response = await POST(req, {
-        params: Promise.resolve({ employeeId: ownerEmployeeId }),
+        params: { employeeId: ownerEmployeeId },
       });
 
       const json = await response.json();
@@ -463,7 +452,7 @@ describe("Organization Owner Employee Protection — Regression Tests", () => {
       });
 
       const response = await POST(req, {
-        params: Promise.resolve({ employeeId: ownerEmployeeId }),
+        params: { employeeId: ownerEmployeeId },
       });
 
       const json = await response.json();
@@ -481,7 +470,7 @@ describe("Organization Owner Employee Protection — Regression Tests", () => {
       });
 
       const response = await PATCH(req, {
-        params: Promise.resolve({ employeeId: ownerEmployeeId }),
+        params: { employeeId: ownerEmployeeId },
       });
 
       const json = await response.json();
@@ -497,7 +486,7 @@ describe("Organization Owner Employee Protection — Regression Tests", () => {
       });
 
       const response = await POST(req, {
-        params: Promise.resolve({ employeeId: ownerEmployeeId }),
+        params: { employeeId: ownerEmployeeId },
       });
 
       const json = await response.json();
@@ -512,7 +501,7 @@ describe("Organization Owner Employee Protection — Regression Tests", () => {
 
       const req = new Request(`http://localhost/api/app/employees/${ownerEmployeeId}`);
       const response = await GET(req, {
-        params: Promise.resolve({ employeeId: ownerEmployeeId }),
+        params: { employeeId: ownerEmployeeId },
       });
 
       const json = await response.json();

@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse } from "@/lib/errors";
 import { listOrganizationUsage } from "@/modules/platform/commercial";
 
@@ -14,10 +13,10 @@ export async function GET(request: Request) {
     });
 
     if (Array.isArray(result)) {
-      return NextResponse.json({ success: true, usage: result });
+      return Response.json({ success: true, usage: result });
     }
 
-    return NextResponse.json({
+    return Response.json({
       success: true,
       ...result,
       usage: result.rows,

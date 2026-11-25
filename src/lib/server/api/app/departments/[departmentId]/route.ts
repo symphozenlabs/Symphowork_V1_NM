@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { withTenantTransaction } from "@/db/client";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import {
@@ -7,10 +7,11 @@ import {
   updateDepartment,
 } from "@/modules/departments/service";
 import { departmentQuerySchema, departmentUpdateSchema } from "@/modules/departments/validation";
+import { tenantApiRead } from "@/lib/server/tenant-api-read";
 
 export async function GET(
   request: Request,
-  context: { params: Promise<{ departmentId: string }> }
+  context: { params: { departmentId: string } }
 ) {
   try {
     const tenant = await resolveTenantContext();
@@ -18,19 +19,22 @@ export async function GET(
       throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     }
 
-    const { departmentId } = await context.params;
+    const { departmentId } = context.params;
     const { searchParams } = new URL(request.url);
     const dateParam = searchParams.get("date") || undefined;
     const validatedQuery = departmentQuerySchema.parse({ date: dateParam });
 
-    const department = await getDepartmentDetails(
-      tenant.organization.id,
-      tenant.user.id,
-      departmentId,
-      validatedQuery.date
-    );
+    const organizationId = tenant.organization.id;
+    const department = await tenantApiRead(tenant, (tx) => {
+      if (tx) {
+        return getDepartmentDetails(organizationId, tenant.user.id, departmentId, validatedQuery.date, tx);
+      }
+      return withTenantTransaction(organizationId, (transaction) =>
+        getDepartmentDetails(organizationId, tenant.user.id, departmentId, validatedQuery.date, transaction)
+      );
+    });
 
-    return NextResponse.json({ success: true, department });
+    return Response.json({ success: true, department });
   } catch (error) {
     return errorResponse(error);
   }
@@ -38,7 +42,7 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  context: { params: Promise<{ departmentId: string }> }
+  context: { params: { departmentId: string } }
 ) {
   try {
     const tenant = await resolveTenantContext();
@@ -46,7 +50,7 @@ export async function PATCH(
       throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     }
 
-    const { departmentId } = await context.params;
+    const { departmentId } = context.params;
     const body = await request.json();
     const validatedInput = departmentUpdateSchema.parse(body);
 
@@ -57,7 +61,7 @@ export async function PATCH(
       validatedInput
     );
 
-    return NextResponse.json({ success: true, department });
+    return Response.json({ success: true, department });
   } catch (error) {
     return errorResponse(error);
   }
@@ -65,7 +69,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  context: { params: Promise<{ departmentId: string }> }
+  context: { params: { departmentId: string } }
 ) {
   try {
     const tenant = await resolveTenantContext();
@@ -73,7 +77,7 @@ export async function DELETE(
       throw new AppError("FORBIDDEN", "Organization context is required.", 403);
     }
 
-    const { departmentId } = await context.params;
+    const { departmentId } = context.params;
     const { searchParams } = new URL(request.url);
     const forceSoft = searchParams.get("mode") === "soft";
 
@@ -84,7 +88,7 @@ export async function DELETE(
       forceSoft
     );
 
-    return NextResponse.json({ ...result });
+    return Response.json({ ...result });
   } catch (error) {
     return errorResponse(error);
   }

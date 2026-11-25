@@ -1,5 +1,4 @@
 import { and, desc, eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
 import { db } from "@/db/client";
 import { attendanceRegularizationRequests } from "@/db/schema";
 import { errorResponse, AppError } from "@/lib/errors";
@@ -22,7 +21,7 @@ export async function GET() {
         )
       )
       .orderBy(desc(attendanceRegularizationRequests.submittedAt));
-    return NextResponse.json({ success: true, requests });
+    return Response.json({ success: true, requests });
   } catch (error) {
     return errorResponse(error);
   }
@@ -51,7 +50,7 @@ export async function POST(request: Request) {
       requestedOut: body.requestedOut,
       reason: body.reason,
     });
-    return NextResponse.json({ success: true, request: req }, { status: 201 });
+    return Response.json({ success: true, request: req }, { status: 201 });
   } catch (error) {
     return errorResponse(error);
   }

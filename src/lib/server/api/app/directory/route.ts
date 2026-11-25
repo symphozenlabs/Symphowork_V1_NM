@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
 import { and, asc, eq, ilike, inArray, or } from "drizzle-orm";
 import { db } from "@/db/client";
 import { departments, designations, employees } from "@/db/schema";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
+import { tenantApiRead } from "@/lib/server/tenant-api-read";
 
 export async function GET(request: Request) {
   try {
@@ -31,7 +31,8 @@ export async function GET(request: Request) {
       );
     }
 
-    const rows = await db
+    const organizationId = tenant.organization.id;
+    const rows = await tenantApiRead(tenant, (tx) => (tx ?? db)
       .select({
         id: employees.id,
         displayName: employees.displayName,
@@ -44,16 +45,16 @@ export async function GET(request: Request) {
       .from(employees)
       .leftJoin(
         departments,
-        and(eq(employees.departmentId, departments.id), eq(departments.organizationId, tenant.organization.id))
+        and(eq(employees.departmentId, departments.id), eq(departments.organizationId, organizationId))
       )
       .leftJoin(
         designations,
-        and(eq(employees.designationId, designations.id), eq(designations.organizationId, tenant.organization.id))
+        and(eq(employees.designationId, designations.id), eq(designations.organizationId, organizationId))
       )
       .where(and(...baseConditions))
-      .orderBy(asc(employees.displayName));
+      .orderBy(asc(employees.displayName)));
 
-    return NextResponse.json({ success: true, employees: rows });
+    return Response.json({ success: true, employees: rows });
   } catch (error) {
     return errorResponse(error);
   }

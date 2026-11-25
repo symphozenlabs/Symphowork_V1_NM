@@ -7,7 +7,7 @@ import { authorizePlatform, authorizePlatformTargetOrganization, hasPlatformPerm
 import { runProvisioning } from "@/modules/platform/provisioning";
 import { organizationStatusSchema, platformRoleSchema } from "@/modules/platform/validation";
 import { z } from "zod";
-import { buildInvitationUrl, sendInvitationEmail } from "@/lib/email";
+import { buildInvitationUrl, getInvitationBaseUrl, sendInvitationEmail } from "@/lib/email";
 import { createOpaqueToken, hashToken } from "@/lib/crypto";
 
 const allowedTransitions: Record<string, string[]> = {
@@ -82,8 +82,14 @@ export async function getPlatformOrganization(organizationId: string) {
   return { organization, job, invitation, subscription, employeeCount, activeEmployeeCount, activity };
 }
 
-async function issueOrganizationOwnerInvitation(organizationId: string, action: string, requireUnexpired: boolean) {
+async function issueOrganizationOwnerInvitation(organizationId: string, action: string, requireUnexpired: boolean, baseUrl?: string) {
   const { organization } = await authorizePlatformTargetOrganization({ organizationId, permission: PLATFORM_PERMISSIONS.provisioningManage, action });
+  let invitationBaseUrl: string;
+  try {
+    invitationBaseUrl = getInvitationBaseUrl(baseUrl);
+  } catch {
+    throw new AppError("PROVISIONING_FAILED", "The public application URL is not configured.", 503);
+  }
   const result = await withPlatformTransaction(async (tx) => {
     const invitation = await tx.query.invitations.findFirst({
       where: and(
@@ -98,25 +104,26 @@ async function issueOrganizationOwnerInvitation(organizationId: string, action: 
     const [updated] = await tx.update(invitations).set({ tokenHash: hashToken(token), expiresAt: new Date(Date.now() + 7 * 86_400_000), updatedAt: new Date() }).where(eq(invitations.id, invitation.id)).returning();
     return { invitation: updated, token };
   });
-  return { organization, ...result };
+  return { organization, invitationBaseUrl, ...result };
 }
 
-export async function resendOrganizationInvitation(organizationId: string, actorUserId: string) {
-  const result = await issueOrganizationOwnerInvitation(organizationId, "organization_invitation_resend", false);
-  const delivery = await sendInvitationEmail({ email: result.invitation.invitedEmail, token: result.token, organizationName: result.organization.name });
+export async function resendOrganizationInvitation(organizationId: string, actorUserId: string, baseUrl?: string) {
+  const result = await issueOrganizationOwnerInvitation(organizationId, "organization_invitation_resend", false, baseUrl);
+  const invitationUrl = buildInvitationUrl(result.token, result.invitationBaseUrl);
+  const delivery = await sendInvitationEmail(
+    { email: result.invitation.invitedEmail, token: result.token, organizationName: result.organization.name },
+    result.invitationBaseUrl,
+  );
   await recordAudit({ actorUserId, organizationId, action: "organization_invitation_resent", resource: "invitation", resourceId: result.invitation.id, platform: true });
-  return { invitation: { id: result.invitation.id, status: result.invitation.status, delivery } };
+  return {
+    invitation: { id: result.invitation.id, status: result.invitation.status, delivery },
+    ...(delivery === "sent" ? {} : { invitationUrl }),
+  };
 }
 
-export async function createOrganizationInvitationLink(organizationId: string, actorUserId: string) {
-  if (!process.env.APP_URL?.trim()) throw new AppError("PROVISIONING_FAILED", "The public application URL is not configured.", 503);
-  const result = await issueOrganizationOwnerInvitation(organizationId, "organization_invitation_link_copy", true);
-  let invitationUrl: string;
-  try {
-    invitationUrl = buildInvitationUrl(result.token);
-  } catch {
-    throw new AppError("PROVISIONING_FAILED", "The public application URL is not configured.", 503);
-  }
+export async function createOrganizationInvitationLink(organizationId: string, actorUserId: string, baseUrl?: string) {
+  const result = await issueOrganizationOwnerInvitation(organizationId, "organization_invitation_link_copy", true, baseUrl);
+  const invitationUrl = buildInvitationUrl(result.token, result.invitationBaseUrl);
   await recordAudit({ actorUserId, organizationId, action: "organization_invitation_link_copied", resource: "invitation", resourceId: result.invitation.id, platform: true });
   return { invitationUrl };
 }

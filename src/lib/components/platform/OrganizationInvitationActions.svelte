@@ -35,6 +35,7 @@ $effect(()=>{modalOpen;return untrack(() => {
     }
   });});
 async function copyLink() {
+    if (busy) return;
     setBusy(true);
     setMessage(undefined);
     try {
@@ -43,66 +44,97 @@ async function copyLink() {
         { method: "POST" }
       );
       const body = await response.json().catch(() => ({}));
-      if (!response.ok || typeof body.invitationUrl !== "string") {
-        setMessage(body.error?.message ?? "Unable to create an invitation link.");
+      if (!response.ok || body.success !== true || typeof body.invitationUrl !== "string") {
+        const errorMessage = body.error?.message ?? "Unable to create an invitation link.";
+        setMessage(errorMessage);
+        notify(errorMessage, "error");
         return;
       }
 
-      const url = body.invitationUrl;
-      setInvitationUrl(url);
+      setInvitationUrl(body.invitationUrl);
+      setCopyStatus("idle");
       setModalOpen(true);
-
-      // Attempt automatic clipboard copy
-      try {
-        await navigator.clipboard.writeText(url);
-        setCopyStatus("copied");
-      } catch {
-        // Browser rejected clipboard write (e.g. transient activation expired during fetch)
-        setCopyStatus("error");
-      }
+      notify("Owner invitation link is ready to copy.", "success");
     } catch {
-      setMessage("Network error occurred while creating an invitation link.");
+      const errorMessage = "Network error occurred while creating an invitation link.";
+      setMessage(errorMessage);
+      notify(errorMessage, "error");
     } finally {
       setBusy(false);
     }
   }
-async function copyFromModal() {
-    if (!invitationUrl) return;
+async function writeInvitationToClipboard() {
     try {
-      await navigator.clipboard.writeText(invitationUrl);
-      setCopyStatus("copied");
-    } catch {
-      if (inputRef.current) {
-        inputRef.current.select();
-        try {
-          const ok = document.execCommand("copy");
-          if (ok) {
-            setCopyStatus("copied");
-            return;
-          }
-        } catch {
-          // ignore execCommand failure
-        }
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(invitationUrl);
+        return true;
       }
-      setCopyStatus("error");
+    } catch {
+      // Clipboard access may be unavailable outside a secure context or user gesture.
+    }
+
+    const input = inputRef.current;
+    if (!input) return false;
+    input.focus();
+    input.select();
+    try {
+      return document.execCommand("copy");
+    } catch {
+      return false;
     }
   }
+async function copyFromModal() {
+    if (!invitationUrl) return;
+    if (await writeInvitationToClipboard()) {
+      setCopyStatus("copied");
+      notify("Invitation link copied to clipboard.", "success");
+      return;
+    }
+    setCopyStatus("error");
+    notify("Could not copy automatically. Select the invitation URL and copy it manually.", "error");
+  }
 async function resend() {
+    if (busy) return;
     setBusy(true);
-    const response = await fetch(
-      `/api/platform/organizations/${organizationId}/invitation/resend`,
-      { method: "POST" }
-    );
-    const body = await response.json().catch(() => ({}));
-    setMessage(
-      response.ok
-        ? body.invitation?.delivery === "not_configured"
-          ? "Invitation renewed. Email delivery is not configured—copy the invitation link to share it manually."
-          : "Invitation email sent."
-        : body.error?.message ?? "Unable to resend invitation."
-    );
-    setBusy(false);
-    if (response.ok) router.refresh();
+    setMessage(undefined);
+    try {
+      const response = await fetch(
+        `/api/platform/organizations/${organizationId}/invitation/resend`,
+        { method: "POST" }
+      );
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok || body.success !== true || !body.invitation) {
+        const errorMessage = body.error?.message ?? "Unable to resend invitation.";
+        setMessage(errorMessage);
+        notify(errorMessage, "error");
+        return;
+      }
+
+      const delivery = body.invitation.delivery;
+      if (delivery === "sent") {
+        setMessage("Invitation email sent.");
+        notify("Invitation email sent.", "success");
+      } else {
+        const errorMessage = delivery === "failed"
+          ? "Invitation renewed, but email delivery failed. Copy the link to share it manually."
+          : "Invitation renewed. Email delivery is not configured—copy the link to share it manually.";
+        setMessage(errorMessage);
+        notify(errorMessage, delivery === "failed" ? "error" : "info");
+        if (typeof body.invitationUrl === "string") {
+          setInvitationUrl(body.invitationUrl);
+          setCopyStatus("idle");
+          setModalOpen(true);
+        }
+      }
+
+      router.refresh();
+    } catch {
+      const errorMessage = "Network error occurred while resending the invitation.";
+      setMessage(errorMessage);
+      notify(errorMessage, "error");
+    } finally {
+      setBusy(false);
+    }
   }
 </script>
 {#if !invitation || invitation.status !== "pending"}<p class="text-sm text-muted">

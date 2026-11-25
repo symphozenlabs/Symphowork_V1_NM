@@ -316,36 +316,35 @@ describe("SymphoWork V1 — Post-Shift Clock-Out & Safe Overtime Tracking", () =
     expect(updated.status).toBe("present");
   });
 
-  // 7. Clock-out while a break is still active, following existing business rules
-  it("7. Clock-out while a break is still active is rejected with 'End active break before clocking out.'", async () => {
+  // 7. An active legacy break is closed by a new event when clocking out.
+  it("7. Clock-out safely closes an active break without rewriting prior punch history", async () => {
     const clockInAt = createDateInTimezone("2026-10-19", "09:00:00", timezone);
     const breakStartAt = createDateInTimezone("2026-10-19", "17:50:00", timezone);
-    const postShiftClockOutAttempt = createDateInTimezone("2026-10-19", "18:15:00", timezone);
-    const breakEndAt = createDateInTimezone("2026-10-19", "18:20:00", timezone);
-    const finalClockOutAt = createDateInTimezone("2026-10-19", "18:25:00", timezone);
+    const clockOutAt = createDateInTimezone("2026-10-19", "18:15:00", timezone);
 
     vi.setSystemTime(clockInAt);
     await recordPunch({ organizationId: orgId, userId, type: "clock_in" });
 
     vi.setSystemTime(breakStartAt);
     await recordPunch({ organizationId: orgId, userId, type: "break_start" });
+    const originalPunches = existingPunches.map((punch) => ({ ...punch }));
 
-    // Attempt clock out post-shift while break is active -> MUST be rejected
-    vi.setSystemTime(postShiftClockOutAttempt);
-    await expect(
-      recordPunch({ organizationId: orgId, userId, type: "clock_out" })
-    ).rejects.toThrow("End active break before clocking out.");
+    vi.setSystemTime(clockOutAt);
+    const result = await recordPunch({ organizationId: orgId, userId, type: "clock_out" });
 
-    // End break post-shift -> MUST succeed
-    vi.setSystemTime(breakEndAt);
-    const breakEndRes = await recordPunch({ organizationId: orgId, userId, type: "break_end" });
-    expect(breakEndRes).toBeDefined();
-
-    // Now clock out post-shift -> MUST succeed
-    vi.setSystemTime(finalClockOutAt);
-    const finalRes = await recordPunch({ organizationId: orgId, userId, type: "clock_out" });
-    expect(finalRes.actualLastOut).toEqual(finalClockOutAt);
-    expect(finalRes.status).toBe("present");
+    expect(result.actualLastOut).toEqual(clockOutAt);
+    expect(result.status).toBe("present");
+    expect(result.totalWorkMinutes).toBe(555);
+    expect(result.totalBreakMinutes).toBe(25);
+    expect(result.netWorkMinutes).toBe(530);
+    expect(existingPunches.slice(0, originalPunches.length)).toEqual(originalPunches);
+    expect(existingPunches.slice(originalPunches.length).map((punch) => ({
+      punchType: punch.punchType,
+      punchedAt: punch.punchedAt,
+    }))).toEqual([
+      { punchType: "break_end", punchedAt: clockOutAt },
+      { punchType: "clock_out", punchedAt: clockOutAt },
+    ]);
   });
 
   // 8. Duplicate clock-out rejection

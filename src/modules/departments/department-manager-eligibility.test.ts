@@ -224,7 +224,12 @@ describe("Department Manager Dropdown & Assignment Regression Suite", () => {
             where: vi.fn(() => ({
               orderBy: vi.fn(() => ({
                 limit: vi.fn((lim: number) => ({
-                  offset: vi.fn(async (off: number) => eligibleEmployees.slice(off, off + lim)),
+                  offset: vi.fn(async (off: number) => {
+                    const rows = eligibleEmployees.slice(off, off + lim);
+                    return fields && typeof fields === "object" && "employee" in fields
+                      ? rows.map((employee) => ({ employee, total: eligibleEmployees.length }))
+                      : rows;
+                  }),
                 })),
                 then: (resolve: any) => Promise.resolve(eligibleEmployees).then(resolve),
               })),

@@ -10,12 +10,16 @@ const { resolveTenantContext, authorize, mockSelect, mockInsert } = vi.hoisted((
 
 vi.mock("@/modules/tenancy/context", () => ({ resolveTenantContext }));
 vi.mock("@/modules/tenancy/authorization", () => ({ authorize }));
-vi.mock("@/db/client", () => ({
-  db: {
+vi.mock("@/db/client", () => {
+  const db = {
     select: mockSelect,
     insert: mockInsert,
-  },
-}));
+  };
+  return {
+    db,
+    withTenantTransaction: async (_organizationId: string, run: (tx: typeof db) => Promise<unknown>) => run(db),
+  };
+});
 
 type MockTeam = {
   id: string;

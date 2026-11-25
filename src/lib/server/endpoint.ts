@@ -1,14 +1,12 @@
 import type { RequestEvent, RequestHandler } from '@sveltejs/kit';
-import { requestCookieStorage, type CookieStore } from './compat/headers';
 import { logPerf } from './perf-logger';
-import { requestCacheStorage, createRequestCacheStore } from './compat/react';
 
-export type NextRouteHandler = (
+export type ApiOperation = (
   request: Request,
-  context: { params: Promise<Record<string, string>> }
+  context: { params: Record<string, string> }
 ) => Promise<Response> | Response;
 
-export function svelteEndpoint(handler?: NextRouteHandler): RequestHandler {
+export function svelteEndpoint(handler?: ApiOperation): RequestHandler {
   return async (event: RequestEvent) => {
     if (!handler) {
       return new Response(
@@ -28,46 +26,11 @@ export function svelteEndpoint(handler?: NextRouteHandler): RequestHandler {
 
 export async function handleSvelteKitRoute(
   event: RequestEvent,
-  handler: NextRouteHandler
+  handler: ApiOperation
 ): Promise<Response> {
-  const cookieStore: CookieStore = {
-    get(name: string) {
-      const val = event.cookies.get(name);
-      if (val === undefined) return undefined;
-      return { name, value: val };
-    },
-    set(name: string, value: string, options?: any) {
-      event.cookies.set(name, value, {
-        path: options?.path ?? '/',
-        httpOnly: options?.httpOnly ?? true,
-        secure: options?.secure ?? (process.env.NODE_ENV === 'production'),
-        sameSite: options?.sameSite ?? 'lax',
-        maxAge: options?.maxAge,
-        expires: options?.expires
-      });
-    },
-    delete(name: string, options?: any) {
-      event.cookies.delete(name, {
-        path: options?.path ?? '/'
-      });
-    }
-  };
-
-  const context = {
-    params: Promise.resolve(event.params as Record<string, string>)
-  };
-
   const epStart = performance.now();
   try {
-    const runHandler = async () => {
-      return await requestCookieStorage.run(cookieStore, async () => {
-        return await handler(event.request, context);
-      });
-    };
-
-    const response = requestCacheStorage.getStore()
-      ? await runHandler()
-      : await requestCacheStorage.run(createRequestCacheStore(), runHandler);
+    const response = await handler(event.request, event);
     const epDuration = performance.now() - epStart;
     logPerf('API', `${event.request.method} ${event.url.pathname}`, epDuration, response.status, 250);
     return response;

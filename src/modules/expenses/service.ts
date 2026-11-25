@@ -1,5 +1,5 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
-import { db } from "@/db/client";
+import { db, withTenantTransaction } from "@/db/client";
 import { approvalTasks, expenseClaims, expenseHistory, expenseItems, expenseNumberCounters, expenseReceipts, organizations } from "@/db/schema";
 import { recordAudit } from "@/lib/audit";
 import { AppError } from "@/lib/errors";
@@ -8,7 +8,7 @@ import { calculateExpenseTotal, canTransitionExpenseStatus } from "@/modules/exp
 import { validateExpenseItems } from "@/modules/expenses/policy";
 import { createWorkflowInstance, ensureDefaultWorkflow } from "@/modules/workflows/service";
 import { notifyUsers } from "@/modules/notifications/service";
-import { getOrEnsureEmployeeForUser } from "@/modules/employees/service";
+import { getOrEnsureEmployeeForUser, requireLinkedEmployee } from "@/modules/employees/service";
 
 async function employeeForUser(organizationId: string, userId: string) { return getOrEnsureEmployeeForUser(organizationId, userId); }
 async function nextClaimNumber(tx: typeof db, organizationId: string, year: number) { await tx.insert(expenseNumberCounters).values({ organizationId, claimYear: year }).onConflictDoNothing(); const [counter] = await tx.update(expenseNumberCounters).set({ nextNumber: sql`${expenseNumberCounters.nextNumber} + 1`, updatedAt: new Date() }).where(and(eq(expenseNumberCounters.organizationId, organizationId), eq(expenseNumberCounters.claimYear, year))).returning(); return `EXP-${year}-${String(counter.nextNumber).padStart(4, "0")}`; }
@@ -77,4 +77,13 @@ export async function submitExpenseClaim(input: { organizationId: string; userId
   return db.query.expenseClaims.findFirst({ where: eq(expenseClaims.id, claim.id) });
 }
 
-export async function listExpenseClaims(input: { organizationId: string; userId: string; status?: typeof expenseClaims.$inferSelect.status; search?: string; limit?: number; offset?: number }) { await authorize({ organizationId: input.organizationId, permission: "expense.read" }); const employee = await employeeForUser(input.organizationId, input.userId); return db.select().from(expenseClaims).where(and(eq(expenseClaims.organizationId, input.organizationId), eq(expenseClaims.employeeId, employee.id), input.status ? eq(expenseClaims.status, input.status) : undefined, input.search ? sql`${expenseClaims.claimNumber} ILIKE ${`%${input.search}%`}` : undefined)).orderBy(desc(expenseClaims.createdAt)).limit(Math.min(input.limit ?? 50, 100)).offset(input.offset ?? 0); }
+export async function listExpenseClaims(input: { organizationId: string; userId: string; status?: typeof expenseClaims.$inferSelect.status; search?: string; limit?: number; offset?: number }) { await authorize({ organizationId: input.organizationId, permission: "expense.read" });
+  return withTenantTransaction(input.organizationId, async (tx) => {
+    const employee = await requireLinkedEmployee(input.organizationId, input.userId, tx);
+    return tx.select().from(expenseClaims)
+      .where(and(eq(expenseClaims.organizationId, input.organizationId), eq(expenseClaims.employeeId, employee.id),
+        input.status ? eq(expenseClaims.status, input.status) : undefined,
+        input.search ? sql`${expenseClaims.claimNumber} ILIKE ${`%${input.search}%`}` : undefined))
+      .orderBy(desc(expenseClaims.createdAt)).limit(Math.min(input.limit ?? 50, 100)).offset(input.offset ?? 0);
+  });
+}

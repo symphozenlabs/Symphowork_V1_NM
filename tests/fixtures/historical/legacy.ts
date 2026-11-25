@@ -1,5 +1,3 @@
-import { error } from '@sveltejs/kit';
-import { dispatchApi } from './api-dispatch';
 import { invalidRelayInput } from './request-validation';
 import {
   allowedMethods,
@@ -8,7 +6,7 @@ import {
   upstreamOrigin,
   sessionCookie,
   SESSION_COOKIE
-} from './proxy-policy';
+} from '../../../src/lib/server/proxy-policy';
 
 function failure(status: number, code: string, message: string): Response {
   return Response.json(
@@ -108,25 +106,5 @@ export async function relay(
     }
   }
 
-  // Native SvelteKit in-process dispatch
-  return dispatchApi(request, clientAddress);
-}
-
-export async function legacyJSON<T>(request: Request, path: string): Promise<T> {
-  const url = new URL(path, request.url);
-  const cookie = sessionCookie(request);
-  const headers = new Headers();
-  if (cookie) headers.set('cookie', cookie);
-
-  const internalReq = new Request(url.href, {
-    method: 'GET',
-    headers
-  });
-
-  const response = await dispatchApi(internalReq);
-  const body = await response.json().catch(() => null);
-  if (!response.ok || body?.success !== true) {
-    error(response.ok ? 502 : response.status, body?.error?.message ?? 'Unable to load application data.');
-  }
-  return body as T;
+  throw new Error('Historical relay tests require an explicit transport and origin.');
 }

@@ -2,9 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createEmployee, updateEmployee } from "@/modules/employees/service";
 import { departments, employees, organizations, teams } from "@/db/schema";
 
-const { authorize, recordAudit } = vi.hoisted(() => ({
+const { authorize, recordAudit, withTenantTransaction } = vi.hoisted(() => ({
   authorize: vi.fn(),
   recordAudit: vi.fn(),
+  withTenantTransaction: vi.fn(async (_orgId: string, run: (transaction: unknown) => Promise<unknown>) => run(tx)),
 }));
 
 const organizationId = "11111111-1111-4111-8111-111111111111";
@@ -34,6 +35,7 @@ let mockTeams: MockTeam[] = [];
 let mockEmployees: Array<Record<string, unknown>> = [];
 
 const tx = {
+  query: { memberships: { findFirst: vi.fn().mockResolvedValue(null) } },
   select: vi.fn(() => ({
     from: vi.fn((table: unknown) => ({
       where: vi.fn().mockImplementation(() => {
@@ -51,7 +53,7 @@ const tx = {
     })),
   })),
   update: vi.fn((table: unknown) => ({
-    set: vi.fn(() => ({
+    set: vi.fn((changes: Record<string, unknown>) => ({
       where: vi.fn().mockImplementation(() => ({
         returning: vi.fn().mockImplementation(() => {
           if (table === organizations) {
@@ -70,6 +72,7 @@ const tx = {
                 organizationId,
                 departmentId: salesDeptId,
                 teamId: "team-sales-ops",
+                ...changes,
               },
             ]);
           }
@@ -92,6 +95,7 @@ const tx = {
 };
 
 vi.mock("@/db/client", () => ({
+  withTenantTransaction,
   db: {
     transaction: vi.fn(async (cb: (nestedTx: typeof tx) => Promise<unknown>) => cb(tx)),
     select: vi.fn(() => ({
@@ -347,5 +351,6 @@ describe("Employee Onboarding Team Validation & Isolation", () => {
 
     expect(updated).toBeDefined();
     expect(updated.teamId).toBeNull();
+    expect(withTenantTransaction).toHaveBeenCalledWith(organizationId, expect.any(Function));
   });
 });

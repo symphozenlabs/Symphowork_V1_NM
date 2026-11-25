@@ -1,0 +1,2954 @@
+[
+  {
+    "path": "src/db/client.ts",
+    "line": 122,
+    "enclosing": "withUserTransaction",
+    "operation": "withVerifiedRequestUser"
+  },
+  {
+    "path": "src/db/client.ts",
+    "line": 128,
+    "enclosing": "withUserTransaction",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/db/client.ts",
+    "line": 149,
+    "enclosing": "withInvitationTokenTransaction",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/db/client.ts",
+    "line": 169,
+    "enclosing": "withTenantTransaction",
+    "operation": "withVerifiedOrganizationTransaction"
+  },
+  {
+    "path": "src/db/client.ts",
+    "line": 172,
+    "enclosing": "withTenantTransaction",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/db/client.ts",
+    "line": 193,
+    "enclosing": "withPlatformTransaction",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/lib/audit.ts",
+    "line": 8,
+    "enclosing": "recordAudit",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/lib/audit.ts",
+    "line": 9,
+    "enclosing": "recordAudit",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/lib/server/api/app/approvals/[taskId]/route.ts",
+    "line": 12,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/approvals/[taskId]/route.ts",
+    "line": 12,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/approvals/[taskId]/route.ts",
+    "line": 12,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/approvals/[taskId]/route.ts",
+    "line": 12,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/approvals/[taskId]/route.ts",
+    "line": 12,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/approvals/[taskId]/route.ts",
+    "line": 12,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/approvals/[taskId]/route.ts",
+    "line": 24,
+    "enclosing": "POST",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/lib/server/api/app/departments/route.ts",
+    "line": 20,
+    "enclosing": "GET",
+    "operation": "tenantApiRead"
+  },
+  {
+    "path": "src/lib/server/api/app/departments/[departmentId]/route.ts",
+    "line": 28,
+    "enclosing": "GET",
+    "operation": "tenantApiRead"
+  },
+  {
+    "path": "src/lib/server/api/app/directory/route.ts",
+    "line": 36,
+    "enclosing": "GET",
+    "operation": "tenantApiRead"
+  },
+  {
+    "path": "src/lib/server/api/app/documents/types/route.ts",
+    "line": 8,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/documents/types/route.ts",
+    "line": 9,
+    "enclosing": "POST",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/lib/server/api/app/employees/route.ts",
+    "line": 15,
+    "enclosing": "GET",
+    "operation": "tenantApiRead"
+  },
+  {
+    "path": "src/lib/server/api/app/employees/[employeeId]/invite/revoke/route.ts",
+    "line": 55,
+    "enclosing": "POST",
+    "operation": "db.query.invitations.findFirst"
+  },
+  {
+    "path": "src/lib/server/api/app/employees/[employeeId]/invite/revoke/route.ts",
+    "line": 101,
+    "enclosing": "POST",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/lib/server/api/app/employees/[employeeId]/invite/route.ts",
+    "line": 71,
+    "enclosing": "POST",
+    "operation": "db.query.invitations.findFirst"
+  },
+  {
+    "path": "src/lib/server/api/app/employees/[employeeId]/invite/route.ts",
+    "line": 102,
+    "enclosing": "POST",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/lib/server/api/app/employees/[employeeId]/onboarding/route.ts",
+    "line": 265,
+    "enclosing": "POST",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/lib/server/api/app/employees/[employeeId]/onboarding/route.ts",
+    "line": 266,
+    "enclosing": "POST",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/lib/server/api/app/employees/[employeeId]/route.ts",
+    "line": 16,
+    "enclosing": "GET",
+    "operation": "tenantApiRead"
+  },
+  {
+    "path": "src/lib/server/api/app/expenses/categories/route.ts",
+    "line": 8,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/expenses/categories/route.ts",
+    "line": 9,
+    "enclosing": "POST",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/lib/server/api/app/expenses/items/[itemId]/receipt/route.ts",
+    "line": 10,
+    "enclosing": "POST",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/expenses/items/[itemId]/receipt/route.ts",
+    "line": 10,
+    "enclosing": "POST",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/expenses/items/[itemId]/receipt/route.ts",
+    "line": 10,
+    "enclosing": "POST",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/lib/server/api/app/expenses/[claimId]/route.ts",
+    "line": 11,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/expenses/[claimId]/route.ts",
+    "line": 11,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/expenses/[claimId]/route.ts",
+    "line": 11,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/expenses/[claimId]/route.ts",
+    "line": 11,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/expenses/[claimId]/route.ts",
+    "line": 12,
+    "enclosing": "PATCH",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/expenses/[claimId]/route.ts",
+    "line": 12,
+    "enclosing": "PATCH",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/lib/server/api/app/expenses/[claimId]/route.ts",
+    "line": 12,
+    "enclosing": "PATCH",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/lib/server/api/app/leave/route.ts",
+    "line": 10,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/leave/route.ts",
+    "line": 10,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/master-data/departments/route.ts",
+    "line": 18,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/master-data/designations/route.ts",
+    "line": 20,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/master-data/designations/route.ts",
+    "line": 26,
+    "enclosing": "POST",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/lib/server/api/app/master-data/holidays/route.ts",
+    "line": 10,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/master-data/holidays/route.ts",
+    "line": 11,
+    "enclosing": "POST",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/lib/server/api/app/master-data/locations/route.ts",
+    "line": 10,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/master-data/locations/route.ts",
+    "line": 11,
+    "enclosing": "POST",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/lib/server/api/app/master-data/shifts/route.ts",
+    "line": 100,
+    "enclosing": "POST",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/lib/server/api/app/master-data/working-days/route.ts",
+    "line": 10,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/master-data/working-days/route.ts",
+    "line": 11,
+    "enclosing": "POST",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/lib/server/api/app/master-data/[resource]/[itemId]/route.ts",
+    "line": 97,
+    "enclosing": "PATCH",
+    "operation": "db.execute"
+  },
+  {
+    "path": "src/lib/server/api/app/master-data/[resource]/[itemId]/route.ts",
+    "line": 121,
+    "enclosing": "DELETE",
+    "operation": "db.execute"
+  },
+  {
+    "path": "src/lib/server/api/app/me/employee/route.ts",
+    "line": 10,
+    "enclosing": "PATCH",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/lib/server/api/app/payroll/config/route.ts",
+    "line": 23,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/payroll/config/route.ts",
+    "line": 24,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/payroll/config/route.ts",
+    "line": 25,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/payroll/config/route.ts",
+    "line": 26,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/payroll/config/route.ts",
+    "line": 27,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/payroll/periods/route.ts",
+    "line": 9,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/payroll/runs/[runId]/route.ts",
+    "line": 9,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/payroll/runs/[runId]/route.ts",
+    "line": 9,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/payroll/runs/[runId]/route.ts",
+    "line": 9,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/payroll/salary-assignments/route.ts",
+    "line": 9,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/workflows/route.ts",
+    "line": 9,
+    "enclosing": "GET",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/api/app/workflows/route.ts",
+    "line": 10,
+    "enclosing": "POST",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/lib/server/api/platform/organizations/[organizationId]/approve/route.ts",
+    "line": 30,
+    "enclosing": "POST",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/lib/server/context.ts",
+    "line": 24,
+    "enclosing": "resolveContext",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/lib/server/context.ts",
+    "line": 66,
+    "enclosing": "resolveContext",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/lib/server/context.ts",
+    "line": 101,
+    "enclosing": "resolveVerifiedContext",
+    "operation": "withVerifiedRequestUser"
+  },
+  {
+    "path": "src/lib/server/platform-read.ts",
+    "line": 24,
+    "enclosing": "platformRead",
+    "operation": "withVerifiedRequestUser"
+  },
+  {
+    "path": "src/lib/server/platform-read.ts",
+    "line": 32,
+    "enclosing": "platformRead",
+    "operation": "database().transaction"
+  },
+  {
+    "path": "src/lib/server/tenant-api-read.ts",
+    "line": 23,
+    "enclosing": "tenantApiRead",
+    "operation": "withVerifiedTenantTransaction"
+  },
+  {
+    "path": "src/lib/server/tenant-read.ts",
+    "line": 9,
+    "enclosing": "tenantRead",
+    "operation": "withVerifiedTenantTransaction"
+  },
+  {
+    "path": "src/lib/server/tenant-read.ts",
+    "line": 14,
+    "enclosing": "tenantRead",
+    "operation": "database().transaction"
+  },
+  {
+    "path": "src/lib/server/verified-tenant-transaction.ts",
+    "line": 78,
+    "enclosing": "withRequestContext",
+    "operation": "database().transaction"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 16,
+    "enclosing": "nextRequisitionNumber",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 16,
+    "enclosing": "nextRequisitionNumber",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 17,
+    "enclosing": "nextCandidateNumber",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 17,
+    "enclosing": "nextCandidateNumber",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 20,
+    "enclosing": "ensureDefaultAtsPipeline",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 22,
+    "enclosing": "ensureDefaultAtsPipeline",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 24,
+    "enclosing": "ensureDefaultAtsPipeline",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 29,
+    "enclosing": "createRequisition",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 29,
+    "enclosing": "createRequisition",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 31,
+    "enclosing": "submitRequisition",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 31,
+    "enclosing": "submitRequisition",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 31,
+    "enclosing": "submitRequisition",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 33,
+    "enclosing": "listRequisitions",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 34,
+    "enclosing": "listJobs",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 35,
+    "enclosing": "listApplications",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 36,
+    "enclosing": "listInterviews",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 37,
+    "enclosing": "getDefaultAtsPipeline",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 37,
+    "enclosing": "getDefaultAtsPipeline",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 38,
+    "enclosing": "createJob",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 38,
+    "enclosing": "createJob",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 38,
+    "enclosing": "createJob",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 39,
+    "enclosing": "publishJob",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 39,
+    "enclosing": "publishJob",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 39,
+    "enclosing": "publishJob",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 39,
+    "enclosing": "publishJob",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 41,
+    "enclosing": "findOrCreateCandidate",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 41,
+    "enclosing": "findOrCreateCandidate",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 42,
+    "enclosing": "createApplication",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 42,
+    "enclosing": "createApplication",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 42,
+    "enclosing": "createApplication",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 42,
+    "enclosing": "createApplication",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 43,
+    "enclosing": "moveApplication",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 44,
+    "enclosing": "searchCandidates",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 45,
+    "enclosing": "scheduleInterview",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 45,
+    "enclosing": "scheduleInterview",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 45,
+    "enclosing": "scheduleInterview",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 45,
+    "enclosing": "scheduleInterview",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 49,
+    "enclosing": "submitInterviewFeedback",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 50,
+    "enclosing": "submitInterviewFeedback",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 54,
+    "enclosing": "submitInterviewFeedback",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 55,
+    "enclosing": "submitInterviewFeedback",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 58,
+    "enclosing": "createTalentPool",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 62,
+    "enclosing": "addCandidateToTalentPool",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 63,
+    "enclosing": "addCandidateToTalentPool",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 66,
+    "enclosing": "addCandidateToTalentPool",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/ats/service.ts",
+    "line": 69,
+    "enclosing": "publicJobBySlug",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/attendance/organization-dashboard.ts",
+    "line": 177,
+    "enclosing": "getOrganizationAttendanceDashboard",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/attendance/organization-dashboard.ts",
+    "line": 178,
+    "enclosing": "getOrganizationAttendanceDashboard",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/attendance/organization-dashboard.ts",
+    "line": 179,
+    "enclosing": "getOrganizationAttendanceDashboard",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/attendance/regularization.ts",
+    "line": 53,
+    "enclosing": "createRegularizationRequest",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/attendance/regularization.ts",
+    "line": 54,
+    "enclosing": "createRegularizationRequest",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/attendance/regularization.ts",
+    "line": 128,
+    "enclosing": "createRegularizationRequest",
+    "operation": "db.delete"
+  },
+  {
+    "path": "src/modules/attendance/service.ts",
+    "line": 52,
+    "enclosing": "recordPunch",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/attendance/service.ts",
+    "line": 70,
+    "enclosing": "recordPunch",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/modules/attendance/service.ts",
+    "line": 497,
+    "enclosing": "processDailyAttendanceAbsences",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/billing/service.ts",
+    "line": 8,
+    "enclosing": "getBillingOverview",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/billing/service.ts",
+    "line": 9,
+    "enclosing": "getEntitlement",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/billing/service.ts",
+    "line": 9,
+    "enclosing": "getEntitlement",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/billing/service.ts",
+    "line": 11,
+    "enclosing": "usageSnapshot",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/billing/service.ts",
+    "line": 11,
+    "enclosing": "usageSnapshot",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/billing/service.ts",
+    "line": 11,
+    "enclosing": "usageSnapshot",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/billing/service.ts",
+    "line": 14,
+    "enclosing": "recordUsage",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/billing/service.ts",
+    "line": 15,
+    "enclosing": "changePlan",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/billing/service.ts",
+    "line": 15,
+    "enclosing": "changePlan",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 19,
+    "enclosing": "nextNumber",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 19,
+    "enclosing": "nextNumber",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 20,
+    "enclosing": "addActivity",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 22,
+    "enclosing": "createProject",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 22,
+    "enclosing": "createProject",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 22,
+    "enclosing": "createProject",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 23,
+    "enclosing": "listProjects",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 23,
+    "enclosing": "listProjects",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 24,
+    "enclosing": "getProject",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 24,
+    "enclosing": "getProject",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 24,
+    "enclosing": "getProject",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 24,
+    "enclosing": "getProject",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 24,
+    "enclosing": "getProject",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 25,
+    "enclosing": "updateProject",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 25,
+    "enclosing": "updateProject",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 26,
+    "enclosing": "addProjectMember",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 26,
+    "enclosing": "addProjectMember",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 27,
+    "enclosing": "removeProjectMember",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 28,
+    "enclosing": "createTask",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 28,
+    "enclosing": "createTask",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 29,
+    "enclosing": "createTask",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 30,
+    "enclosing": "listTasks",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 31,
+    "enclosing": "getTask",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 31,
+    "enclosing": "getTask",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 31,
+    "enclosing": "getTask",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 32,
+    "enclosing": "updateTask",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 32,
+    "enclosing": "updateTask",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 33,
+    "enclosing": "addTaskDependency",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 33,
+    "enclosing": "addTaskDependency",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 33,
+    "enclosing": "addTaskDependency",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 33,
+    "enclosing": "addTaskDependency",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 34,
+    "enclosing": "addTaskComment",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 34,
+    "enclosing": "addTaskComment",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 37,
+    "enclosing": "convertMessageToTask",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 59,
+    "enclosing": "createConversation",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 121,
+    "enclosing": "listConversations",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 311,
+    "enclosing": "getUnreadConversationCount",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 375,
+    "enclosing": "listMessages",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 656,
+    "enclosing": "sendMessage",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 754,
+    "enclosing": "toggleMessageReaction",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 825,
+    "enclosing": "uploadChatAttachment",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 931,
+    "enclosing": "getChatAttachment",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 976,
+    "enclosing": "searchMessages",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 1070,
+    "enclosing": "listChatRecipients",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 1124,
+    "enclosing": "markConversationAsRead",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 1153,
+    "enclosing": "updatePresence",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 1189,
+    "enclosing": "getPresenceForEmployees",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/collaboration/service.ts",
+    "line": 1229,
+    "enclosing": "signalTyping",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/departments/service.ts",
+    "line": 390,
+    "enclosing": "validateManagerEmployee",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/departments/service.ts",
+    "line": 467,
+    "enclosing": "listEligibleManagers",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/departments/service.ts",
+    "line": 527,
+    "enclosing": "validateTeamLeadEmployee",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/departments/service.ts",
+    "line": 582,
+    "enclosing": "listEligibleTeamLeads",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/departments/service.ts",
+    "line": 1061,
+    "enclosing": "createDepartment",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/departments/service.ts",
+    "line": 1127,
+    "enclosing": "updateDepartment",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/departments/service.ts",
+    "line": 1306,
+    "enclosing": "checkDepartmentDeletionSafety",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/departments/service.ts",
+    "line": 1319,
+    "enclosing": "deleteDepartment",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/documents/service.ts",
+    "line": 13,
+    "enclosing": "employeeForUser",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/documents/service.ts",
+    "line": 14,
+    "enclosing": "listEmployeeDocuments",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/documents/service.ts",
+    "line": 15,
+    "enclosing": "getExpiringDocuments",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/documents/service.ts",
+    "line": 16,
+    "enclosing": "createEmployeeDocument",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/documents/service.ts",
+    "line": 16,
+    "enclosing": "createEmployeeDocument",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/documents/service.ts",
+    "line": 16,
+    "enclosing": "createEmployeeDocument",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/documents/service.ts",
+    "line": 16,
+    "enclosing": "createEmployeeDocument",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/documents/service.ts",
+    "line": 17,
+    "enclosing": "getDocumentDownload",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/documents/service.ts",
+    "line": 17,
+    "enclosing": "getDocumentDownload",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/documents/service.ts",
+    "line": 18,
+    "enclosing": "updateDocumentStatus",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/documents/service.ts",
+    "line": 18,
+    "enclosing": "updateDocumentStatus",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/documents/service.ts",
+    "line": 18,
+    "enclosing": "updateDocumentStatus",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/employees/service.ts",
+    "line": 50,
+    "enclosing": "createEmployee",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/modules/employees/service.ts",
+    "line": 315,
+    "enclosing": "enrichEmployeesWithRoles",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/employees/service.ts",
+    "line": 410,
+    "enclosing": "listEmployees",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/employees/service.ts",
+    "line": 915,
+    "enclosing": "updateEmployee",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/employees/service.ts",
+    "line": 998,
+    "enclosing": "updateEmployee",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/employees/service.ts",
+    "line": 1051,
+    "enclosing": "updateEmployee",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/employees/service.ts",
+    "line": 1064,
+    "enclosing": "updateEmployee",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/employees/service.ts",
+    "line": 1113,
+    "enclosing": "updateEmployee",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/employees/service.ts",
+    "line": 1129,
+    "enclosing": "updateEmployee",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/employees/service.ts",
+    "line": 1130,
+    "enclosing": "updateEmployee",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/employees/service.ts",
+    "line": 1287,
+    "enclosing": "getOrEnsureEmployeeForUser",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/modules/expenses/policy.ts",
+    "line": 6,
+    "enclosing": "resolveExpensePolicy",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/expenses/policy.ts",
+    "line": 6,
+    "enclosing": "resolveExpensePolicy",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/expenses/service.ts",
+    "line": 20,
+    "enclosing": "createExpenseClaim",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/expenses/service.ts",
+    "line": 25,
+    "enclosing": "createExpenseClaim",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/modules/expenses/service.ts",
+    "line": 39,
+    "enclosing": "submitExpenseClaim",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/expenses/service.ts",
+    "line": 42,
+    "enclosing": "submitExpenseClaim",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/expenses/service.ts",
+    "line": 45,
+    "enclosing": "submitExpenseClaim",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/expenses/service.ts",
+    "line": 64,
+    "enclosing": "submitExpenseClaim",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/expenses/service.ts",
+    "line": 68,
+    "enclosing": "submitExpenseClaim",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/expenses/service.ts",
+    "line": 69,
+    "enclosing": "submitExpenseClaim",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/expenses/service.ts",
+    "line": 72,
+    "enclosing": "submitExpenseClaim",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/expenses/service.ts",
+    "line": 75,
+    "enclosing": "submitExpenseClaim",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/expenses/service.ts",
+    "line": 77,
+    "enclosing": "submitExpenseClaim",
+    "operation": "db.query.expenseClaims.findFirst"
+  },
+  {
+    "path": "src/modules/expenses/service.ts",
+    "line": 80,
+    "enclosing": "listExpenseClaims",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/files/private-download.ts",
+    "line": 19,
+    "enclosing": "readAuthorizedLocalFile",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/files/private-download.ts",
+    "line": 24,
+    "enclosing": "readAuthorizedLocalFile",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/files/private-download.ts",
+    "line": 33,
+    "enclosing": "readAuthorizedLocalFile",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/files/private-download.ts",
+    "line": 49,
+    "enclosing": "readAuthorizedLocalFile",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 21,
+    "enclosing": "createSession",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 60,
+    "enclosing": "registerUser",
+    "operation": "db.query.users.findFirst"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 62,
+    "enclosing": "registerUser",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 64,
+    "enclosing": "registerUser",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 70,
+    "enclosing": "resendVerification",
+    "operation": "db.query.users.findFirst"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 73,
+    "enclosing": "resendVerification",
+    "operation": "db.delete"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 74,
+    "enclosing": "resendVerification",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 80,
+    "enclosing": "authenticate",
+    "operation": "db.query.users.findFirst"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 88,
+    "enclosing": "authenticate",
+    "operation": "db.execute"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 104,
+    "enclosing": "revokePresentedSession",
+    "operation": "db.execute"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 111,
+    "enclosing": "revokePresentedSession",
+    "operation": "db.delete"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 121,
+    "enclosing": "verifyEmail",
+    "operation": "db.query.emailVerificationTokens.findFirst"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 123,
+    "enclosing": "verifyEmail",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 128,
+    "enclosing": "requestPasswordReset",
+    "operation": "db.query.users.findFirst"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 131,
+    "enclosing": "requestPasswordReset",
+    "operation": "db.delete"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 132,
+    "enclosing": "requestPasswordReset",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 139,
+    "enclosing": "resetPassword",
+    "operation": "db.query.passwordResetTokens.findFirst"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 142,
+    "enclosing": "resetPassword",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/modules/identity/auth.ts",
+    "line": 149,
+    "enclosing": "changePassword",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/leave/service.ts",
+    "line": 17,
+    "enclosing": "applyLeave",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/leave/service.ts",
+    "line": 21,
+    "enclosing": "applyLeave",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/leave/service.ts",
+    "line": 46,
+    "enclosing": "applyLeave",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/leave/service.ts",
+    "line": 47,
+    "enclosing": "applyLeave",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/modules/leave/service.ts",
+    "line": 48,
+    "enclosing": "applyLeave",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/leave/service.ts",
+    "line": 48,
+    "enclosing": "applyLeave",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/modules/leave/service.ts",
+    "line": 52,
+    "enclosing": "listLeaveTypes",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/notifications/service.ts",
+    "line": 9,
+    "enclosing": "createNotification",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/notifications/service.ts",
+    "line": 9,
+    "enclosing": "createNotification",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/notifications/service.ts",
+    "line": 9,
+    "enclosing": "createNotification",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/notifications/service.ts",
+    "line": 9,
+    "enclosing": "createNotification",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/notifications/service.ts",
+    "line": 9,
+    "enclosing": "createNotification",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/notifications/service.ts",
+    "line": 9,
+    "enclosing": "createNotification",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/notifications/service.ts",
+    "line": 11,
+    "enclosing": "listNotifications",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/notifications/service.ts",
+    "line": 12,
+    "enclosing": "unreadNotificationCount",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/notifications/service.ts",
+    "line": 13,
+    "enclosing": "markNotificationRead",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/notifications/service.ts",
+    "line": 14,
+    "enclosing": "markAllNotificationsRead",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/notifications/service.ts",
+    "line": 15,
+    "enclosing": "updateNotificationPreference",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/notifications/service.ts",
+    "line": 16,
+    "enclosing": "listNotificationPreferences",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 48,
+    "enclosing": "createPayrollPeriod",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 56,
+    "enclosing": "listPayrollRuns",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 62,
+    "enclosing": "assignSalaryStructure",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 63,
+    "enclosing": "assignSalaryStructure",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 67,
+    "enclosing": "assignSalaryStructure",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 70,
+    "enclosing": "assignSalaryStructure",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 76,
+    "enclosing": "statutoryInputs",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 79,
+    "enclosing": "statutoryInputs",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 86,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 89,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 90,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 92,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 94,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 98,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 101,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 106,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 109,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 111,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 113,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 115,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 120,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 124,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 125,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 126,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 129,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 133,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 135,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 151,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 154,
+    "enclosing": "calculatePayrollRun",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 159,
+    "enclosing": "finalizePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 161,
+    "enclosing": "finalizePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 163,
+    "enclosing": "finalizePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 168,
+    "enclosing": "finalizePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 169,
+    "enclosing": "finalizePayrollRun",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 198,
+    "enclosing": "finalizePayrollRun",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 201,
+    "enclosing": "finalizePayrollRun",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 204,
+    "enclosing": "finalizePayrollRun",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/payroll/service.ts",
+    "line": 205,
+    "enclosing": "finalizePayrollRun",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/platform/analytics.ts",
+    "line": 12,
+    "enclosing": "getPlatformAnalytics",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/analytics.ts",
+    "line": 13,
+    "enclosing": "getPlatformAnalytics",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/analytics.ts",
+    "line": 14,
+    "enclosing": "getPlatformAnalytics",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/analytics.ts",
+    "line": 15,
+    "enclosing": "getPlatformAnalytics",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/analytics.ts",
+    "line": 16,
+    "enclosing": "getPlatformAnalytics",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/analytics.ts",
+    "line": 17,
+    "enclosing": "getPlatformAnalytics",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/analytics.ts",
+    "line": 18,
+    "enclosing": "getPlatformAnalytics",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/analytics.ts",
+    "line": 19,
+    "enclosing": "getPlatformAnalytics",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/analytics.ts",
+    "line": 20,
+    "enclosing": "getPlatformAnalytics",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/analytics.ts",
+    "line": 21,
+    "enclosing": "getPlatformAnalytics",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/analytics.ts",
+    "line": 22,
+    "enclosing": "getPlatformAnalytics",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/analytics.ts",
+    "line": 23,
+    "enclosing": "getPlatformAnalytics",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/analytics.ts",
+    "line": 24,
+    "enclosing": "getPlatformAnalytics",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/analytics.ts",
+    "line": 31,
+    "enclosing": "organizationCreationTrend",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/authorization.ts",
+    "line": 15,
+    "enclosing": "authorizePlatformTargetOrganization",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 18,
+    "enclosing": "listPlans",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 26,
+    "enclosing": "savePlan",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 33,
+    "enclosing": "savePlan",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 49,
+    "enclosing": "savePlan",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 56,
+    "enclosing": "savePlan",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 78,
+    "enclosing": "deletePlan",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 84,
+    "enclosing": "deletePlan",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 96,
+    "enclosing": "deletePlan",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 116,
+    "enclosing": "setPlanFeatures",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 118,
+    "enclosing": "setPlanFeatures",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 122,
+    "enclosing": "getPlanFeatures",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 132,
+    "enclosing": "getBatchPlanFeatures",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 195,
+    "enclosing": "listSubscriptions",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 232,
+    "enclosing": "updateSubscription",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 234,
+    "enclosing": "updateSubscription",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 237,
+    "enclosing": "updateSubscription",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 298,
+    "enclosing": "getOrganizationUsage",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 389,
+    "enclosing": "listOrganizationUsage",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 469,
+    "enclosing": "commercialDashboard",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 470,
+    "enclosing": "commercialDashboard",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 471,
+    "enclosing": "commercialDashboard",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 472,
+    "enclosing": "commercialDashboard",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/commercial.ts",
+    "line": 473,
+    "enclosing": "commercialDashboard",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/configuration.ts",
+    "line": 17,
+    "enclosing": "getPlatformConfiguration",
+    "operation": "withVerifiedRequestUser"
+  },
+  {
+    "path": "src/modules/platform/configuration.ts",
+    "line": 21,
+    "enclosing": "getPlatformConfiguration",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/configuration.ts",
+    "line": 24,
+    "enclosing": "setPlatformConfiguration",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/features.ts",
+    "line": 10,
+    "enclosing": "listFeatureFlags",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/features.ts",
+    "line": 12,
+    "enclosing": "getFeatureFlag",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/features.ts",
+    "line": 14,
+    "enclosing": "isFeatureEnabled",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/features.ts",
+    "line": 15,
+    "enclosing": "saveFeatureFlag",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/invitations.ts",
+    "line": 18,
+    "enclosing": "withInvitationContext",
+    "operation": "withInvitationTokenTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 30,
+    "enclosing": "listPlatformOrganizations",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 73,
+    "enclosing": "getPlatformOrganization",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 87,
+    "enclosing": "issueOrganizationOwnerInvitation",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 128,
+    "enclosing": "changeOrganizationStatus",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 141,
+    "enclosing": "deletePlatformOrganization",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 175,
+    "enclosing": "listProvisioningJobs",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 181,
+    "enclosing": "retryProvisioning",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 185,
+    "enclosing": "retryProvisioning",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 186,
+    "enclosing": "retryProvisioning",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 200,
+    "enclosing": "retryProvisioning",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 207,
+    "enclosing": "retryProvisioning",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 252,
+    "enclosing": "listPlatformUsers",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 287,
+    "enclosing": "changePlatformRole",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 292,
+    "enclosing": "changePlatformRole",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 295,
+    "enclosing": "changePlatformRole",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/operations.ts",
+    "line": 338,
+    "enclosing": "listPlatformAudit",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/provisioning.ts",
+    "line": 11,
+    "enclosing": "createOrganization",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/provisioning.ts",
+    "line": 105,
+    "enclosing": "approveOrganization",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/provisioning.ts",
+    "line": 148,
+    "enclosing": "syncOrganizationRolePermissions",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/provisioning.ts",
+    "line": 152,
+    "enclosing": "runProvisioning",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/provisioning.ts",
+    "line": 159,
+    "enclosing": "runProvisioning",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/provisioning.ts",
+    "line": 166,
+    "enclosing": "runProvisioning",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/provisioning.ts",
+    "line": 172,
+    "enclosing": "runProvisioning",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/provisioning.ts",
+    "line": 176,
+    "enclosing": "runProvisioning",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/provisioning.ts",
+    "line": 195,
+    "enclosing": "runProvisioning",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/provisioning.ts",
+    "line": 200,
+    "enclosing": "runProvisioning",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/support.ts",
+    "line": 44,
+    "enclosing": "searchSupportOrganizations",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/support.ts",
+    "line": 74,
+    "enclosing": "listSupportNotes",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/platform/support.ts",
+    "line": 75,
+    "enclosing": "createSupportNote",
+    "operation": "withPlatformTransaction"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 11,
+    "enclosing": "candidateProfile",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 11,
+    "enclosing": "candidateProfile",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 11,
+    "enclosing": "candidateProfile",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 13,
+    "enclosing": "getSemanticConfig",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 14,
+    "enclosing": "updateSemanticConfig",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 15,
+    "enclosing": "extractJobRequirements",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 15,
+    "enclosing": "extractJobRequirements",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 15,
+    "enclosing": "extractJobRequirements",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 15,
+    "enclosing": "extractJobRequirements",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 16,
+    "enclosing": "matchCandidatesForJob",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 16,
+    "enclosing": "matchCandidatesForJob",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 16,
+    "enclosing": "matchCandidatesForJob",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 16,
+    "enclosing": "matchCandidatesForJob",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 17,
+    "enclosing": "intelligentSearch",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 17,
+    "enclosing": "intelligentSearch",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/recruiter-intelligence/service.ts",
+    "line": 17,
+    "enclosing": "intelligentSearch",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 10,
+    "enclosing": "groupedStatus",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 12,
+    "enclosing": "employeeReport",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 12,
+    "enclosing": "employeeReport",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 12,
+    "enclosing": "employeeReport",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 12,
+    "enclosing": "employeeReport",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 12,
+    "enclosing": "employeeReport",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 21,
+    "enclosing": "reportDashboard",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 22,
+    "enclosing": "reportDashboard",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 22,
+    "enclosing": "reportDashboard",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 22,
+    "enclosing": "reportDashboard",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 22,
+    "enclosing": "reportDashboard",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 22,
+    "enclosing": "reportDashboard",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 23,
+    "enclosing": "reportDashboard",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 23,
+    "enclosing": "reportDashboard",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 23,
+    "enclosing": "reportDashboard",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 23,
+    "enclosing": "reportDashboard",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 24,
+    "enclosing": "reportDashboard",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 28,
+    "enclosing": "operationalReport",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/reporting/service.ts",
+    "line": 28,
+    "enclosing": "operationalReport",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 17,
+    "enclosing": "writeAttempt",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 22,
+    "enclosing": "uploadResume",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 24,
+    "enclosing": "uploadResume",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 26,
+    "enclosing": "uploadResume",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 29,
+    "enclosing": "uploadResume",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 30,
+    "enclosing": "uploadResume",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 31,
+    "enclosing": "uploadResume",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 36,
+    "enclosing": "uploadPublicResume",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 36,
+    "enclosing": "uploadPublicResume",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 36,
+    "enclosing": "uploadPublicResume",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 36,
+    "enclosing": "uploadPublicResume",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 36,
+    "enclosing": "uploadPublicResume",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 40,
+    "enclosing": "processResumeJob",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 41,
+    "enclosing": "processResumeJob",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 41,
+    "enclosing": "processResumeJob",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 42,
+    "enclosing": "processResumeJob",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 42,
+    "enclosing": "processResumeJob",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 46,
+    "enclosing": "processResumeJob",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 47,
+    "enclosing": "processResumeJob",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 47,
+    "enclosing": "processResumeJob",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 48,
+    "enclosing": "processResumeJob",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 49,
+    "enclosing": "processResumeJob",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 50,
+    "enclosing": "processResumeJob",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 51,
+    "enclosing": "processResumeJob",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 51,
+    "enclosing": "processResumeJob",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 51,
+    "enclosing": "processResumeJob",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 51,
+    "enclosing": "processResumeJob",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 52,
+    "enclosing": "processResumeJob",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 52,
+    "enclosing": "processResumeJob",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 52,
+    "enclosing": "processResumeJob",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 53,
+    "enclosing": "processResumeJob",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 53,
+    "enclosing": "processResumeJob",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 56,
+    "enclosing": "retryResumeJob",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 57,
+    "enclosing": "getResumeDownload",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 58,
+    "enclosing": "listResumeJobs",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 59,
+    "enclosing": "reviewExtractionField",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 59,
+    "enclosing": "reviewExtractionField",
+    "operation": "db.update"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 59,
+    "enclosing": "reviewExtractionField",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 59,
+    "enclosing": "reviewExtractionField",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 60,
+    "enclosing": "updateResumeProcessingConfig",
+    "operation": "db.insert"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 61,
+    "enclosing": "getResumeProcessingConfig",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 62,
+    "enclosing": "getCandidateResumeProfile",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 62,
+    "enclosing": "getCandidateResumeProfile",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 62,
+    "enclosing": "getCandidateResumeProfile",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/resume-intelligence/service.ts",
+    "line": 62,
+    "enclosing": "getCandidateResumeProfile",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/tenancy/authorization.ts",
+    "line": 85,
+    "enclosing": "can",
+    "operation": "db.query.users.findFirst"
+  },
+  {
+    "path": "src/modules/tenancy/authorization.ts",
+    "line": 118,
+    "enclosing": "can",
+    "operation": "db.query.memberships.findFirst"
+  },
+  {
+    "path": "src/modules/tenancy/authorization.ts",
+    "line": 219,
+    "enclosing": "canAny",
+    "operation": "db.query.users.findFirst"
+  },
+  {
+    "path": "src/modules/tenancy/authorization.ts",
+    "line": 251,
+    "enclosing": "canAny",
+    "operation": "db.query.memberships.findFirst"
+  },
+  {
+    "path": "src/modules/tenancy/context.ts",
+    "line": 181,
+    "enclosing": "resolveTenantContext",
+    "operation": "withUserTransaction"
+  },
+  {
+    "path": "src/modules/tenancy/context.ts",
+    "line": 188,
+    "enclosing": "resolveTenantContext",
+    "operation": "db.query.organizations.findFirst"
+  },
+  {
+    "path": "src/modules/tenancy/context.ts",
+    "line": 194,
+    "enclosing": "resolveTenantContext",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/workflows/service.ts",
+    "line": 11,
+    "enclosing": "ensureDefaultWorkflow",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/workflows/service.ts",
+    "line": 13,
+    "enclosing": "ensureDefaultWorkflow",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/modules/workflows/service.ts",
+    "line": 33,
+    "enclosing": "resolveApprover",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/workflows/service.ts",
+    "line": 33,
+    "enclosing": "resolveApprover",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/workflows/service.ts",
+    "line": 42,
+    "enclosing": "resolveApprover",
+    "operation": "withTenantTransaction"
+  },
+  {
+    "path": "src/modules/workflows/service.ts",
+    "line": 57,
+    "enclosing": "createWorkflowInstance",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/workflows/service.ts",
+    "line": 59,
+    "enclosing": "createWorkflowInstance",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/workflows/service.ts",
+    "line": 61,
+    "enclosing": "createWorkflowInstance",
+    "operation": "db.select"
+  },
+  {
+    "path": "src/modules/workflows/service.ts",
+    "line": 65,
+    "enclosing": "createWorkflowInstance",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/modules/workflows/service.ts",
+    "line": 70,
+    "enclosing": "actOnApprovalTask",
+    "operation": "db.transaction"
+  },
+  {
+    "path": "src/routes/app/+page.server.ts",
+    "line": 8,
+    "enclosing": "load",
+    "operation": "tenantRead"
+  },
+  {
+    "path": "src/routes/app/employees/[employeeId]/+page.server.ts",
+    "line": 2,
+    "enclosing": "load",
+    "operation": "tenantRead"
+  },
+  {
+    "path": "src/routes/app/profile/+page.server.ts",
+    "line": 4,
+    "enclosing": "load",
+    "operation": "tenantRead"
+  },
+  {
+    "path": "src/routes/platform/+page.server.ts",
+    "line": 3,
+    "enclosing": "load",
+    "operation": "platformRead"
+  },
+  {
+    "path": "src/routes/platform/+page.server.ts",
+    "line": 11,
+    "enclosing": "load",
+    "operation": "platformRead"
+  },
+  {
+    "path": "src/routes/platform/+page.server.ts",
+    "line": 12,
+    "enclosing": "load",
+    "operation": "platformRead"
+  }
+]

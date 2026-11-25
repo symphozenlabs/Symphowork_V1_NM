@@ -1,8 +1,7 @@
-import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { db } from "@/db/client";
+import { withTenantTransaction } from "@/db/client";
 import { designations } from "@/db/schema";
-import { errorResponse } from "@/lib/errors";
+import { AppError, errorResponse } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { authorize, authorizeAny } from "@/modules/tenancy/authorization";
 import { z } from "zod";
@@ -10,17 +9,31 @@ const schema = z.object({ name: z.string().trim().min(2).max(120), code: z.strin
 export async function GET() {
   try {
     const tenant = await resolveTenantContext();
-    if (!tenant.organization) return NextResponse.json({ success: true, items: [] });
+    if (!tenant.organization) return Response.json({ success: true, items: [] });
     await authorizeAny({
       organizationId: tenant.organization.id,
       permissions: ["designation.read", "employee.create", "employee.read"],
     });
-    return NextResponse.json({
+    return Response.json({
       success: true,
-      items: await db.select().from(designations).where(eq(designations.organizationId, tenant.organization.id))
+      items: await withTenantTransaction(tenant.organization.id, async (tx) => tx.select().from(designations).where(eq(designations.organizationId, tenant.organization!.id)))
     });
   } catch (error) {
     return errorResponse(error);
   }
 }
-export async function POST(request: Request) { try { const tenant = await resolveTenantContext(); if (!tenant.organization) throw new Error("organization required"); await authorize({ organizationId: tenant.organization.id, permission: "designation.create" }); const [item] = await db.insert(designations).values({ organizationId: tenant.organization.id, ...schema.parse(await request.json()) }).returning(); return NextResponse.json({ success: true, item }, { status: 201 }); } catch (error) { return errorResponse(error); } }
+export async function POST(request: Request) {
+  try {
+    const tenant = await resolveTenantContext();
+    if (!tenant.organization) throw new AppError("FORBIDDEN", "Organization context is required.", 403);
+    const organizationId = tenant.organization.id;
+    await authorize({ organizationId, permission: "designation.create" });
+    const input = schema.parse(await request.json());
+    const [item] = await withTenantTransaction(organizationId, (tx) =>
+      tx.insert(designations).values({ organizationId, ...input }).returning()
+    );
+    return Response.json({ success: true, item }, { status: 201 });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}

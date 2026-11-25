@@ -426,6 +426,7 @@ describe("Organization Attendance Dashboard — Enterprise Verification", () => 
     expect(csv).toContain("Employee ID,Employee Name,Department");
     expect(csv).toContain('"EMP001","Amit Patel","Engineering"');
     expect(csv).toContain('"09:12 AM"');
+    expect(csv).toContain("Break Status,Break Used (min),Remaining Break (min)");
   });
 
   it("12. formatTimeInTimezone formats UTC date strings into configured organization timezone", () => {

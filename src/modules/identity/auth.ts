@@ -1,11 +1,12 @@
-import { cookies } from "next/headers";
-import { cache, getRequestCacheStore } from "react";
+import { getRequestEvent } from "$app/server";
+import { memoizeRequest, getRequestCacheStore } from '@/lib/server/request-cache';
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
 import { emailVerificationTokens, passwordResetTokens, sessions, users } from "@/db/schema";
 import { AppError } from "@/lib/errors";
 import { createOpaqueToken, hashPassword, hashToken, verifyPassword } from "@/lib/crypto";
 import { recordAudit } from "@/lib/audit";
+import { logPerf } from "@/lib/server/perf-logger";
 
 export const SESSION_COOKIE = "symphowork_session";
 const SESSION_DAYS = 14;
@@ -16,17 +17,19 @@ export function validatePassword(password: string) { return password.length >= 1
 export async function createSession(userId: string) {
   const token = createOpaqueToken();
   const expiresAt = new Date(Date.now() + SESSION_DAYS * 86_400_000);
+  const start = performance.now();
   await db.insert(sessions).values({ userId, tokenHash: hashToken(token), expiresAt });
+  logPerf('DB', 'session-create', performance.now() - start, 'CREATED', 200);
   return { token, expiresAt };
 }
 
 export async function setSessionCookie(token: string) {
-  (await cookies()).set(SESSION_COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/" });
+  getRequestEvent().cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/" });
 }
 
-export async function clearSessionCookie() { (await cookies()).delete(SESSION_COOKIE); }
+export async function clearSessionCookie() { getRequestEvent().cookies.delete(SESSION_COOKIE, { path: "/" }); }
 
-export const getSessionUser = cache(async () => {
+export const getSessionUser = memoizeRequest(async () => {
   const store = getRequestCacheStore?.();
   if (store) {
     const svelteContext = store.sharedData.get('svelteContext');
@@ -38,7 +41,12 @@ export const getSessionUser = cache(async () => {
       return tenantContext.user;
     }
   }
-  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  let token: string | undefined;
+  try {
+    token = getRequestEvent().cookies.get(SESSION_COOKIE);
+  } catch {
+    return null;
+  }
   if (!token) return null;
   const [row] = await db
     .select({ user: users })
@@ -73,17 +81,29 @@ export async function resendVerification(email: string) {
 }
 
 export async function authenticate(input: { email: string; password: string }) {
+  const lookupStart = performance.now();
   const user = await db.query.users.findFirst({ where: eq(users.email, normalizeEmail(input.email)) });
-  if (!user || !(await verifyPassword(input.password, user.passwordHash))) { await recordAudit({ action: "failed_login", resource: "user", metadata: { email: normalizeEmail(input.email) } }); throw new AppError("AUTH_INVALID_CREDENTIALS", "Email or password is incorrect.", 401); }
+  logPerf('DB', 'login-user-lookup', performance.now() - lookupStart, user ? 'HIT' : 'MISS', 200);
+  const verifyStart = performance.now();
+  const passwordMatches = user ? await verifyPassword(input.password, user.passwordHash) : false;
+  logPerf('AUTH', 'login-password-verification', performance.now() - verifyStart, passwordMatches ? 'MATCH' : 'NO_MATCH', 200);
+  if (!user || !passwordMatches || user.status !== "active") {
+    await recordAudit({ action: "failed_login", resource: "user", metadata: { email: normalizeEmail(input.email) }, platform: true });
+    throw new AppError("AUTH_INVALID_CREDENTIALS", "Email or password is incorrect.", 401);
+  }
   if (!user.emailVerifiedAt) throw new AppError("AUTH_EMAIL_NOT_VERIFIED", "Verify your email before signing in.", 403);
   const session = await createSession(user.id);
-  await recordAudit({ actorUserId: user.id, action: "login", resource: "session", metadata: { expiresAt: session.expiresAt.toISOString() } });
+  await recordAudit({ actorUserId: user.id, action: "login", resource: "session", metadata: { expiresAt: session.expiresAt.toISOString() }, platform: true });
   return { user, ...session };
 }
 
+export async function revokePresentedSession(token: string) {
+  await db.delete(sessions).where(eq(sessions.tokenHash, hashToken(token)));
+}
+
 export async function logout() {
-  const token = (await cookies()).get(SESSION_COOKIE)?.value;
-  if (token) await db.delete(sessions).where(eq(sessions.tokenHash, hashToken(token)));
+  const token = getRequestEvent().cookies.get(SESSION_COOKIE);
+  if (token) await revokePresentedSession(token);
   await clearSessionCookie();
 }
 

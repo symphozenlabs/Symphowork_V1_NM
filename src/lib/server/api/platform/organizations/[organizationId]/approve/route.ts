@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { errorResponse } from "@/lib/errors";
 import { requireSession } from "@/modules/identity/auth";
 import { authorizePlatform, authorizePlatformTargetOrganization, PLATFORM_PERMISSIONS } from "@/modules/platform/authorization";
@@ -8,11 +6,11 @@ import { withPlatformTransaction } from "@/db/client";
 import { provisioningJobs } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-export async function POST(_: Request, context: { params: Promise<{ organizationId: string }> }) {
+export async function POST(_: Request, context: { params: { organizationId: string } }) {
   try {
     const user = await requireSession();
     await authorizePlatform(PLATFORM_PERMISSIONS.organizationSuspend);
-    const { organizationId } = await context.params;
+    const { organizationId } = context.params;
 
     const { organization: currentOrg } = await authorizePlatformTargetOrganization({
       organizationId,
@@ -41,8 +39,7 @@ export async function POST(_: Request, context: { params: Promise<{ organization
       provisioning = await retryProvisioning(organizationId, user.id);
     }
 
-    revalidatePath(`/platform/organizations/${organizationId}`);
-    return NextResponse.json({ success: true, organization, provisioning });
+    return Response.json({ success: true, organization, provisioning });
   } catch (error) {
     return errorResponse(error);
   }

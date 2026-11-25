@@ -103,15 +103,15 @@ vi.mock("@/db/client", () => ({
 }));
 
 vi.mock("@/modules/identity/auth", () => ({
-  requireSession: vi.fn(async () => ({ id: "user-kavita-menon", platformRole: "NONE" })),
-  getSessionUser: vi.fn(async () => ({ id: "user-kavita-menon", platformRole: "NONE" })),
+  requireSession: vi.fn(async () => ({ id: mockEmployee.userId, platformRole: "NONE" })),
+  getSessionUser: vi.fn(async () => ({ id: mockEmployee.userId, platformRole: "NONE" })),
 }));
 
 vi.mock("@/modules/tenancy/context", () => ({
   getCachedTenantContext: vi.fn(async () => ({
     organization: mockOrganization,
-    user: { id: "user-kavita-menon", platformRole: "NONE" },
-    membership: { roleId: "role-hrexec", status: "active", organizationId: "org-test-1" },
+    user: { id: mockEmployee.userId, platformRole: "NONE" },
+    membership: { roleId: "role-hrexec", status: "active", organizationId: mockOrganization.id },
     role: { id: "role-hrexec", key: mockUserRoleKey },
     permissions: ROLE_PERMISSIONS[mockUserRoleKey],
   })),
@@ -178,8 +178,8 @@ describe("Attendance Authorization & Roles", () => {
   describe("Punch Execution Authorization", () => {
     it("allows HR Executive (Kavita Menon) to record clock in for their own assigned shift", async () => {
       const result = await recordPunch({
-        organizationId: "org-test-1",
-        userId: "user-kavita-menon",
+        organizationId: mockOrganization.id,
+        userId: mockEmployee.userId,
         type: "clock_in",
         employeeId: mockEmployee.id,
       });
@@ -194,15 +194,15 @@ describe("Attendance Authorization & Roles", () => {
     it("allows HR Executive to complete full break and clock out lifecycle", async () => {
       // 1. Clock in
       await recordPunch({
-        organizationId: "org-test-1",
-        userId: "user-kavita-menon",
+        organizationId: mockOrganization.id,
+        userId: mockEmployee.userId,
         type: "clock_in",
       });
 
       // 2. Start break
       await recordPunch({
-        organizationId: "org-test-1",
-        userId: "user-kavita-menon",
+        organizationId: mockOrganization.id,
+        userId: mockEmployee.userId,
         type: "break_start",
       });
       expect(insertedPunches).toHaveLength(2);
@@ -210,8 +210,8 @@ describe("Attendance Authorization & Roles", () => {
 
       // 3. End break
       await recordPunch({
-        organizationId: "org-test-1",
-        userId: "user-kavita-menon",
+        organizationId: mockOrganization.id,
+        userId: mockEmployee.userId,
         type: "break_end",
       });
       expect(insertedPunches).toHaveLength(3);
@@ -219,8 +219,8 @@ describe("Attendance Authorization & Roles", () => {
 
       // 4. Clock out
       const outResult = await recordPunch({
-        organizationId: "org-test-1",
-        userId: "user-kavita-menon",
+        organizationId: mockOrganization.id,
+        userId: mockEmployee.userId,
         type: "clock_out",
       });
       expect(outResult).toBeDefined();
@@ -231,8 +231,8 @@ describe("Attendance Authorization & Roles", () => {
     it("rejects attempt to punch on behalf of another employee", async () => {
       await expect(
         recordPunch({
-          organizationId: "org-test-1",
-          userId: "user-kavita-menon",
+          organizationId: mockOrganization.id,
+          userId: mockEmployee.userId,
           type: "clock_in",
           employeeId: "emp-someone-else",
         })

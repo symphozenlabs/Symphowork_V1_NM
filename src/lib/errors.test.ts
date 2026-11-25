@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { error as kitError } from "@sveltejs/kit";
 import { z } from "zod";
 import { AppError, errorResponse } from "./errors";
 
@@ -51,6 +52,26 @@ describe("errorResponse", () => {
     expect(response.status).toBe(503);
     expect(body.error).toEqual({ code: "SERVICE_UNAVAILABLE", message: "The application database is not configured." });
     expect(JSON.stringify(body)).not.toContain("configuration details");
+  });
+
+  it.each([
+    [401, "UNAUTHORIZED", "Please sign in."],
+    [403, "FORBIDDEN", "You are not authorized to access this resource."],
+    [503, "SERVICE_UNAVAILABLE", "Verified tenant context is unavailable."]
+  ] as const)("preserves SvelteKit HTTP status %s with a sanitized API envelope", async (status, code, message) => {
+    let cause: unknown;
+    try {
+      kitError(status, "sensitive implementation detail");
+    } catch (error) {
+      cause = error;
+    }
+
+    const response = errorResponse(cause);
+    const body = await response.json();
+
+    expect(response.status).toBe(status);
+    expect(body).toEqual({ success: false, error: { code, message } });
+    expect(JSON.stringify(body)).not.toContain("sensitive implementation detail");
   });
 
   it("preserves sanitized role guard errors for DatabaseConfigurationError", async () => {

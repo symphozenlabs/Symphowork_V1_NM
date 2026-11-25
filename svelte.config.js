@@ -9,12 +9,6 @@ const config = {
     alias: {
       '@': './src',
       '@/*': './src/*',
-      '@/app/api': './src/lib/server/api',
-      '@/app/api/*': './src/lib/server/api/*',
-      'next/headers': './src/lib/server/compat/headers.ts',
-      'next/server': './src/lib/server/compat/server.ts',
-      'next/cache': './src/lib/server/compat/cache.ts',
-      'react': './src/lib/server/compat/react.ts'
     },
     csp: {
       mode: 'auto',

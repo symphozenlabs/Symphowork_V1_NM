@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { errorResponse, AppError } from "@/lib/errors";
 import { resolveTenantContext } from "@/modules/tenancy/context";
 import { checkAndEnsureAttendanceReminder } from "@/modules/attendance/reminder";
@@ -15,7 +14,7 @@ export async function GET() {
       userId: tenant.user.id,
     });
 
-    return NextResponse.json({ success: true, ...result });
+    return Response.json({ success: true, ...result });
   } catch (error) {
     return errorResponse(error);
   }
