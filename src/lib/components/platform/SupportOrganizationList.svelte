@@ -64,7 +64,7 @@ function navigateTo(targetQuery: string, targetPage: number) {
     }
     const qs = params.toString();
     startTransition(() => {
-      router.push(`/platform/support${qs ? `?${qs}` : ""}`);
+      router.push(`/platform/support/troubleshooting${qs ? `?${qs}` : ""}`);
     });
   }
 $effect(()=>{searchInput;return untrack(() => {

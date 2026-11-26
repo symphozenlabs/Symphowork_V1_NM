@@ -36,7 +36,7 @@ import PendingContent from '$lib/components/loading/PendingContent.svelte';
  ...(owner||context.isDepartmentManager||allowed('department.create')||allowed('department.manage')?[['Departments','/app/departments','Building2']]:[]),
  ...(allowed('organization.settings.read')?[['Organization settings','/app/settings','Settings2']]:[]),
  ...(allowed('workflow.manage')?[['Workflow settings','/app/settings/workflows','Settings2']]:[])] }
- ]);
+ ,{title:'',items:[['Support','/app/support','LifeBuoy']]}]);
  const active=(href:string)=>href==='/app'?String(page.url.pathname)===href:String(page.url.pathname)===href||String(page.url.pathname).startsWith(href+'/');
  $effect(()=>{page.url.pathname;drawer=false;});
  onMount(()=>{
@@ -58,8 +58,11 @@ import PendingContent from '$lib/components/loading/PendingContent.svelte';
   const poll=setInterval(()=>{void notifications();},30000);
   const chatPoll=setInterval(()=>{if(shouldPollChatUnread(page.url.pathname,document.hidden))void chat();},15000);
   const update=(event:Event)=>{chatUnread=(event as CustomEvent<{count:number}>).detail.count;};
+  const refreshNotifications=()=>{void notifications();};
   const visible=()=>{if(shouldPollChatUnread(page.url.pathname,document.hidden))void chat();};
-  window.addEventListener('symphowork:chat-unread-count',update);document.addEventListener('visibilitychange',visible);
+  window.addEventListener('symphowork:chat-unread-count',update);
+  window.addEventListener('symphowork:notifications-updated',refreshNotifications);
+  document.addEventListener('visibilitychange',visible);
   return()=>{
     alive=false;
     clearTimeout(chatInitTimer);
@@ -67,6 +70,7 @@ import PendingContent from '$lib/components/loading/PendingContent.svelte';
     clearInterval(poll);
     clearInterval(chatPoll);
     window.removeEventListener('symphowork:chat-unread-count',update);
+    window.removeEventListener('symphowork:notifications-updated',refreshNotifications);
     document.removeEventListener('visibilitychange',visible);
   };
  });

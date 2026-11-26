@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { error as kitError } from "@sveltejs/kit";
 import { z } from "zod";
-import { AppError, errorResponse } from "./errors";
+import { AppError, errorResponse, isMissingRelationError } from "./errors";
 
 describe("errorResponse", () => {
   afterEach(() => vi.restoreAllMocks());
@@ -43,6 +43,22 @@ describe("errorResponse", () => {
     expect(body.error).toEqual({ code: "SERVICE_UNAVAILABLE", message: "The application data service is unavailable." });
     expect(JSON.stringify(body)).not.toContain("connection parameters");
     expect(JSON.stringify(body)).not.toContain("driver wrapper");
+  });
+
+  it("maps wrapped missing-relation errors (42P01) to a sanitized 503 without leaking SQL", async () => {
+    const pgErr = Object.assign(new Error('relation "support_submissions" does not exist'), { code: "42P01" });
+    const drizzleErr = Object.assign(new Error("Failed query: select * from support_submissions"), { cause: pgErr });
+    const response = errorResponse(drizzleErr);
+    const body = await response.json();
+
+    expect(isMissingRelationError(drizzleErr)).toBe(true);
+    expect(response.status).toBe(503);
+    expect(body.error).toEqual({
+      code: "SERVICE_UNAVAILABLE",
+      message: "This service is unavailable until its database migration is applied.",
+    });
+    expect(JSON.stringify(body)).not.toContain("support_submissions");
+    expect(JSON.stringify(body)).not.toContain("Failed query");
   });
 
   it("maps missing database configuration to a sanitized 503", async () => {

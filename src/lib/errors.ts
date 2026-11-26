@@ -14,7 +14,7 @@ export class AppError extends Error {
   }
 }
 
-function getDriverCode(error: unknown): string | undefined {
+export function getDriverCode(error: unknown): string | undefined {
   const seen = new Set<object>();
   let current: unknown = error;
   for (let depth = 0; depth < 5 && typeof current === "object" && current !== null && !seen.has(current); depth++) {
@@ -25,6 +25,10 @@ function getDriverCode(error: unknown): string | undefined {
     current = "cause" in current ? (current as { cause?: unknown }).cause : undefined;
   }
   return undefined;
+}
+
+export function isMissingRelationError(error: unknown): boolean {
+  return getDriverCode(error) === "42P01";
 }
 
 export function errorResponse(error: unknown) {
@@ -96,6 +100,13 @@ export function errorResponse(error: unknown) {
     return Response.json(
       { success: false, error: { code: "VALIDATION_ERROR", message: "A request identifier is invalid." } },
       { status: 400 }
+    );
+  }
+
+  if (driverCode === "42P01") {
+    return Response.json(
+      { success: false, error: { code: "SERVICE_UNAVAILABLE", message: "This service is unavailable until its database migration is applied." } },
+      { status: 503 }
     );
   }
 
